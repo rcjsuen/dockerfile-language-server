@@ -20,9 +20,6 @@ matrix:
 git:
   depth: 1
 
-before_install:
-  - nvm install $NODE_VERSION
-
 install:
   - npm install
 
