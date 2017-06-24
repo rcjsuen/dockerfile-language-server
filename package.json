@@ -1,0 +1,24 @@
+{
+  "name": "dockerfile-language-server-nodejs",
+  "description": "A language server for Dockerfiles powered by NodeJS, TypeScript, and VSCode technologies.",
+  "version": "0.0.1",
+  "author": "Remy Suen",
+  "license": "MIT",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.33",
+    "@types/node": "^6.0.52",
+    "mocha": "^3.2.0",
+    "typescript": "^2.1.5"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc --watch -p .",
+    "test": "mocha out/test"
+  }
+}
