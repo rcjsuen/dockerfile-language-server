@@ -63,8 +63,12 @@ describe("Dockerfile hover", function() {
 		});
 
 		it("invalid directive definition", function() {
-			let document = createDocument("#escape ");
+			let document = createDocument("#eskape=`");
 			let hover = onHover(document, 0, 4);
+			assert.equal(hover, null);
+
+			document = createDocument("#escape ");
+			hover = onHover(document, 0, 4);
 			assert.equal(hover, null);
 
 			document = createDocument("#escape\t");
@@ -109,10 +113,54 @@ describe("Dockerfile hover", function() {
 			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
 		});
 
+		it("fr\\\\roM", function() {
+			let document = createDocument("fr\\\roM node");
+			let hover = onHover(document, 0, 0);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 0, 1);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 1, 1);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 1, 1);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+		});
+
+		it("fr\\\\r\\noM", function() {
+			let document = createDocument("fr\\\r\noM node");
+			let hover = onHover(document, 0, 0);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 0, 1);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 1, 1);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 1, 1);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+		});
+
 		it("HEALTHCHECK NONE", function() {
 			let document = createDocument("HEALTHCHECK NONE");
 			let hover = onHover(document, 0, 14);
 			assert.equal(hover, null);
+		});
+
+		it("newlines", function() {
+			let document = createDocument("FROM node\nEXPOSE 8081");
+			let hover = onHover(document, 1, 4);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("FROM node\rEXPOSE 8081");
+			hover = onHover(document, 1, 4);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("FROM node\r\nEXPOSE 8081");
+			hover = onHover(document, 1, 4);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
 	});
 
@@ -126,6 +174,14 @@ describe("Dockerfile hover", function() {
 		it("ONBUILD EXPOSE escaped on newline", function() {
 			let document = createDocument("ONBUILD \\\nEXPOSE 8080");
 			let hover = onHover(document, 1, 3);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("ONBUILD \\\rEXPOSE 8080");
+			hover = onHover(document, 1, 3);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("ONBUILD \\\r\nEXPOSE 8080");
+			hover = onHover(document, 1, 3);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
 
