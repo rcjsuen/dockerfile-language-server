@@ -7,7 +7,7 @@
 import {
 	TextDocument, TextDocumentPositionParams, Hover
 } from 'vscode-languageserver';
-import { KEYWORDS } from './docker';
+import { KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { MarkdownDocumentation } from './dockerMarkdown';
 
 export class DockerHover {
@@ -39,8 +39,8 @@ export class DockerHover {
 									break directiveCheck;
 								default:
 									if (char === '=') {
-										if (directive === "escape") {
-											return this.markdown.getMarkdown("escape");	
+										if (directive === DIRECTIVE_ESCAPE) {
+											return this.markdown.getMarkdown(DIRECTIVE_ESCAPE);
 										}
 									} else {
 										directive = directive + char.toLowerCase();

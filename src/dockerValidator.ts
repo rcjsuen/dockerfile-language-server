@@ -5,7 +5,7 @@
 import {
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
-import { Util } from './docker';
+import { Util, DIRECTIVE_ESCAPE } from './docker';
 
 export enum ValidationCode {
 	DEFAULT,
@@ -50,7 +50,7 @@ export class Validator {
 					// are we processing a potentially valid directive declaration
 					if (inComment && directiveMark !== -1) {
 						var directiveName = text.substring(directiveMark, directiveEnd + 1);
-						if (directiveName.toLowerCase() !== "escape") {
+						if (directiveName.toLowerCase() !== DIRECTIVE_ESCAPE) {
 							// Dockerfiles currently only support the 'escape' directive
 							problems.push(this.createUnknownDirective(directiveMark, directiveEnd + 1, directiveName));
 							// process the rest of this line before letting the standard parser work

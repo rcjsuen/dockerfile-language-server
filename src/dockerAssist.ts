@@ -8,7 +8,7 @@ import {
 	TextDocument, TextEdit, Range,
 	CompletionItem, CompletionItemKind, InsertTextFormat
 } from 'vscode-languageserver';
-import { Util, KEYWORDS } from './docker';
+import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 
 export class DockerAssist {
 
@@ -70,12 +70,12 @@ export class DockerAssist {
 							case ' ':
 							case '\t':
 								// ignore whitespace if directive is well-formed or hasn't been found yet
-								if (directive !== "escape" && directive !== "") {
+								if (directive !== DIRECTIVE_ESCAPE && directive !== "") {
 									break escapeCheck;
 								}
 								continue;
 							case '=':
-								if (directive === "escape") {
+								if (directive === DIRECTIVE_ESCAPE) {
 									// '=' found and the directive that has been declared is the escape directive,
 									// record its value so we know what the escape character of this Dockerfile is
 									capture = true;
@@ -122,8 +122,8 @@ export class DockerAssist {
 						// we're in the first comment, might need to suggest
 						// the escape directive as a proposal
 						var directivePrefix = buffer.substring(i + 1, offset).trim().toLowerCase();
-						if ("escape".indexOf(directivePrefix) === 0) {
-							return [ this.createEscape(prefix, offset, "escape") ];
+						if (DIRECTIVE_ESCAPE.indexOf(directivePrefix) === 0) {
+							return [ this.createEscape(prefix, offset, DIRECTIVE_ESCAPE) ];
 						}
 					}
 					// in a comment, no proposals to suggest
@@ -440,7 +440,7 @@ export class DockerAssist {
 	}
 
 	createEscape(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("escape", "escape=`", prefix, offset, "escape=${1:`}", markdown);
+		return this.createKeywordCompletionItem(DIRECTIVE_ESCAPE, "escape=`", prefix, offset, "escape=${1:`}", markdown);
 	}
 
 	createKeywordCompletionItem(keyword: string, label: string, prefix: string, offset: number, insertText: string, markdown: string): CompletionItem {

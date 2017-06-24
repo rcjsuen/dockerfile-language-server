@@ -25,6 +25,8 @@ export const KEYWORDS = [
 	"WORKDIR"
 ];
 
+export const DIRECTIVE_ESCAPE = "escape";
+
 export class Util {
 	public static isWhitespace(char: string): boolean {
 		return char === ' ' || char === '\t' || Util.isNewline(char);
@@ -55,7 +57,7 @@ export class Util {
 							case '\n':
 								break directiveCheck;
 							case '=':
-								if (directive.toLowerCase() === "escape") {
+								if (directive.toLowerCase() === DIRECTIVE_ESCAPE) {
 									directiveValue: for (let k = j + 1; k < buffer.length; k++) {
 										char = buffer.charAt(k);
 										switch (char) {

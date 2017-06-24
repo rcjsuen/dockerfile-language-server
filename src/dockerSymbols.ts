@@ -7,6 +7,7 @@
 import {
 	TextDocument, TextDocumentPositionParams, SymbolInformation, SymbolKind
 } from 'vscode-languageserver';
+import { DIRECTIVE_ESCAPE } from './docker';
 
 export class DockerSymbols {
 
@@ -53,7 +54,7 @@ export class DockerSymbols {
 							case '\n':
 								break directiveCheck;
 							case '=':
-								if (directive.toLowerCase() === "escape") {
+								if (directive.toLowerCase() === DIRECTIVE_ESCAPE) {
 									directiveValue: for (let k = j + 1; k < buffer.length; k++) {
 										char = buffer.charAt(k);
 										switch (char) {
@@ -70,7 +71,7 @@ export class DockerSymbols {
 												break;
 										}
 									}
-									return this.createSymbolInformation(document, "escape", textDocumentURI, directiveStart, j - 1, SymbolKind.Property);
+									return this.createSymbolInformation(document, DIRECTIVE_ESCAPE, textDocumentURI, directiveStart, j - 1, SymbolKind.Property);
 								}
 								break directiveCheck;
 							default:
