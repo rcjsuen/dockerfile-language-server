@@ -109,6 +109,10 @@ export class DockerHover {
 								continue;
 						}
 					}
+					// reached EOF
+					if (previousWord !== "" && previousWord !== "ONBUILD") {
+						return null;
+					}
 					wordStart = i + 1;
 					break startCheck;
 				default:

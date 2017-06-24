@@ -134,5 +134,31 @@ describe("Dockerfile hover", function() {
 			let hover = onHover(document, 1, 4);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
+
+		it("invalid nesting", function() {
+			let document = createDocument("RUN EXPOSE 8080");
+			let hover = onHover(document, 0, 7);
+			assert.equal(hover, null);
+
+			document = createDocument(" RUN EXPOSE 8080");
+			hover = onHover(document, 0, 8);
+			assert.equal(hover, null);
+
+			document = createDocument("\tRUN EXPOSE 8080");
+			hover = onHover(document, 0, 8);
+			assert.equal(hover, null);
+
+			document = createDocument("\r\nRUN EXPOSE 8080");
+			hover = onHover(document, 1, 7);
+			assert.equal(hover, null);
+
+			document = createDocument("\rRUN EXPOSE 8080");
+			hover = onHover(document, 1, 7);
+			assert.equal(hover, null);
+
+			document = createDocument("\nRUN EXPOSE 8080");
+			hover = onHover(document, 1, 7);
+			assert.equal(hover, null);
+		});
 	});
 });
