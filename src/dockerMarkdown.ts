@@ -5,7 +5,6 @@
 'use strict';
 
 import { Hover } from 'vscode-languageserver';
-import { KEYWORDS } from './docker';
 
 export class MarkdownDocumentation {
 
@@ -208,11 +207,16 @@ export class MarkdownDocumentation {
 		};
 	}
 	
-	formatMessage(text: string, variable: string): string {
+	private formatMessage(text: string, variable: string): string {
 		return text.replace("${0}", variable);
 	}
 
-	getMarkdown(data: string): Hover {
-		return this.markdowns[data];
+	/**
+	 * Retrieves the Markdown documentation for the given word.
+	 * 
+	 * @param word the Dockerfile keyword or directive, must not be null
+	 */
+	public getMarkdown(word: string): Hover {
+		return this.markdowns[word];
 	}
 }
