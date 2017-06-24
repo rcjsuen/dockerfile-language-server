@@ -162,6 +162,15 @@ describe("Dockerfile hover", function() {
 			hover = onHover(document, 1, 4);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
+
+		it("invalid escape", function() {
+			let document = createDocument("FR\\OM node");
+			let hover = onHover(document, 0, 1);
+			assert.equal(hover, null);
+
+			hover = onHover(document, 0, 3);
+			assert.equal(hover, null);
+		});
 	});
 
 	describe("keyword nesting", function() {

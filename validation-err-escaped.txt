@@ -1,0 +1,5 @@
+Error response from daemon: Unknown instruction: FR\OM
+The command "docker build -f Dockerfile.2.1 ." exited with 1.
+0.06s$ docker build -f Dockerfile.3.1 .
+Sending build context to Docker daemon 64.51 kB
+Error response from daemon: Unknown instruction: FR\OOM

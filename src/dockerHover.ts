@@ -130,6 +130,8 @@ export class DockerHover {
 						i = buffer.charAt(i + 2) === '\n' ? i + 2 : i + 1;
 					} else if (char === '\n') {
 						i = i + 1;
+					} else {
+						return null;
 					}
 					break;
 				case '\r':
