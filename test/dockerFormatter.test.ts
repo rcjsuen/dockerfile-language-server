@@ -301,6 +301,14 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.start.character, 0);
 				assert.equal(edits[0].range.end.line, 2);
 				assert.equal(edits[0].range.end.character, 1);
+
+				edits = formatRange(document, range, { tabSize: 2, insertSpaces: true });
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "  ");
+				assert.equal(edits[0].range.start.line, 2);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 2);
+				assert.equal(edits[0].range.end.character, 1);
 			});
 		});
 
@@ -381,6 +389,36 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[1].range.start.character, 0);
 				assert.equal(edits[1].range.end.line, 1);
 				assert.equal(edits[1].range.end.character, 1);
+
+				document = createDocument("  FROM node\r\tEXPOSE 8080\r  HEALTHCHECK NONE");
+				range = Range.create(Position.create(0, 3), Position.create(2, 5));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 0);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 0);
+				assert.equal(edits[0].range.end.character, 2);
+				assert.equal(edits[1].newText, "");
+				assert.equal(edits[1].range.start.line, 1);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 1);
+				assert.equal(edits[1].range.end.character, 1);
+
+				document = createDocument("  FROM node\r\n\tEXPOSE 8080\r\n  HEALTHCHECK NONE");
+				range = Range.create(Position.create(0, 3), Position.create(2, 5));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 0);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 0);
+				assert.equal(edits[0].range.end.character, 2);
+				assert.equal(edits[1].newText, "");
+				assert.equal(edits[1].range.start.line, 1);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 1);
+				assert.equal(edits[1].range.end.character, 1);
 			});
 
 			/**
@@ -416,6 +454,18 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[2].range.start.character, 0);
 				assert.equal(edits[2].range.end.line, 4);
 				assert.equal(edits[2].range.end.character, 0);
+			});
+
+			it("full file", function() {
+				let document = createDocument("FROM node\n EXPOSE 8081\nHEALTHCHECK NONE");
+				let range = Range.create(Position.create(0, 1), Position.create(1, 3));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 1);
 			});
 		});
 	});
