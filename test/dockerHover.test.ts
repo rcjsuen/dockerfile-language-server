@@ -5,12 +5,7 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import {
-	TextEdit, TextDocument,
-	InitializeResult, TextDocumentPositionParams, TextDocumentSyncKind,
-	CompletionItem, CompletionItemKind, InsertTextFormat, Hover,
-	CodeActionParams, Command, Position, Range, FormattingOptions
-} from 'vscode-languageserver';
+import { TextDocument, Hover, Position } from 'vscode-languageserver';
 import { MarkdownDocumentation } from '../src/dockerMarkdown';
 import { DockerHover } from '../src/dockerHover';
 
