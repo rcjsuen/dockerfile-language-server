@@ -7,6 +7,7 @@
 import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
+import { Util } from '../src/docker';
 
 export class DockerFormatter {
 
@@ -16,62 +17,6 @@ export class DockerFormatter {
 
 	private isNewline(char: string): boolean {
 		return char === '\r' || char === '\n';
-	}
-
-	private getEscapeDirective(buffer: string): string {
-		directiveCheck: for (let i = 0; i < buffer.length; i++) {
-			switch (buffer.charAt(i)) {
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
-				case '#':
-					let directiveStart = -1;
-					let directive = "";
-					for (let j = i + 1; j < buffer.length; j++) {
-						let char = buffer.charAt(j);
-						switch (char) {
-							case ' ':
-							case '\t':
-								break;
-							case '\r':
-							case '\n':
-								break directiveCheck;
-							case '=':
-								if (directive.toLowerCase() === "escape") {
-									directiveValue: for (let k = j + 1; k < buffer.length; k++) {
-										char = buffer.charAt(k);
-										switch (char) {
-											case '\r':
-											case '\n':
-												break directiveValue;
-											case '\t':
-											case ' ':
-												continue;
-											default:
-												if (k + 1 !== buffer.length && this.isWhitespace(buffer.charAt(k + 1))) {
-													return char;
-												}
-												break;
-										}
-									}
-								}
-								break directiveCheck;
-							default:
-								if (directiveStart === -1) {
-									directiveStart = j;
-								}
-								directive = directive + char;
-								break;
-						}
-					}
-					break;
-				default:
-					break directiveCheck;
-			}
-		}
-		return '\\';
 	}
 
 	private getIndentation(formattingOptions?: FormattingOptions): string {
@@ -112,7 +57,7 @@ export class DockerFormatter {
 		let indentation = this.getIndentation(options);
 		let edits = [];
 		let buffer = document.getText();
-		let escapeChar = this.getEscapeDirective(buffer);
+		let escapeChar = Util.getEscapeDirective(buffer);
 		let indent = false;
 		let comment = false;
 		let parseStart = 0;
@@ -184,7 +129,7 @@ export class DockerFormatter {
 
 	public formatDocument(document: TextDocument, options?: FormattingOptions): TextEdit[] {
 		let buffer = document.getText();
-		let escapeChar = this.getEscapeDirective(buffer);
+		let escapeChar = Util.getEscapeDirective(buffer);
 		return this.format(document, buffer, escapeChar, false, 0, options);
 	}
 

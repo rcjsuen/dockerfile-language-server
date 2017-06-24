@@ -5,6 +5,7 @@
 import {
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
+import { Util } from './docker';
 
 export enum ValidationCode {
 	DEFAULT,
@@ -16,10 +17,6 @@ export enum ValidationCode {
 export class Validator {
 
 	private document: TextDocument;
-
-	isWhitespace(char: string): boolean {
-		return char === ' ' || char === '\t' || char === '\r' || char === '\n';
-	}
 
 	shouldSkipNewline(text: string, offset: number, escape: string) {
 		// only skip ahead if at an escape character,
@@ -134,7 +131,7 @@ export class Validator {
 
 		lineCheck: for (let i = dc; i < text.length; i++) {
 			// skip generic whitespace
-			if (this.isWhitespace(text.charAt(i))) {
+			if (Util.isWhitespace(text.charAt(i))) {
 				continue;
 			}
 
@@ -172,9 +169,9 @@ export class Validator {
 					continue;
 				}
 
-				if (this.isWhitespace(text.charAt(j)) || j === text.length - 1) {
+				if (Util.isWhitespace(text.charAt(j)) || j === text.length - 1) {
 					// first word of the line
-					if (j === text.length - 1 && !this.isWhitespace(text.charAt(j))) {
+					if (j === text.length - 1 && !Util.isWhitespace(text.charAt(j))) {
 						// if parsing is at the end and the last character is not a whitespace,
 						// then extend the instruction to include the last character
 						instruction = instruction + text.substring(start, j + 1);
@@ -184,7 +181,7 @@ export class Validator {
 
 					var uppercaseInstruction = instruction.toUpperCase();
 					if (j === text.length - 1) {
-						if (this.isWhitespace(text.charAt(j))) {
+						if (Util.isWhitespace(text.charAt(j))) {
 							this.markFinalLine(keywords, escape, text, i, last + 1, instruction, uppercaseInstruction, problems, hasFrom);
 						} else {
 							this.markFinalLine(keywords, escape, text, i, j, instruction, uppercaseInstruction, problems, hasFrom);
@@ -300,7 +297,7 @@ export class Validator {
 	}
 
 	markFinalLine(keywords, escape, text, i, j, instruction, uppercaseInstruction, problems, hasFrom) {
-		if (!this.isWhitespace(text.charAt(j)) && text.charAt(j) !== escape) {
+		if (!Util.isWhitespace(text.charAt(j)) && text.charAt(j) !== escape) {
 			j = j + 1;
 		}
 
@@ -382,7 +379,7 @@ export class Validator {
 			if (i === text.length - 1) {
 				// reached end of the file
 				if (!flagged) {
-					if (wordStart === i || !this.isWhitespace(text.charAt(i))) {
+					if (wordStart === i || !Util.isWhitespace(text.charAt(i))) {
 						// increase the index to include the last character if not whitespace
 						i++;
 					}
@@ -402,7 +399,7 @@ export class Validator {
 
 		// reached end of the file
 		if (!flagged) {
-			if (wordStart === i || !this.isWhitespace(text.charAt(i))) {
+			if (wordStart === i || !Util.isWhitespace(text.charAt(i))) {
 				// increase the index to include the last character if not whitespace
 				i++;
 			}
@@ -603,7 +600,7 @@ export class Validator {
 			if (i === text.length - 1) {
 				// reached end of the file
 				if (!flagged) {
-					if (wordStart === i || !this.isWhitespace(text.charAt(i))) {
+					if (wordStart === i || !Util.isWhitespace(text.charAt(i))) {
 						i++;
 					}
 
@@ -625,7 +622,7 @@ export class Validator {
 		}
 
 		if (!flagged) {
-			if (wordStart === i || !this.isWhitespace(text.charAt(i))) {
+			if (wordStart === i || !Util.isWhitespace(text.charAt(i))) {
 				i++;
 			}
 

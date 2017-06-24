@@ -8,7 +8,7 @@ import {
 	TextDocument, TextEdit, Range,
 	CompletionItem, CompletionItemKind, InsertTextFormat
 } from 'vscode-languageserver';
-import { KEYWORDS } from './docker';
+import { Util, KEYWORDS } from './docker';
 
 export class DockerAssist {
 
@@ -88,7 +88,7 @@ export class DockerAssist {
 								if (capture) {
 									// the escape directive should be a single character and followed by whitespace,
 									// it should also either be a backslash or a backtick
-									if ((j + 1 === buffer.length || this.isWhitespace(buffer.charAt(j + 1)))
+									if ((j + 1 === buffer.length || Util.isWhitespace(buffer.charAt(j + 1)))
 										&& (char === '\\' || char === '`')) {
 										escapeCharacter = char;
 									}
@@ -264,10 +264,6 @@ export class DockerAssist {
 		return proposals;
 	}
 
-	isWhitespace(char: string): boolean {
-		return char === ' ' || char === '\t' || char === '\r' || char === '\n';
-	}
-
 	/**
 	 * Walks back in the text buffer to calculate the true prefix of the
 	 * current text caret offset. Orion's provided prefix does not include
@@ -310,7 +306,7 @@ export class DockerAssist {
 				var truePrefix = char;
 				for (let i = offset - 2; i >= 0; i--) {
 					char = buffer.charAt(i);
-					if (this.isWhitespace(char)) {
+					if (Util.isWhitespace(char)) {
 						break;
 					} else {
 						truePrefix = char + truePrefix;
