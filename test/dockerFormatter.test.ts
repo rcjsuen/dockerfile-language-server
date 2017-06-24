@@ -260,6 +260,163 @@ describe("Dockerfile formatter", function() {
 				edits = formatRange(document, range);
 				assert.equal(edits.length, 0);
 			});
+
+			/**
+			 * FROM node
+			 * EXPOSE 8080\
+			 * 8[08]1
+			 * ------------
+			 * FROM node
+			 * EXPOSE 8080\
+			 * \t8081
+			 */
+			it("escape non-whitespace", function() {
+				let document = createDocument("FROM node\nEXPOSE 8080\\\n8081");
+				let range = Range.create(Position.create(2, 1), Position.create(2, 2));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 2);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 2);
+				assert.equal(edits[0].range.end.character, 0);
+			});
+
+			/**
+			 * FROM node
+			 * EXPOSE 8080\
+			 *  8[08]1
+			 * ------------
+			 * FROM node
+			 * EXPOSE 8080\
+			 * \t8081
+			 */
+			it("escape whitespace", function() {
+				let document = createDocument("FROM node\nEXPOSE 8080\\\n 8081");
+				let range = Range.create(Position.create(2, 2), Position.create(2, 3));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 2);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 2);
+				assert.equal(edits[0].range.end.character, 1);
+			});
+		});
+
+		describe("multi line selection", function() {
+
+			/**
+			 *  [ 
+			 *  ] 
+			 * ---
+			 * 
+			 * 
+			 */
+			it("empty", function() {
+				let document = createDocument("  \n  ");
+				let range = Range.create(Position.create(0, 1), Position.create(1, 1));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 2);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 0);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 0);
+				assert.equal(edits[0].range.end.character, 2);
+				assert.equal(edits[1].newText, "");
+				assert.equal(edits[1].range.start.line, 1);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 1);
+				assert.equal(edits[1].range.end.character, 2);
+			});
+
+			/**
+			 *  [ 
+			 *   
+			 *  ] 
+			 * ---
+			 * 
+			 * 
+			 * 
+			 */
+			it("empty double", function() {
+				let document = createDocument("  \n  \n  ");
+				let range = Range.create(Position.create(0, 1), Position.create(2, 1));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 0);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 0);
+				assert.equal(edits[0].range.end.character, 2);
+				assert.equal(edits[1].newText, "");
+				assert.equal(edits[1].range.start.line, 1);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 1);
+				assert.equal(edits[1].range.end.character, 2);
+				assert.equal(edits[2].newText, "");
+				assert.equal(edits[2].range.start.line, 2);
+				assert.equal(edits[2].range.start.character, 0);
+				assert.equal(edits[2].range.end.line, 2);
+				assert.equal(edits[2].range.end.character, 2);
+			});
+
+			/**
+			 *   [FROM node
+			 * \tEXPOSE 8080
+			 * HEALT]HCHECK NONE
+			 */
+			it("instructions", function() {
+				let document = createDocument("  FROM node\n\tEXPOSE 8080\n  HEALTHCHECK NONE");
+				let range = Range.create(Position.create(0, 3), Position.create(2, 5));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 0);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 0);
+				assert.equal(edits[0].range.end.character, 2);
+				assert.equal(edits[1].newText, "");
+				assert.equal(edits[1].range.start.line, 1);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 1);
+				assert.equal(edits[1].range.end.character, 1);
+			});
+
+			/**
+			 * FROM node
+			 * EXPOSE 8080\
+			 * 8[081\
+			 * 8082\
+			 * 808]3
+			 * ------------
+			 * FROM node
+			 * EXPOSE 8080\
+			 * \t8081\
+			 * \t8082\
+			 * \t8083
+			 */
+			it("escaped indents selected", function() {
+				let document = createDocument("FROM node\nEXPOSE 8080\\\n8081\\\n8082\\\n8083");
+				let range = Range.create(Position.create(2, 1), Position.create(4, 3));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 2);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 2);
+				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[1].newText, "\t");
+				assert.equal(edits[1].range.start.line, 3);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 3);
+				assert.equal(edits[1].range.end.character, 0);
+				assert.equal(edits[2].newText, "\t");
+				assert.equal(edits[2].range.start.line, 4);
+				assert.equal(edits[2].range.start.character, 0);
+				assert.equal(edits[2].range.end.line, 4);
+				assert.equal(edits[2].range.end.character, 0);
+			});
 		});
 	});
 });

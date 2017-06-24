@@ -85,7 +85,16 @@ export class DockerFormatter {
 		return indentation;
 	}
 
-	private createFormattingEdit(document: TextDocument, start, end, indent: boolean, indentation: string) {
+	/**
+	 * Creates a TextEdit for formatting the given document.
+	 * 
+	 * @param document the document being formatted
+	 * @param start the start offset of the document's content to be replaced
+	 * @param end the end offset of the document's content to be replaced
+	 * @param indent true if this block should be replaced with an indentation, false otherwise
+	 * @param indentation the string to use for an indentation
+	 */
+	private createFormattingEdit(document: TextDocument, start: number, end: number, indent: boolean, indentation: string): TextEdit {
 		if (indent) {
 			return TextEdit.replace({
 				start: document.positionAt(start),
@@ -99,8 +108,8 @@ export class DockerFormatter {
 		}
 	}
 
-	public formatRange(document: TextDocument, range: Range, formattingOptions?: FormattingOptions): TextEdit[] {
-		let indentation = this.getIndentation(formattingOptions);
+	public formatRange(document: TextDocument, range: Range, options?: FormattingOptions): TextEdit[] {
+		let indentation = this.getIndentation(options);
 		let edits = [];
 		let buffer = document.getText();
 		let escapeChar = this.getEscapeDirective(buffer);
@@ -108,8 +117,22 @@ export class DockerFormatter {
 		let comment = false;
 		let parseStart = 0;
 		if (range.start.line !== 0) {
+			// walk back to see if an indentation is needed for the first line of the selected blocks
 			for (let i = document.offsetAt(range.start); i >= 0; i--) {
-				if (this.isNewline(buffer.charAt(i))) {
+				let char = buffer.charAt(i);
+				if (char === '\r') {
+					char = buffer.charAt(i - 1);
+					if (char === escapeChar) {
+						indent = true;
+					} else if (char === '\n' && buffer.charAt(i - 2) === escapeChar) {
+						indent = true;
+					}
+					parseStart = i + 1;
+					break;
+				} else if (char === '\n') {
+					if (buffer.charAt(i - 1) === escapeChar) {
+						indent = true;
+					}
 					parseStart = i + 1;
 					break;
 				}
@@ -123,7 +146,8 @@ export class DockerFormatter {
 						return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, i))) ];
 					}
 				}
-				if (buffer.trim().length === 0) {
+				// only whitespace characters?
+				if (buffer.length > 0) {
 					return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, buffer.length))) ];
 				}
 			} else {
@@ -131,7 +155,14 @@ export class DockerFormatter {
 				for (let i = parseStart; i < buffer.length; i++) {
 					if (!this.isWhitespace(buffer.charAt(i))) {
 						if (parseStart === i) {
+							// the first char is not a whitespace, either indent or no formatting
+							if (indent) {
+								return [ TextEdit.insert(document.positionAt(i), indentation) ];
+							}
 							return [];
+						}
+						if (indent) {
+							return [ TextEdit.replace(Range.create(Position.create(range.start.line, 0), document.positionAt(i)), indentation) ];
 						}
 						return [ TextEdit.del(Range.create(Position.create(range.start.line, 0), Position.create(range.start.line, i - parseStart))) ];
 					}
@@ -139,15 +170,27 @@ export class DockerFormatter {
 			}
 		}
 
-		return edits;
+		// search for the end of the selection, as determined by a newline or an EOF
+		let parseEnd = buffer.length;
+		for (let i = document.offsetAt(range.end); i < parseEnd; i++) {
+			if (this.isNewline(buffer.charAt(i))) {
+				parseEnd = i;
+				break;
+			}
+		}
+
+		return this.format(document, buffer.substring(parseStart, parseEnd), escapeChar, indent, parseStart, options);
 	}
 
-	public formatDocument(document: TextDocument, formattingOptions?: FormattingOptions): TextEdit[] {
-		let indentation = this.getIndentation(formattingOptions);
-		let edits = [];
+	public formatDocument(document: TextDocument, options?: FormattingOptions): TextEdit[] {
 		let buffer = document.getText();
 		let escapeChar = this.getEscapeDirective(buffer);
-		let indent = false;
+		return this.format(document, buffer, escapeChar, false, 0, options);
+	}
+
+	private format(document: TextDocument, buffer: string, escapeChar: string, indent: boolean, documentOffset: number, options?: FormattingOptions): TextEdit[] {
+		let indentation = this.getIndentation(options);
+		let edits = [];
 		let comment = false;
 		let lineStart = 0;
 		lineCheck: for (let i = 0; i < buffer.length; i++) {
@@ -157,8 +200,8 @@ export class DockerFormatter {
 					// check for last line being whitespaces
 					if (i + 1 === buffer.length) {
 						let edit = TextEdit.del({
-							start: document.positionAt(lineStart),
-							end: document.positionAt(i + 1)
+							start: document.positionAt(documentOffset + lineStart),
+							end: document.positionAt(documentOffset + i + 1)
 						});
 						edits.push(edit);
 					}
@@ -168,8 +211,8 @@ export class DockerFormatter {
 					// empty lines with just whitespace
 					if (lineStart !== i) {
 						let edit = TextEdit.del({
-							start: document.positionAt(lineStart),
-							end: document.positionAt(i)
+							start: document.positionAt(documentOffset + lineStart + documentOffset),
+							end: document.positionAt(documentOffset + i)
 						});
 						edits.push(edit);
 					}
@@ -180,7 +223,7 @@ export class DockerFormatter {
 					comment = true;
 				default:
 					if (lineStart !== i || indent) {
-						let edit = this.createFormattingEdit(document, lineStart, i, indent, indentation);
+						let edit = this.createFormattingEdit(document, documentOffset + lineStart, documentOffset + i, indent, indentation);
 						edits.push(edit);
 						indent = false;
 					}
