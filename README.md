@@ -1,5 +1,7 @@
 # Dockerfile language server
 
+[![Build Status](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs.svg?branch=master)](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs)
+
 This is a language server for Dockerfiles powered by Node.js
 written in TypeScript.
 
