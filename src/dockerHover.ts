@@ -7,7 +7,7 @@
 import {
 	TextDocument, TextDocumentPositionParams, Hover
 } from 'vscode-languageserver';
-import { KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
+import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { MarkdownDocumentation } from './dockerMarkdown';
 
 export class DockerHover {
@@ -20,8 +20,8 @@ export class DockerHover {
 
 	onHover(document: TextDocument, textDocumentPosition: TextDocumentPositionParams): Hover {
 		let buffer = document.getText();
-		let tokenStart = 0;
-		let tokenEnd = buffer.length;
+		let wordStart = 0;
+		let wordEnd = buffer.length;
 		if (textDocumentPosition.position.line === 0) {
 			// might be hovering over the 'escape' directive
 			directiveCheck: for (let i = 0; i < buffer.length; i++) {
@@ -58,51 +58,94 @@ export class DockerHover {
 			}
 		}
 
+		let escapeChar = Util.getEscapeDirective(buffer);
 		let offset = document.offsetAt(textDocumentPosition.position);
+		let word = "";
 
 		startCheck: for (let i = offset; i >= 0; i--) {
-			switch (buffer.charAt(i)) {
+			let char = buffer.charAt(i);
+			switch (char) {
 				case '\r':
+					if (buffer.charAt(i - 1) === escapeChar) {
+						i--;
+						continue;
+					} else {
+						wordStart = i + 1;
+						break startCheck;
+					}
 				case '\n':
-					tokenStart = i + 1;
-					break startCheck;
+					char = buffer.charAt(i - 1);
+					if (char === escapeChar) {
+						i--;
+						continue;
+					} else if (char === '\r' && buffer.charAt(i - 2) === escapeChar) {
+						i = i - 2;
+						continue;
+					} else {
+						wordStart = i + 1;
+						break startCheck;
+					}
 				case '\t':
 				case ' ':
+					let previousWord = "";
 					for (let j = i; j >= 0; j--) {
-						switch (buffer.charAt(j)) {
+						char = buffer.charAt(j);
+						switch (char) {
 							case '\r':
 							case '\n':
-								tokenStart = i + 1;
+								if (previousWord !== "" && previousWord !== "ONBUILD") {
+									return null;
+								}
+								wordStart = i + 1;
 								break startCheck;
 							case '\t':
 							case ' ':
+								if (previousWord !== "" && previousWord !== "ONBUILD") {
+									return null;
+								}
 								continue;
 							default:
-								return null;
+								previousWord = char.toUpperCase() + previousWord;
+								continue;
 						}
 					}
-					tokenStart = i + 1;
+					wordStart = i + 1;
 					break startCheck;
+				default:
+					word = char + word;
+					break;
 			}
 		}
 
-		endCheck: for (let i = offset; i <= buffer.length; i++) {
-			switch (buffer.charAt(i)) {
+		endCheck: for (let i = offset + 1; i <= buffer.length; i++) {
+			let char = buffer.charAt(i);
+			switch (char) {
+				case escapeChar:
+					char = buffer.charAt(i - 1);
+					if (char === '\r') {
+						i = buffer.charAt(i - 2) === '\n' ? i - 2 : i - 1;
+					} else if (char === '\n') {
+						i = i - 1;
+					}
+					break;
 				case '\r':
 				case '\n':
 				case '\t':
 				case ' ':
-					tokenEnd = i;
+					wordEnd = i;
 					break endCheck;
+				default:
+					word = word + char;
+					break;
 			}
 		}
 
-		let target = buffer.substring(tokenStart, tokenEnd).toUpperCase();
+		let target = word.toUpperCase();
 		let markdown = this.markdown.getMarkdown(target);
 		if (markdown) {
 			markdown.range = {
-				start: document.positionAt(tokenStart),
-				end: document.positionAt(tokenEnd),
+				start: document.positionAt(wordStart),
+				end: document.positionAt(wordEnd),
 			};
 		}
 		return markdown;
