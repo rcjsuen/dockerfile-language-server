@@ -72,20 +72,20 @@ describe("Dockerfile hover", function() {
 		});
 	});
 
-	describe("ONBUILD nesting", function() {
-		it("second keyword", function() {
+	describe("keyword nesting", function() {
+		it("ONBUILD EXPOSE", function() {
 			let document = createDocument("ONBUILD EXPOSE 8080");
 			let hover = onHover(document, 0, 11);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
 
-		it("second keyword escaped on newline", function() {
+		it("ONBUILD EXPOSE escaped on newline", function() {
 			let document = createDocument("ONBUILD \\\nEXPOSE 8080");
 			let hover = onHover(document, 1, 3);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
 
-		it("second keyword escaped on newline with space", function() {
+		it("ONBUILD EXPOSE escaped on newline with space", function() {
 			let document = createDocument("ONBUILD \\\n EXPOSE 8080");
 			let hover = onHover(document, 1, 4);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
