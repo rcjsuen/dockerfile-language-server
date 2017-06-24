@@ -33,12 +33,50 @@ describe("Dockerfile hover", function() {
 			let hover = onHover(document, 0, 0);
 			assert.equal(hover, null);
 		});
+
+		it("spaces", function() {
+			let document = createDocument("    ");
+			let hover = onHover(document, 0, 2);
+			assert.equal(hover, null);
+		});
+
+		it("tabs", function() {
+			let document = createDocument("\t\t\t\t");
+			let hover = onHover(document, 0, 2);
+			assert.equal(hover, null);
+		});
 	});
 
 	describe("comments", function() {
 		it("# FROM node", function() {
 			let document = createDocument("3");
 			let hover = onHover(document, 0, 0);
+			assert.equal(hover, null);
+		});
+	});
+
+	describe("directives", function() {
+		it("escape", function() {
+			let document = createDocument("#escape=`");
+			let hover = onHover(document, 0, 4);
+			assert.equal(hover, markdownDocumentation.getMarkdown("escape"));
+		});
+
+		it("invalid directive definition", function() {
+			let document = createDocument("#escape ");
+			let hover = onHover(document, 0, 4);
+			assert.equal(hover, null);
+
+			document = createDocument("#escape\t");
+			hover = onHover(document, 0, 4);
+			assert.equal(hover, null);
+
+			document = createDocument("#escape\r\n");
+			hover = onHover(document, 0, 4);
+			assert.equal(hover, null);
+
+			document = createDocument("#escape\n");
+			hover = onHover(document, 0, 4);
 			assert.equal(hover, null);
 		});
 	});
