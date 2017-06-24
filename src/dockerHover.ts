@@ -121,11 +121,11 @@ export class DockerHover {
 			let char = buffer.charAt(i);
 			switch (char) {
 				case escapeChar:
-					char = buffer.charAt(i - 1);
+					char = buffer.charAt(i + 1);
 					if (char === '\r') {
-						i = buffer.charAt(i - 2) === '\n' ? i - 2 : i - 1;
+						i = buffer.charAt(i + 2) === '\n' ? i + 2 : i + 1;
 					} else if (char === '\n') {
-						i = i - 1;
+						i = i + 1;
 					}
 					break;
 				case '\r':

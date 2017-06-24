@@ -96,7 +96,13 @@ describe("Dockerfile hover", function() {
 
 		it("fr\\\\noM", function() {
 			let document = createDocument("fr\\\noM node");
-			let hover = onHover(document, 1, 0);
+			let hover = onHover(document, 0, 0);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 0, 1);
+			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
+
+			hover = onHover(document, 1, 1);
 			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
 
 			hover = onHover(document, 1, 1);
