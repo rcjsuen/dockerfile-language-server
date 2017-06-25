@@ -92,11 +92,6 @@ export class DockerSymbols {
 
 	public parseSymbolInformation(document: TextDocument, textDocumentURI: string): SymbolInformation[] {
 		let buffer = document.getText();
-		buffer = buffer.trim();
-		if (buffer.length === 0) {
-			return [];
-		}
-		
 		let symbols: SymbolInformation[] = [];
 		let directiveSymbol = this.getDirectiveSymbol(document, buffer, textDocumentURI);
 		if (directiveSymbol) {

@@ -73,5 +73,67 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.end.line, 0);
 			assert.equal(symbols[0].location.range.end.character, 7);
 		});
+
+		it("leading whitespace", function () {
+			let document = createDocument(" #escape=`");
+			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 2);
+			assert.equal(symbols[0].location.range.end.line, 0);
+			assert.equal(symbols[0].location.range.end.character, 7);
+
+			document = createDocument("\t#escape=`");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 2);
+			assert.equal(symbols[0].location.range.end.line, 0);
+			assert.equal(symbols[0].location.range.end.character, 7);
+
+			document = createDocument("\r#escape=`");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 1);
+			assert.equal(symbols[0].location.range.start.character, 1);
+			assert.equal(symbols[0].location.range.end.line, 1);
+			assert.equal(symbols[0].location.range.end.character, 6);
+
+			document = createDocument("\n#escape=`");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 1);
+			assert.equal(symbols[0].location.range.start.character, 1);
+			assert.equal(symbols[0].location.range.end.line, 1);
+			assert.equal(symbols[0].location.range.end.character, 6);
+
+			document = createDocument("\r\n#escape=`");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 1);
+			assert.equal(symbols[0].location.range.start.character, 1);
+			assert.equal(symbols[0].location.range.end.line, 1);
+			assert.equal(symbols[0].location.range.end.character, 6);
+		});
 	});
 });
