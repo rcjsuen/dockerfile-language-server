@@ -6,11 +6,8 @@ import * as child_process from "child_process";
 import * as assert from "assert";
 
 import {
-	TextEdit, TextDocument, Position, Range, SymbolKind,
-	Command, ExecuteCommandParams,
-	Diagnostic, DiagnosticSeverity
+	TextDocument, Position, Range, SymbolKind,
 } from 'vscode-languageserver';
-import { ValidationCode } from '../src/dockerValidator';
 import { DockerSymbols } from '../src/dockerSymbols';
 
 let uri = "uri://host/Dockerfile.sample";
