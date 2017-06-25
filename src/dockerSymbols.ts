@@ -7,13 +7,9 @@
 import {
 	TextDocument, TextDocumentPositionParams, SymbolInformation, SymbolKind
 } from 'vscode-languageserver';
-import { DIRECTIVE_ESCAPE } from './docker';
+import { Util, DIRECTIVE_ESCAPE } from './docker';
 
 export class DockerSymbols {
-
-	private isWhitespace(char: string): boolean {
-		return char === ' ' || char === '\t' || char === '\r' || char === '\n';
-	}
 
 	private escapeChar: string;
 
@@ -65,7 +61,7 @@ export class DockerSymbols {
 											case ' ':
 												continue;
 											default:
-												if (k + 1 !== buffer.length && this.isWhitespace(buffer.charAt(k + 1))) {
+												if (k + 1 !== buffer.length && Util.isWhitespace(buffer.charAt(k + 1))) {
 													this.escapeChar = char;
 												}
 												break;
