@@ -12,7 +12,7 @@ import {
 import { ValidationCode } from './dockerValidator';
 
 export class CommandIds {
-	static readonly LOWERCASE = "docker.command.convertLowercase";
+	static readonly UPPERCASE = "docker.command.convertToUppercase";
 	static readonly EXTRA_ARGUMENT = "docker.command.removeExtraArgument";
 	static readonly DIRECTIVE_TO_BACKTICK = "docker.command.directiveToBacktick";
 	static readonly DIRECTIVE_TO_BACKSLASH = "docker.command.directiveToBackslash";
@@ -27,7 +27,7 @@ export class DockerCommands {
 					return [
 						{
 							title: "Convert instruction to uppercase",
-							command: CommandIds.LOWERCASE,
+							command: CommandIds.UPPERCASE,
 							arguments: [
 								textDocumentURI,
 								range
@@ -73,7 +73,7 @@ export class DockerCommands {
 		let uri: string = params.arguments[0];
 		let range: Range = params.arguments[1];
 		switch (params.command) {
-			case CommandIds.LOWERCASE:
+			case CommandIds.UPPERCASE:
 				let instruction = document.getText().substring(document.offsetAt(range.start), document.offsetAt(range.end));
 				return {
 					changes: {

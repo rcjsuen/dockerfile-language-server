@@ -54,7 +54,7 @@ connection.onInitialize((params): InitializeResult => {
 			},
 			executeCommandProvider: {
 				commands: [
-					CommandIds.LOWERCASE,
+					CommandIds.UPPERCASE,
 					CommandIds.EXTRA_ARGUMENT,
 					CommandIds.DIRECTIVE_TO_BACKSLASH,
 					CommandIds.DIRECTIVE_TO_BACKTICK
