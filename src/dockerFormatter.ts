@@ -66,16 +66,14 @@ export class DockerFormatter {
 			for (let i = document.offsetAt(range.start); i >= 0; i--) {
 				let char = buffer.charAt(i);
 				if (char === '\r') {
-					char = buffer.charAt(i - 1);
-					if (char === escapeChar) {
-						indent = true;
-					} else if (char === '\n' && buffer.charAt(i - 2) === escapeChar) {
+					if (buffer.charAt(i - 1) === escapeChar) {
 						indent = true;
 					}
 					parseStart = i + 1;
 					break;
 				} else if (char === '\n') {
-					if (buffer.charAt(i - 1) === escapeChar) {
+					char = buffer.charAt(i - 1);
+					if (char === escapeChar || (char === '\r' && buffer.charAt(i - 2) === escapeChar)) {
 						indent = true;
 					}
 					parseStart = i + 1;
