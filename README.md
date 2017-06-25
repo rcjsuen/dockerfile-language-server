@@ -77,13 +77,9 @@ header will be included in the response message.
 
 ```TypeScript
 import * as child_process from "child_process";
-import { StreamMessageReader, StreamMessageWriter } from "vscode-languageserver";
 
 let lspProcess = child_process.spawn("node", [ "out/src/server.js", "--stdio" ]);
 let messageId = 1;
-
-const reader = new StreamMessageReader(lspProcess.stdout);
-const writer = new StreamMessageWriter(lspProcess.stdin);
 
 function send(method: string, params: object) {
     let message = {
