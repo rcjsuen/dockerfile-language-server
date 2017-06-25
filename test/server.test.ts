@@ -45,6 +45,7 @@ function initialize(id: number) {
 
 describe("Dockerfile LSP Tests", function() {
 	it("Initialize", function(finished) {
+		this.timeout(5000);
 		lspProcess.on('message', function (json) {
 			assert.equal(json.id, 1);
 			let capabilities = json.result.capabilities;
