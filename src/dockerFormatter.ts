@@ -86,6 +86,9 @@ export class DockerFormatter {
 				// formatting the one single line
 				for (let i = 0; i < buffer.length; i++) {
 					if (!this.isWhitespace(buffer.charAt(i))) {
+						if (i === 0) {
+							return [];
+						}
 						return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, i))) ];
 					}
 				}

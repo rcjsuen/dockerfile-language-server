@@ -221,9 +221,14 @@ describe("Dockerfile formatter", function() {
 			});
 
 			it("instruction", function() {
-				let document = createDocument("  FROM node");
+				let document = createDocument("FROM node");
 				let range = Range.create(Position.create(0, 1), Position.create(0, 2));
 				let edits = formatRange(document, range);
+				assert.equal(edits.length, 0);
+
+				document = createDocument("  FROM node");
+				range = Range.create(Position.create(0, 1), Position.create(0, 2));
+				edits = formatRange(document, range);
 				assert.equal(edits.length, 1);
 				assert.equal(edits[0].newText, "");
 				assert.equal(edits[0].range.start.line, 0);
