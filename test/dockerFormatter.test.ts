@@ -335,6 +335,38 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.end.line, 2);
 				assert.equal(edits[0].range.end.character, 0);
 			});
+
+			it("no indentation", function() {
+				let document = createDocument("FROM node\n\tEXPOSE 8080");
+				let range = Range.create(Position.create(1, 3), Position.create(1, 4));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 1);
+
+				document = createDocument("FROM node\r\tEXPOSE 8080");
+				range = Range.create(Position.create(1, 3), Position.create(1, 4));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 1);
+
+				document = createDocument("FROM node\r\n\tEXPOSE 8080");
+				range = Range.create(Position.create(1, 3), Position.create(1, 4));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 1);
+			});
 		});
 
 		describe("multi line selection", function() {

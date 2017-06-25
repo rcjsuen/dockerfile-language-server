@@ -92,10 +92,8 @@ export class DockerFormatter {
 						return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, i))) ];
 					}
 				}
-				// only whitespace characters?
-				if (buffer.length > 0) {
-					return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, buffer.length))) ];
-				}
+				// only whitespace characters
+				return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, buffer.length))) ];
 			} else {
 				// formatting the one single line
 				for (let i = parseStart; i < buffer.length; i++) {
