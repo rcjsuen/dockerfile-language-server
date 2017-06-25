@@ -1,6 +1,6 @@
 # Dockerfile language server
 
-[![Build Status](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs.svg?branch=master)](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs.svg?branch=master)](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs) [![Coverage Status](https://coveralls.io/repos/github/rcjsuen/dockerfile-language-server-nodejs/badge.svg?branch=master)](https://coveralls.io/github/rcjsuen/dockerfile-language-server-nodejs?branch=master) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This is a language server for Dockerfiles powered by Node.js
 written in TypeScript.
