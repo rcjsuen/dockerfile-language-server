@@ -14,11 +14,14 @@
     "@types/mocha": "^2.2.33",
     "@types/node": "^6.0.52",
     "mocha": "^3.2.0",
-    "typescript": "^2.1.5"
+    "typescript": "^2.1.5",
+    "nyc": "^11.0.2"
   },
   "scripts": {
     "build": "tsc -p .",
     "watch": "tsc --watch -p .",
-    "test": "mocha out/test"
+    "test": "mocha out/test",
+    "nyc": "nyc mocha out/test",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   }
 }

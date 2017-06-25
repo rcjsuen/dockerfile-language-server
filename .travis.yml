@@ -21,7 +21,11 @@ git:
 
 install:
   - npm install
+  - npm install coveralls --save-dev
 
 script:
   - npm run build;
-  - npm test;
+  - npm run nyc
+
+after_success:
+  - npm run coverage
