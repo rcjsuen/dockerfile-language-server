@@ -22,10 +22,20 @@ function createRange(startLine, startCharacter, endLine, endCharacter): Range {
 }
 
 describe("Dockerfile document symbols", function () {
-	describe("whitespace", function() {
+	describe("no directives", function() {
 		it("empty file", function () {
 			let document = createDocument("");
 			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 0);
+		});
+
+		it("comment", function () {
+			let document = createDocument("#");
+			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 0);
+			
+			document = createDocument("# comment");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
 			assert.equal(symbols.length, 0);
 		});
 	});
@@ -130,6 +140,58 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 1);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 1);
+			assert.equal(symbols[0].location.range.end.character, 6);
+		});
+
+		it("invalid directive definition with leading comment", function () {
+			let document = createDocument("#\n#escape=`");
+			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 0);
+			
+			document = createDocument("#\r#escape=`");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 0);
+			
+			document = createDocument("#comment\n#escape=`");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 0);
+		});
+
+		it("invalid directive definition with nothing", function () {
+			let document = createDocument("#escape=");
+			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 1);
+			assert.equal(symbols[0].location.range.end.line, 0);
+			assert.equal(symbols[0].location.range.end.character, 6);
+
+			document = createDocument("#escape=\r");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 1);
+			assert.equal(symbols[0].location.range.end.line, 0);
+			assert.equal(symbols[0].location.range.end.character, 6);
+
+			document = createDocument("#escape=\n");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 1);
+			assert.equal(symbols[0].location.range.end.line, 0);
 			assert.equal(symbols[0].location.range.end.character, 6);
 		});
 	});
