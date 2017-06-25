@@ -119,7 +119,8 @@ export class DockerSymbols {
 								continue keywordCheck;
 						}
 					}
-					break;
+					// reached EOF
+					return symbols;
 				default:
 					let keywordStart = i;
 					for (let j = i + 1; j < buffer.length; j++) {
@@ -159,7 +160,10 @@ export class DockerSymbols {
 								continue keywordCheck;
 						}
 					}
-					break;
+					// reached EOF
+					let noArgsKeyword = buffer.substring(keywordStart, buffer.length);
+					symbols.push(this.createSymbolInformation(document, noArgsKeyword, textDocumentURI, keywordStart, buffer.length, SymbolKind.Function));
+					return symbols;
 			}
 		}
 		return symbols;
