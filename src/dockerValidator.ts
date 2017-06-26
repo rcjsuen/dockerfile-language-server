@@ -289,7 +289,6 @@ export class Validator {
 								}
 								return problems;
 							}
-							break;
 					}
 					if (instruction !== uppercaseInstruction && !unknown) {
 						// warn about uppercase convention if not an unknown instruction
