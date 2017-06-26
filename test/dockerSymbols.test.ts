@@ -418,6 +418,20 @@ describe("Dockerfile document symbols", function () {
 				assert.equal(symbols[0].location.range.end.character, 3);
 			});
 
+			it("escape not with a newline", function () {
+				let document = createDocument("FR\\om node");
+				let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FR\\OM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 5);
+			});
+
 			it("whitespace", function () {
 				let document = createDocument("\rFROM node");
 				let symbols = symbolsProvider.parseSymbolInformation(document, uri);

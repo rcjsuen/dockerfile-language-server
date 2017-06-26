@@ -133,6 +133,9 @@ export class DockerSymbols {
 									j++;
 								} else if (char === '\n') {
 									j++;
+								} else {
+									// not escaping something properly
+									keyword = keyword + this.escapeChar;
 								}
 								break;
 							case ' ':
