@@ -256,11 +256,10 @@ export class Validator {
 										// adjust offset and go to the next line
 										i = k;
 										continue lineCheck;
-									} else if (k === text.length - 1) {
-										// end of the file
-										return problems;
 									}
 								}
+								// reached EOF
+								return problems;
 							} else {
 								if (instruction !== uppercaseInstruction) {
 									// warn about uppercase convention

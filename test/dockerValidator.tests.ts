@@ -503,6 +503,10 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node\nRUNCMD docker\r\n");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
+
+				diagnostics = validate("FROM node\nRUNCMD docker\\\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
 			});
 
 			it("escape", function () {
