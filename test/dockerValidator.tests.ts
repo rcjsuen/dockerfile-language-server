@@ -398,10 +398,6 @@ describe("Docker Validator Tests", function() {
 				return testMissingArgument("LABEL");
 			});
 
-			it("MAINTAINER", function() {
-				return testMissingArgument("MAINTAINER");
-			});
-
 			it("ONBUILD", function() {
 				return testMissingArgument("ONBUILD");
 			});
