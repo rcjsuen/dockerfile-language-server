@@ -641,7 +641,7 @@ export class Validator {
 		return i;
 	}
 
-	dockerProblems = {
+	private static dockerProblems = {
 		"directiveUnknown": "Unknown directive: ${0}",
 		"directiveEscapeInvalid": "invalid ESCAPE '${0}'. Must be ` or \\",
 
@@ -660,50 +660,97 @@ export class Validator {
 
 		"unexpectedToken": "Unexpected token"
 	};
-	i18nUtil = {
-		formatMessage(text: string, variable: string): string {
-			return text.replace("${0}", variable);
-		}
-	};
+	
+	private static formatMessage(text: string, variable: string): string {
+		return text.replace("${0}", variable);
+	}
+
+	public static getDiagnosticMessage_DirectiveUnknown(directive: string) {
+		return Validator.formatMessage(Validator.dockerProblems["directiveUnknown"], directive);
+	}
+
+	public static getDiagnosticMessage_DirectiveEscapeInvalid(value: string) {
+		return Validator.formatMessage(Validator.dockerProblems["directiveEscapeInvalid"], value);
+	}
+
+	public static getDiagnosticMessage_MissingFROM() {
+		return Validator.dockerProblems["missingFROM"];
+	}
+
+	public static getDiagnosticMessage_FirstNotFROM() {
+		return Validator.dockerProblems["firstNotFROM"];
+	}
+
+	public static getDiagnosticMessage_InvalidPort(port: string) {
+		return Validator.formatMessage(Validator.dockerProblems["invalidPort"], port);
+	}
+
+	public static getDiagnosticMessage_InvalidStopsignal() {
+		return Validator.dockerProblems["invalidStopsignal"];
+	}
+
+	public static getDiagnosticMessage_InstructionExtraArgument() {
+		return Validator.dockerProblems["instructionExtraArgument"];
+	}
+
+	public static getDiagnosticMessage_InstructionMissingArgument() {
+		return Validator.dockerProblems["instructionMissingArgument"];
+	}
+
+	public static getDiagnosticMessage_InstructionUnknown(instruction: string) {
+		return Validator.formatMessage(Validator.dockerProblems["instructionUnknown"], instruction);
+	}
+
+	public static getDiagnosticMessage_InstructionCasing() {
+		return Validator.dockerProblems["instructionCasing"];
+	}
+
+	public static getDiagnosticMessage_DeprecatedMaintainer() {
+		return Validator.dockerProblems["deprecatedMaintainer"];
+	}
+
+	public static getDiagnosticMessage_UnexpectedToken() {
+		return Validator.dockerProblems["unexpectedToken"];
+	}
 
 	createMissingFrom(): Diagnostic {
-		return this.createError(0, 0, this.dockerProblems["missingFROM"]);
+		return this.createError(0, 0, Validator.getDiagnosticMessage_MissingFROM());
 	}
 
 	createUnknownDirective(start: number, end: number, directive: string): Diagnostic {
-		return this.createError(start, end, this.i18nUtil.formatMessage(this.dockerProblems["directiveUnknown"], directive));
+		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive));
 	}
 
 	createInvalidEscapeDirective(start: number, end: number, value: string): Diagnostic {
-		return this.createError(start, end, this.i18nUtil.formatMessage(this.dockerProblems["directiveEscapeInvalid"], value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
+		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	}
 
 	createInvalidPort(start: number, end: number, port: string): Diagnostic {
-		return this.createError(start, end, this.i18nUtil.formatMessage(this.dockerProblems["invalidPort"], port));
+		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	}
 
 	createInvalidStopSignal(start: number, end: number): Diagnostic {
-		return this.createError(start, end, this.dockerProblems["invalidStopSignal"]);
+		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidStopsignal());
 	}
 
 	createMissingArgument(start: number, end: number): Diagnostic {
-		return this.createError(start, end, this.dockerProblems["instructionMissingArgument"]);
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionMissingArgument());
 	}
 
 	createExtraArgument(start: number, end: number): Diagnostic {
-		return this.createError(start, end, this.dockerProblems["instructionExtraArgument"], ValidationCode.EXTRA_ARGUMENT);
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.EXTRA_ARGUMENT);
 	}
 
 	createUnexpectedToken(start: number, end: number): Diagnostic {
-		return this.createError(start, end, this.dockerProblems["unexpectedToken"]);
+		return this.createError(start, end, Validator.getDiagnosticMessage_UnexpectedToken());
 	}
 
 	createFROMNotFirst(start: number, end: number): Diagnostic {
-		return this.createError(start, end, this.dockerProblems["firstNotFROM"]);
+		return this.createError(start, end, Validator.getDiagnosticMessage_FirstNotFROM());
 	}
 
 	createUnknownInstruction(start: number, end: number, instruction: string): Diagnostic {
-		return this.createError(start, end, this.i18nUtil.formatMessage(this.dockerProblems["instructionUnknown"], instruction));
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionUnknown(instruction));
 	}
 
 	createError(start: number, end: number, description: string, code?: ValidationCode): Diagnostic {
@@ -711,11 +758,11 @@ export class Validator {
 	}
 
 	createUppercaseInstruction(start: number, end: number): Diagnostic {
-		return this.createWarning(start, end, this.dockerProblems["instructionCasing"], ValidationCode.LOWERCASE);
+		return this.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
 	}
 
 	createMaintainerDeprecated(start: number, end: number): Diagnostic {
-		return this.createWarning(start, end, this.dockerProblems["deprecatedMaintainer"]);
+		return this.createWarning(start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer());
 	}
 
 	createWarning(start: number, end: number, description: string, code?: ValidationCode): Diagnostic {
