@@ -495,6 +495,14 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("FROM node\nRUNCMD docker");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
+
+				diagnostics = validate("FROM node\nRUNCMD docker\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
+
+				diagnostics = validate("FROM node\nRUNCMD docker\r\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
 			});
 
 			it("escape", function () {
@@ -575,6 +583,9 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 0);
 
 				diagnostics = validate("#=# key=value\nFROM node");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("#=# key=value\r\nFROM node");
 				assert.equal(diagnostics.length, 0);
 			});
 		});
