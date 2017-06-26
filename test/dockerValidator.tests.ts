@@ -225,10 +225,18 @@ describe("Docker Validator Tests", function() {
 			let diagnostics = validate("# This is a comment");
 			assert.equal(diagnostics.length, 1);
 			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+
+			diagnostics = validate("#=This is a comment");
+			assert.equal(diagnostics.length, 1);
+			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
 		});
 
 		it("directive only", function() {
 			let diagnostics = validate("# escape=`");
+			assert.equal(diagnostics.length, 1);
+			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+
+			diagnostics = validate("# escape=\\");
 			assert.equal(diagnostics.length, 1);
 			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
 		});
@@ -382,111 +390,88 @@ describe("Docker Validator Tests", function() {
 		});
 
 		describe("missing argument", function() {
-			function testMissingArgument(instruction) {
+			function testMissingArgument(instruction, prefix, middle, suffix) {
 				var length = instruction.length;
-				let diagnostics = validate("FROM node\n" + instruction);
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + " ");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\n");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\r\n");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\\\n");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\\\r\n");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\\\n ");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\\\r\n ");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\\\n");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
-
-				diagnostics = validate("FROM node\n" + instruction + "\\\r\n");
+				let diagnostics = validate("FROM node\n" + instruction + prefix + middle + suffix);
 				assert.equal(diagnostics.length, 1);
 				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
 			}
 
+			function testMissingArgumentLoop(instruction) {
+				let newlines = [ "", "\r", "\n", "\r\n", "\\\r", "\\\n", "\\\r\n" ];
+				for (let newline of newlines) {
+					testMissingArgument(instruction, "", newline, "");
+					testMissingArgument(instruction, "", newline, " ");
+					testMissingArgument(instruction, " ", newline, "");
+					testMissingArgument(instruction, " ", newline, " ");
+					testMissingArgument(instruction, "", newline, "\t");
+					testMissingArgument(instruction, "\t", newline, "");
+					testMissingArgument(instruction, "\t", newline, "\t");
+				}
+			}
+
 			it("ADD", function() {
-				return testMissingArgument("ADD");
+				return testMissingArgumentLoop("ADD");
 			});
 
 			it("ARG", function() {
-				return testMissingArgument("ARG");
+				return testMissingArgumentLoop("ARG");
 			});
 
 			it("CMD", function() {
-				return testMissingArgument("CMD");
+				return testMissingArgumentLoop("CMD");
 			});
 
 			it("COPY", function() {
-				return testMissingArgument("COPY");
+				return testMissingArgumentLoop("COPY");
 			});
 
 			it("ENTRYPOINT", function() {
-			return testMissingArgument("ENTRYPOINT");
+				return testMissingArgumentLoop("ENTRYPOINT");
 			});
 
 			it("ENV", function() {
-				return testMissingArgument("ENV");
+				return testMissingArgumentLoop("ENV");
 			});
 
 			it("EXPOSE", function() {
-				return testMissingArgument("EXPOSE");
+				return testMissingArgumentLoop("EXPOSE");
 			});
 
 			it("FROM", function() {
-				return testMissingArgument("FROM");
+				return testMissingArgumentLoop("FROM");
 			});
 
 			it("HEALTHCHECK", function() {
-				return testMissingArgument("HEALTHCHECK");
+				return testMissingArgumentLoop("HEALTHCHECK");
 			});
 
 			it("LABEL", function() {
-				return testMissingArgument("LABEL");
+				return testMissingArgumentLoop("LABEL");
 			});
 
 			it("ONBUILD", function() {
-				return testMissingArgument("ONBUILD");
+				return testMissingArgumentLoop("ONBUILD");
 			});
 
 			it("RUN", function() {
-				return testMissingArgument("RUN");
+				return testMissingArgumentLoop("RUN");
 			});
 
 			it("SHELL", function() {
-				return testMissingArgument("SHELL");
+				return testMissingArgumentLoop("SHELL");
 			});
 
 			it("STOPSIGNAL", function() {
-				return testMissingArgument("STOPSIGNAL");
+				return testMissingArgumentLoop("STOPSIGNAL");
 			});
 
 			it("USER", function() {
-				return testMissingArgument("USER");
+				return testMissingArgumentLoop("USER");
 			});
 
 			it("WORKDIR", function() {
-				return testMissingArgument("WORKDIR");
+				return testMissingArgumentLoop("WORKDIR");
 			});
 		});
 
