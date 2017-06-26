@@ -15,7 +15,8 @@ export enum ValidationCode {
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
 	INVALID_STOPSIGNAL,
-	UNKNOWN_DIRECTIVE
+	UNKNOWN_DIRECTIVE,
+	UNKNOWN_INSTRUCTION
 }
 
 export class Validator {
@@ -751,7 +752,7 @@ export class Validator {
 	}
 
 	createUnknownInstruction(start: number, end: number, instruction: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionUnknown(instruction));
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionUnknown(instruction), ValidationCode.UNKNOWN_INSTRUCTION);
 	}
 
 	createError(start: number, end: number, description: string, code?: ValidationCode): Diagnostic {

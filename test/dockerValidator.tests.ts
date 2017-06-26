@@ -78,6 +78,17 @@ function assertInstructionMissingArgument(diagnostic: Diagnostic, startLine: num
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertInstructionUnknown(diagnostic: Diagnostic, instruction: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_INSTRUCTION);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InstructionUnknown(instruction));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertDirectiveUnknown(diagnostic: Diagnostic, directive: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_DIRECTIVE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -422,6 +433,42 @@ describe("Docker Validator Tests", function() {
 
 			it("WORKDIR", function() {
 				return testMissingArgument("WORKDIR");
+			});
+		});
+
+		describe("unknown", function () {
+			it("simple", function () {
+				let diagnostics = validate("FROM node\nRUNCMD docker");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
+			});
+
+			it("escape", function () {
+				let diagnostics = validate("FROM node\nSTOPSIGNAL\\\n9");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\\n9 ");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\\r\n9");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\\r\n9 ");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+			});
+
+			/**
+			 * Checks that an unknown instruction that is written in lowercase only
+			 * receives one error about the unknown instruction.
+			 */
+			it("does not overlap with casing", function () {
+				let diagnostics = validate("FROM node\nruncmd docker");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
 			});
 		});
 	});
