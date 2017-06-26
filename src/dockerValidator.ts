@@ -13,7 +13,8 @@ export enum ValidationCode {
 	EXTRA_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
-	INVALID_STOPSIGNAL
+	INVALID_STOPSIGNAL,
+	UNKNOWN_DIRECTIVE
 }
 
 export class Validator {
@@ -720,7 +721,7 @@ export class Validator {
 	}
 
 	createUnknownDirective(start: number, end: number, directive: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive));
+		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive), ValidationCode.UNKNOWN_DIRECTIVE);
 	}
 
 	createInvalidEscapeDirective(start: number, end: number, value: string): Diagnostic {
