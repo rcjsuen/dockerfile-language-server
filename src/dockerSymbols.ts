@@ -99,7 +99,8 @@ export class DockerSymbols {
 		}
 
 		keywordCheck: for (let i = 0; i < buffer.length; i++) {
-			switch (buffer.charAt(i)) {
+			let char = buffer.charAt(i);
+			switch (char) {
 				case ' ':
 				case '\t':
 				case '\r':
@@ -107,7 +108,7 @@ export class DockerSymbols {
 					break;
 				case '#':
 					for (let j = i + 1; j < buffer.length; j++) {
-						let char = buffer.charAt(j);
+						char = buffer.charAt(j);
 						switch (char) {
 							case '\r':
 							case '\n':
@@ -118,13 +119,24 @@ export class DockerSymbols {
 					// reached EOF
 					return symbols;
 				default:
+					let keyword = char.toUpperCase();
 					let keywordStart = i;
 					for (let j = i + 1; j < buffer.length; j++) {
-						let char = buffer.charAt(j);
+						char = buffer.charAt(j);
 						switch (char) {
+							case this.escapeChar:
+								char = buffer.charAt(j + 1);
+								if (char === '\r') {
+									if (buffer.charAt(j + 2) === '\n') {
+										j++;
+									}
+									j++;
+								} else if (char === '\n') {
+									j++;
+								}
+								break;
 							case ' ':
 							case '\t':
-								let keyword = buffer.substring(keywordStart, j);
 								symbols.push(this.createSymbolInformation(document, keyword, textDocumentURI, keywordStart, j, SymbolKind.Function));
 								
 								for (let k = j + 1; k < buffer.length; k++) {
@@ -150,15 +162,16 @@ export class DockerSymbols {
 								return symbols;
 							case '\r':
 							case '\n':
-								let noArgsKeyword = buffer.substring(keywordStart, j);
-								symbols.push(this.createSymbolInformation(document, noArgsKeyword, textDocumentURI, keywordStart, j, SymbolKind.Function));
+								symbols.push(this.createSymbolInformation(document, keyword, textDocumentURI, keywordStart, j, SymbolKind.Function));
 								i = j;
 								continue keywordCheck;
+							default:
+								keyword = keyword + char.toUpperCase();
+								break;
 						}
 					}
 					// reached EOF
-					let noArgsKeyword = buffer.substring(keywordStart, buffer.length);
-					symbols.push(this.createSymbolInformation(document, noArgsKeyword, textDocumentURI, keywordStart, buffer.length, SymbolKind.Function));
+					symbols.push(this.createSymbolInformation(document, keyword, textDocumentURI, keywordStart, buffer.length, SymbolKind.Function));
 					return symbols;
 			}
 		}
