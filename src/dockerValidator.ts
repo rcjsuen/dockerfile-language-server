@@ -12,6 +12,7 @@ export enum ValidationCode {
 	LOWERCASE,
 	EXTRA_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
+	INVALID_PORT,
 	INVALID_STOPSIGNAL
 }
 
@@ -727,7 +728,7 @@ export class Validator {
 	}
 
 	createInvalidPort(start: number, end: number, port: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
+		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_PORT);
 	}
 
 	createInvalidStopSignal(start: number, end: number): Diagnostic {

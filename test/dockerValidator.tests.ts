@@ -23,6 +23,17 @@ function validate(content: string) {
 	return validator.validate(KEYWORDS, createDocument(content));
 }
 
+function assertInvalidPort(diagnostic: Diagnostic, port: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.INVALID_PORT);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidPort(port));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInvalidStopSignal(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_STOPSIGNAL);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -374,6 +385,68 @@ describe("Docker Validator Tests", function() {
 
 			diagnostics = validate("FROM node\nEXPOSE 8000\\\r\n-9000");
 			assert.equal(diagnostics.length, 0);
+		});
+
+		it("invalid containerPort", function() {
+			let diagnostics = validate("FROM node\nEXPOSE a");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE a ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE a\n");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE a\\\n ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE -8000");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE -8000 ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE -8000\n");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE -8000\n ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE 8000-");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE 8000- ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE 8000-\n");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE 8000-\n ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+			diagnostics = validate("FROM node\nEXPOSE 80\\\n00-\n");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 2, 3);
+
+			diagnostics = validate("FROM node\nEXPOSE 80\\\n00-");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 2, 3);
+
+			diagnostics = validate("FROM node\nEXPOSE -");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "-", 1, 7, 1, 8);
 		});
 	});
 
