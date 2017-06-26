@@ -105,6 +105,18 @@ export class Validator {
 							}
 						}
 					}
+
+					// not a parser directive, just eat this comment line
+					for (let i = dc; i < text.length; i++) {
+						switch (text.charAt(i)) {
+							case '\r':
+							case '\n':
+								dc = i + 1;
+								break directiveCheck;
+						}
+					}
+					// reached EOF
+					dc = text.length;
 					break directiveCheck;
 				default:
 					if (inComment) {

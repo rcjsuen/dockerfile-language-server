@@ -530,6 +530,9 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("#\r# key=value\nFROM node");
 				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("#=# key=value\nFROM node");
+				assert.equal(diagnostics.length, 0);
 			});
 		});
 
