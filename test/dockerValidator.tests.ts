@@ -23,6 +23,17 @@ function validate(content: string) {
 	return validator.validate(KEYWORDS, createDocument(content));
 }
 
+function assertFirstNotFROM(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FROM_NOT_FIRST);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FirstNotFROM());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInvalidPort(diagnostic: Diagnostic, port: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_PORT);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -469,6 +480,32 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("FROM node\nruncmd docker");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
+			});
+		});
+
+		describe("first instruction not FROM", function() {
+			it("one line", function() {
+				let diagnostics = validate("EXPOSE 8080");
+				assert.equal(diagnostics.length, 1);
+				assertFirstNotFROM(diagnostics[0], 0, 0, 0, 6);
+			});
+
+			it("two lines", function() {
+				let diagnostics = validate("EXPOSE 8080\n# another line");
+				assert.equal(diagnostics.length, 1);
+				assertFirstNotFROM(diagnostics[0], 0, 0, 0, 6);
+			});
+
+			it("two instructions", function() {
+				let diagnostics = validate("EXPOSE 8080\nEXPOSE 8081");
+				assert.equal(diagnostics.length, 1);
+				assertFirstNotFROM(diagnostics[0], 0, 0, 0, 6);
+			});
+
+			it("comments ignored", function() {
+				let diagnostics = validate("# FROM node\nEXPOSE 8080");
+				assert.equal(diagnostics.length, 1);
+				assertFirstNotFROM(diagnostics[0], 1, 0, 1, 6);
 			});
 		});
 	});

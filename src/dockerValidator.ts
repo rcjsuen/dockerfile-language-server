@@ -11,6 +11,7 @@ export enum ValidationCode {
 	DEFAULT,
 	LOWERCASE,
 	EXTRA_ARGUMENT,
+	FROM_NOT_FIRST,
 	MISSING_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
@@ -748,7 +749,7 @@ export class Validator {
 	}
 
 	createFROMNotFirst(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_FirstNotFROM());
+		return this.createError(start, end, Validator.getDiagnosticMessage_FirstNotFROM(), ValidationCode.FROM_NOT_FIRST);
 	}
 
 	createUnknownInstruction(start: number, end: number, instruction: string): Diagnostic {
