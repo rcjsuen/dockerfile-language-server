@@ -312,7 +312,6 @@ describe("Docker Validator Tests", function() {
 				testExtraArgument("WORKDIR /path/docker");
 			});
 		});
-	});
 
 		describe("missing argument", function() {
 			function testMissingArgument(instruction) {
