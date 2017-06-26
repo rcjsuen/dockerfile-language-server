@@ -144,15 +144,12 @@ export class Validator {
 				for (let j = i + 1; j < text.length; j++) {
 					if (text.charAt(j) === '\r' || text.charAt(j) === '\n') {
 						i = j;
-						break;
+						continue lineCheck;
 					}
 				}
 
-				if (j === text.length) {
-					// a comment was the last line of the file, we're done
-					break;
-				}
-				continue;
+				// a comment was the last line of the file, we're done
+				break lineCheck;
 			}
 
 			var instruction = "";

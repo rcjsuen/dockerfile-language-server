@@ -189,6 +189,9 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node\n" + mixed + " " + argument);
 				assert.equal(diagnostics.length, 1);
 				assertInstructionCasing(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n#" + mixed.toLowerCase() + " " + argument);
+				assert.equal(diagnostics.length, 0);
 			}
 
 			it("ADD", function() {
