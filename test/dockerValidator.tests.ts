@@ -24,7 +24,7 @@ function validate(content: string) {
 }
 
 function assertInvalidStopSignal(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.LOWERCASE);
+	assert.equal(diagnostic.code, ValidationCode.INVALID_STOPSIGNAL);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidStopsignal());
@@ -407,6 +407,24 @@ describe("Docker Validator Tests", function() {
 
 			testEscape("STOPSIGNAL", "SI", "GKILL");
 			testEscape("STOPSIGNAL", "SIGK", "ILL");
+		});
+
+		it("invalid stop signal", function() {
+			let diagnostics = validate("FROM node\nSTOPSIGNAL a");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidStopSignal(diagnostics[0], 1, 11, 1, 12);
+
+			diagnostics = validate("FROM node\nSTOPSIGNAL a ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidStopSignal(diagnostics[0], 1, 11, 1, 12);
+
+			diagnostics = validate("FROM node\nSTOPSIGNAL a\n");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidStopSignal(diagnostics[0], 1, 11, 1, 12);
+
+			diagnostics = validate("FROM node\nSTOPSIGNAL a\r");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidStopSignal(diagnostics[0], 1, 11, 1, 12);
 		});
 	});
 

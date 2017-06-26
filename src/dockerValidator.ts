@@ -12,6 +12,7 @@ export enum ValidationCode {
 	LOWERCASE,
 	EXTRA_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
+	INVALID_STOPSIGNAL
 }
 
 export class Validator {
@@ -730,7 +731,7 @@ export class Validator {
 	}
 
 	createInvalidStopSignal(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidStopsignal());
+		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidStopsignal(), ValidationCode.INVALID_STOPSIGNAL);
 	}
 
 	createMissingArgument(start: number, end: number): Diagnostic {
