@@ -11,6 +11,7 @@ export enum ValidationCode {
 	DEFAULT,
 	LOWERCASE,
 	EXTRA_ARGUMENT,
+	MISSING_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
 	INVALID_STOPSIGNAL,
@@ -737,7 +738,7 @@ export class Validator {
 	}
 
 	createMissingArgument(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionMissingArgument());
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionMissingArgument(), ValidationCode.MISSING_ARGUMENT);
 	}
 
 	createExtraArgument(start: number, end: number): Diagnostic {

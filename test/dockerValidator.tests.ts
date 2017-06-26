@@ -67,6 +67,17 @@ function assertInstructionExtraArgument(diagnostic: Diagnostic, startLine: numbe
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertInstructionMissingArgument(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.MISSING_ARGUMENT);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InstructionMissingArgument());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertDirectiveUnknown(diagnostic: Diagnostic, directive: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_DIRECTIVE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -299,6 +310,120 @@ describe("Docker Validator Tests", function() {
 
 			it("WORKDIR", function() {
 				testExtraArgument("WORKDIR /path/docker");
+			});
+		});
+	});
+
+		describe("missing argument", function() {
+			function testMissingArgument(instruction) {
+				var length = instruction.length;
+				let diagnostics = validate("FROM node\n" + instruction);
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + " ");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\r\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\\\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\\\r\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\\\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\\\r\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\\\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+
+				diagnostics = validate("FROM node\n" + instruction + "\\\r\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+			}
+
+			it("ADD", function() {
+				return testMissingArgument("ADD");
+			});
+
+			it("ARG", function() {
+				return testMissingArgument("ARG");
+			});
+
+			it("CMD", function() {
+				return testMissingArgument("CMD");
+			});
+
+			it("COPY", function() {
+				return testMissingArgument("COPY");
+			});
+
+			it("ENTRYPOINT", function() {
+			return testMissingArgument("ENTRYPOINT");
+			});
+
+			it("ENV", function() {
+				return testMissingArgument("ENV");
+			});
+
+			it("EXPOSE", function() {
+				return testMissingArgument("EXPOSE");
+			});
+
+			it("FROM", function() {
+				return testMissingArgument("FROM");
+			});
+
+			it("HEALTHCHECK", function() {
+				return testMissingArgument("HEALTHCHECK");
+			});
+
+			it("LABEL", function() {
+				return testMissingArgument("LABEL");
+			});
+
+			it("MAINTAINER", function() {
+				return testMissingArgument("MAINTAINER");
+			});
+
+			it("ONBUILD", function() {
+				return testMissingArgument("ONBUILD");
+			});
+
+			it("RUN", function() {
+				return testMissingArgument("RUN");
+			});
+
+			it("SHELL", function() {
+				return testMissingArgument("SHELL");
+			});
+
+			it("STOPSIGNAL", function() {
+				return testMissingArgument("STOPSIGNAL");
+			});
+
+			it("USER", function() {
+				return testMissingArgument("USER");
+			});
+
+			it("WORKDIR", function() {
+				return testMissingArgument("WORKDIR");
 			});
 		});
 	});
