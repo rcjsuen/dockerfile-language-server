@@ -34,6 +34,17 @@ function assertFirstNotFROM(diagnostic: Diagnostic, startLine: number, startChar
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertMissingFROM(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FROM_MISSING);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_MissingFROM());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInvalidPort(diagnostic: Diagnostic, port: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_PORT);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -197,6 +208,38 @@ function testEscape(instruction, argumentFront, argumentBack) {
 }
 
 describe("Docker Validator Tests", function() {
+	describe("no content", function() {
+		it("empty file", function() {
+			let diagnostics = validate("");
+			assert.equal(diagnostics.length, 1);
+			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+		});
+
+		it("whitespace only", function() {
+			let diagnostics = validate(" \t\r\n");
+			assert.equal(diagnostics.length, 1);
+			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+		});
+
+		it("comments only", function() {
+			let diagnostics = validate("# This is a comment");
+			assert.equal(diagnostics.length, 1);
+			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+		});
+
+		it("directive only", function() {
+			let diagnostics = validate("# escape=`");
+			assert.equal(diagnostics.length, 1);
+			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+		});
+
+		it("FROM in comment", function() {
+			let diagnostics = validate("# FROM node");
+			assert.equal(diagnostics.length, 1);
+			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+		});
+	});
+
 	describe("instruction", function() {
 		describe("uppercase style check", function() {
 			function testCasingStyle(mixed: string, argument: string) {

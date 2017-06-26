@@ -12,6 +12,7 @@ export enum ValidationCode {
 	LOWERCASE,
 	EXTRA_ARGUMENT,
 	FROM_NOT_FIRST,
+	FROM_MISSING,
 	MISSING_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
@@ -729,7 +730,7 @@ export class Validator {
 	}
 
 	createMissingFrom(): Diagnostic {
-		return this.createError(0, 0, Validator.getDiagnosticMessage_MissingFROM());
+		return this.createError(0, 0, Validator.getDiagnosticMessage_MissingFROM(), ValidationCode.FROM_MISSING);
 	}
 
 	createUnknownDirective(start: number, end: number, directive: string): Diagnostic {
