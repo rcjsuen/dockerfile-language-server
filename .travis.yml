@@ -23,8 +23,10 @@ install:
   - npm install
   - npm install coveralls --save-dev
 
-script:
+before_script:
   - npm run build;
+
+script:
   - npm run nyc
 
 after_success:
