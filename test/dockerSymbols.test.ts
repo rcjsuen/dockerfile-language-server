@@ -103,6 +103,18 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
 			assert.equal(symbols[0].location.range.end.character, 7);
+
+			document = createDocument("# escape=` ");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 2);
+			assert.equal(symbols[0].location.range.end.line, 0);
+			assert.equal(symbols[0].location.range.end.character, 7);
 		});
 
 		it("leading whitespace", function () {
@@ -218,21 +230,193 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.end.line, 0);
 			assert.equal(symbols[0].location.range.end.character, 6);
 		});
+
+		it("invalid directive name", function () {
+			let document = createDocument("#eskape=`");
+			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 0);
+		});
 	});
 
-	describe("keywords", function() {
-		it("single keyword", function () {
-			let document = createDocument("FROM");
-			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
-			assert.equal(symbols.length, 1);
-			assert.equal(symbols[0].containerName, undefined);
-			assert.equal(symbols[0].name, "FROM");
-			assert.equal(symbols[0].kind, SymbolKind.Function);
-			assert.equal(symbols[0].location.uri, uri);
-			assert.equal(symbols[0].location.range.start.line, 0);
-			assert.equal(symbols[0].location.range.start.character, 0);
-			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 4);
+	describe("instructions", function() {
+		describe("single", function() {
+			it("keyword only", function () {
+				let document = createDocument("FROM");
+				let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 4);
+				
+				document = createDocument("FROM\r");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 4);
+				
+				document = createDocument("FROM\n");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 4);
+			});
+
+			it("valid", function () {
+				let document = createDocument("FROM node");
+				let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 4);
+			});
+
+			it("escaped", function () {
+				let document = createDocument("RUN npm install && \\\n\tnpm test");
+				let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "RUN");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 3);
+
+				document = createDocument("RUN npm install && \\\r\tnpm test");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "RUN");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 3);
+
+				document = createDocument("RUN npm install && \\\r\n\tnpm test");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "RUN");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 3);
+			});
+
+			it("escape in string", function () {
+				let document = createDocument("RUN echo \"\\\\n\"");
+				let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "RUN");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 0);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 0);
+				assert.equal(symbols[0].location.range.end.character, 3);
+			});
+
+			it("whitespace", function () {
+				let document = createDocument("\rFROM node");
+				let symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 1);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 1);
+				assert.equal(symbols[0].location.range.end.character, 4);
+				
+				document = createDocument("\nFROM node");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 1);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 1);
+				assert.equal(symbols[0].location.range.end.character, 4);
+				
+				document = createDocument("\r\nFROM node");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 1);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 1);
+				assert.equal(symbols[0].location.range.end.character, 4);
+				
+				document = createDocument("\rFROM node\r");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 1);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 1);
+				assert.equal(symbols[0].location.range.end.character, 4);
+				
+				document = createDocument("\nFROM node\n");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 1);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 1);
+				assert.equal(symbols[0].location.range.end.character, 4);
+				
+				document = createDocument("\r\nFROM node\r\n");
+				symbols = symbolsProvider.parseSymbolInformation(document, uri);
+				assert.equal(symbols.length, 1);
+				assert.equal(symbols[0].containerName, undefined);
+				assert.equal(symbols[0].name, "FROM");
+				assert.equal(symbols[0].kind, SymbolKind.Function);
+				assert.equal(symbols[0].location.uri, uri);
+				assert.equal(symbols[0].location.range.start.line, 1);
+				assert.equal(symbols[0].location.range.start.character, 0);
+				assert.equal(symbols[0].location.range.end.line, 1);
+				assert.equal(symbols[0].location.range.end.character, 4);
+			});
 		});
 	});
 });
