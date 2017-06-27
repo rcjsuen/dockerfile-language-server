@@ -392,6 +392,17 @@ describe('Docker Content Assist Tests', function() {
 			assert.equal(proposals.length, 0);
 		});
 
+		it("nesting", function() {
+			let proposals = compute("FROM F", 6);
+			assert.equal(proposals.length, 0);
+
+			proposals = compute("FROM node F", 11);
+			assert.equal(proposals.length, 0);
+
+			proposals = compute("FROM \\\n F", 9);
+			assert.equal(proposals.length, 0);
+		});
+
 		it('all', function() {
 			var proposals = compute("FROM node\n", 10);
 			assertAllProposals(proposals, 1, 0, 0);
