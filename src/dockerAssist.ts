@@ -400,7 +400,7 @@ export class DockerAssist {
 	}
 
 	createHEALTHCHECK_NONE(prefix: string, offset: number): CompletionItem {
-		return this.createKeywordCompletionItem("HEALTHCHECK", "HEALTHCHECK NONE", prefix, offset, "HEALTHCHECK ${1:NONE}", "HEALTHCHECK_NONE");
+		return this.createKeywordCompletionItem("HEALTHCHECK", "HEALTHCHECK NONE", prefix, offset, "HEALTHCHECK NONE", "HEALTHCHECK_NONE");
 	}
 
 	createLABEL(prefix: string, offset: number, markdown: string): CompletionItem {
