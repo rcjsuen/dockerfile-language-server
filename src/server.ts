@@ -149,7 +149,7 @@ connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDo
 		} else {
 			end = offset + changes[i].rangeLength;
 		}
-		buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(offset + end);
+		buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
 	}
 	documents[didChangeTextDocumentParams.textDocument.uri] = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
 });
