@@ -52,7 +52,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 6);
+			assert.equal(symbols[0].location.range.end.character, 7);
 		});
 
 		it("space", function () {
@@ -66,7 +66,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 7);
+			assert.equal(symbols[0].location.range.end.character, 8);
 
 			document = createDocument("#\tescape=`");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -78,7 +78,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 7);
+			assert.equal(symbols[0].location.range.end.character, 8);
 
 			document = createDocument("# escape= `");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -90,7 +90,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 7);
+			assert.equal(symbols[0].location.range.end.character, 8);
 
 			document = createDocument("# escape=\t`");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -102,7 +102,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 7);
+			assert.equal(symbols[0].location.range.end.character, 8);
 
 			document = createDocument("# escape=` ");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -114,7 +114,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 7);
+			assert.equal(symbols[0].location.range.end.character, 8);
 		});
 
 		it("leading whitespace", function () {
@@ -128,7 +128,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 7);
+			assert.equal(symbols[0].location.range.end.character, 8);
 
 			document = createDocument("\t#escape=`");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -140,7 +140,19 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 2);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 7);
+			assert.equal(symbols[0].location.range.end.character, 8);
+
+			document = createDocument("# escape\t=\t` ");
+			symbols = symbolsProvider.parseSymbolInformation(document, uri);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "escape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 2);
+			assert.equal(symbols[0].location.range.end.line, 0);
+			assert.equal(symbols[0].location.range.end.character, 8);
 
 			document = createDocument("\r#escape=`");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -152,7 +164,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 1);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 1);
-			assert.equal(symbols[0].location.range.end.character, 6);
+			assert.equal(symbols[0].location.range.end.character, 7);
 
 			document = createDocument("\n#escape=`");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -164,7 +176,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 1);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 1);
-			assert.equal(symbols[0].location.range.end.character, 6);
+			assert.equal(symbols[0].location.range.end.character, 7);
 
 			document = createDocument("\r\n#escape=`");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -176,7 +188,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 1);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 1);
-			assert.equal(symbols[0].location.range.end.character, 6);
+			assert.equal(symbols[0].location.range.end.character, 7);
 		});
 
 		it("invalid directive definition with leading comment", function () {
@@ -204,7 +216,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 6);
+			assert.equal(symbols[0].location.range.end.character, 7);
 
 			document = createDocument("#escape=\r");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -216,7 +228,7 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 6);
+			assert.equal(symbols[0].location.range.end.character, 7);
 
 			document = createDocument("#escape=\n");
 			symbols = symbolsProvider.parseSymbolInformation(document, uri);
@@ -228,13 +240,21 @@ describe("Dockerfile document symbols", function () {
 			assert.equal(symbols[0].location.range.start.line, 0);
 			assert.equal(symbols[0].location.range.start.character, 1);
 			assert.equal(symbols[0].location.range.end.line, 0);
-			assert.equal(symbols[0].location.range.end.character, 6);
+			assert.equal(symbols[0].location.range.end.character, 7);
 		});
 
 		it("invalid directive name", function () {
 			let document = createDocument("#eskape=`");
 			let symbols = symbolsProvider.parseSymbolInformation(document, uri);
-			assert.equal(symbols.length, 0);
+			assert.equal(symbols.length, 1);
+			assert.equal(symbols[0].containerName, undefined);
+			assert.equal(symbols[0].name, "eskape");
+			assert.equal(symbols[0].kind, SymbolKind.Property);
+			assert.equal(symbols[0].location.uri, uri);
+			assert.equal(symbols[0].location.range.start.line, 0);
+			assert.equal(symbols[0].location.range.start.character, 1);
+			assert.equal(symbols[0].location.range.end.line, 0);
+			assert.equal(symbols[0].location.range.end.character, 7);
 		});
 	});
 
@@ -423,7 +443,7 @@ describe("Dockerfile document symbols", function () {
 				let symbols = symbolsProvider.parseSymbolInformation(document, uri);
 				assert.equal(symbols.length, 1);
 				assert.equal(symbols[0].containerName, undefined);
-				assert.equal(symbols[0].name, "FR\\OM");
+				assert.equal(symbols[0].name, "FR\\om");
 				assert.equal(symbols[0].kind, SymbolKind.Function);
 				assert.equal(symbols[0].location.uri, uri);
 				assert.equal(symbols[0].location.range.start.line, 0);
