@@ -121,9 +121,23 @@ export class DockerAssist {
 					if (i === firstCommentIdx) {
 						// we're in the first comment, might need to suggest
 						// the escape directive as a proposal
-						var directivePrefix = buffer.substring(i + 1, offset).trim().toLowerCase();
+						let leadingString = buffer.substring(i + 1, offset);
+						let found = false;
+						for (let j = 0; j < leadingString.length; j++) {
+							if (leadingString.charAt(j) !== ' ' && leadingString.charAt(j) !== '\\') {
+								leadingString = leadingString.substring(j);
+								found = true;
+								break;
+							}
+						}
+
+						if (!found) {
+							leadingString = "";
+						}
+
+						let directivePrefix = leadingString.toLowerCase();
 						if (DIRECTIVE_ESCAPE.indexOf(directivePrefix) === 0) {
-							return [ this.createEscape(prefix, offset, DIRECTIVE_ESCAPE) ];
+							return [ this.createEscape(directivePrefix, offset, DIRECTIVE_ESCAPE) ];
 						}
 					}
 					// in a comment, no proposals to suggest

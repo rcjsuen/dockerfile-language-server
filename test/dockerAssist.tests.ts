@@ -994,4 +994,68 @@ describe('Docker Content Assist Tests', function() {
 			assertAllProposals(proposals, 2, 0, 0);
 		});
 	});
+
+	describe("directives", function() {
+		describe("escape", function() {
+			it("#", function() {
+				var proposals = compute("#", 1);
+				assertOnlyDirectiveEscape(proposals, 0, 1, 0);
+			});
+
+			it("# ", function() {
+				var proposals = compute("# ", 2);
+				assertOnlyDirectiveEscape(proposals, 0, 2, 0);
+			});
+
+			it("##", function() {
+				var proposals = compute("##", 1);
+				assertOnlyDirectiveEscape(proposals, 0, 1, 0);
+			});
+
+			it("# #", function() {
+				var proposals = compute("# #", 1);
+				assertOnlyDirectiveEscape(proposals, 0, 1, 0);
+			});
+
+			it("# #", function() {
+				var proposals = compute("# #", 2);
+				assertOnlyDirectiveEscape(proposals, 0, 2, 0);
+			});
+
+			it("#e", function() {
+				var proposals = compute("#e", 2);
+				assertOnlyDirectiveEscape(proposals, 0, 1, 1);
+			});
+
+			it("# e", function() {
+				var proposals = compute("# e", 3);
+				assertOnlyDirectiveEscape(proposals, 0, 2, 1);
+			});
+
+			it("#E", function() {
+				var proposals = compute("#E", 2);
+				assertOnlyDirectiveEscape(proposals, 0, 1, 1);
+			});
+
+			it("#eS", function() {
+				var proposals = compute("#eS", 3);
+				assertOnlyDirectiveEscape(proposals, 0, 1, 2);
+			});
+
+			it("#e ", function() {
+				var proposals = compute("#e ", 3);
+				assert.equal(proposals.length, 0);
+			});
+
+			it("#\\n#", function() {
+				var proposals = compute("#\n#", 3);
+				assert.equal(proposals.length, 0);
+			});
+
+			it("#\\n#e", function() {
+				var proposals = compute("#\n#e", 4);
+				assert.equal(proposals.length, 0);
+			});
+		});
+	})
 });
