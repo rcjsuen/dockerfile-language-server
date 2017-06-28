@@ -577,6 +577,11 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("#=# key=value\r\nFROM node");
 				assert.equal(diagnostics.length, 0);
 			});
+
+			it("ignored after one instruction", function() {
+				let diagnostics = validate("FROM node\n# key=value");
+				assert.equal(diagnostics.length, 0);
+		});
 		});
 
 		describe("escape validation", function() {
