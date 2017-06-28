@@ -80,6 +80,10 @@ export class Validator {
 				let range = instruction.getInstructionRange();
 				// invalid instruction found
 				problems.push(this.createUnknownInstruction(document.offsetAt(range.start), document.offsetAt(range.end), keyword));
+			} else if (keyword !== instruction.getInstruction()) {
+				let range = instruction.getInstructionRange();
+				// warn about uppercase convention if the keyword doesn't match the actual instruction
+				problems.push(this.createUppercaseInstruction(document.offsetAt(range.start), document.offsetAt(range.end)));
 			}
 		}
 
@@ -195,10 +199,6 @@ export class Validator {
 								// reached EOF
 								return problems;
 							} else {
-								if (instruction !== uppercaseInstruction) {
-									// warn about uppercase convention
-									problems.push(this.createUppercaseInstruction(i, j));
-								}
 								var check = false;
 								for (var k = j + 1; k < text.length; k++) {
 									if (this.shouldSkipNewline(text, k, escape)) {
@@ -224,10 +224,6 @@ export class Validator {
 								return problems;
 							}
 					}
-					if (instruction !== uppercaseInstruction && !unknown) {
-						// warn about uppercase convention if not an unknown instruction
-						problems.push(this.createUppercaseInstruction(i, j));
-					}
 
 					i = jump;
 					continue lineCheck;
@@ -251,9 +247,6 @@ export class Validator {
 
 		if (keywords.indexOf(uppercaseInstruction) !== -1) {
 			problems.push(this.createMissingArgument(i, j));
-			if (instruction !== uppercaseInstruction) {
-				problems.push(this.createUppercaseInstruction(i, j));
-			}
 		}
 
 		if (!hasFrom && uppercaseInstruction !== "FROM") {
