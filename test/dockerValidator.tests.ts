@@ -582,6 +582,18 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("FROM node\n# key=value");
 				assert.equal(diagnostics.length, 0);
 			});
+
+			it("EOF", function() {
+				let diagnostics = validate("#escape=");
+				assert.equal(diagnostics.length, 1);
+				assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			});
+
+			it("EOF newline", function() {
+				let diagnostics = validate("#escape=\n");
+				assert.equal(diagnostics.length, 1);
+				assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			});
 		});
 
 		describe("escape validation", function() {
