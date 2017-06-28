@@ -5,6 +5,7 @@
 import {
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
+import { DockerfileParser } from '../parser/dockerfileParser';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
 
 export enum ValidationCode {
@@ -31,111 +32,35 @@ export class Validator {
 		return text.charAt(offset) === escape && offset !== text.length - 1 && (text.charAt(offset + 1) === '\r' || text.charAt(offset + 1) === '\n');
 	}
 
-	parseDirective(text: string, problems: Diagnostic[]) {
-		var hasFrom = false;
-		var inComment = false;
-		var directiveEnd = -1;
-		var directiveMark = -1;
-		var escapeCharacter = '\\';
-		var dc = 0;
-		directiveCheck: for (dc = 0; dc < text.length; dc++) {
-			switch (text.charAt(dc)) {
-				case '#':
-					// first line is a comment, might be a directive
-					inComment = true;
-					break;
-				case ' ':
-				case '\t':
-					// ignore whitespace
-					continue;
-				case '\r':
-				case '\n':
-					// newlines, stop processing directive
-					dc++;
-					break directiveCheck;
-				case '=':
-					// are we processing a potentially valid directive declaration
-					if (inComment && directiveMark !== -1) {
-						var directiveName = text.substring(directiveMark, directiveEnd + 1);
-						if (directiveName.toLowerCase() !== DIRECTIVE_ESCAPE) {
-							// Dockerfiles currently only support the 'escape' directive
-							problems.push(this.createUnknownDirective(directiveMark, directiveEnd + 1, directiveName));
-							// process the rest of this line before letting the standard parser work
-							while (true) {
-								dc++;
-								if (dc === text.length || text.charAt(dc) === '\r' || text.charAt(dc) === '\n') {
-									// end of file or newline
-									break directiveCheck;
-								}
-							}
-						}
+	parseDirective(document: TextDocument, problems: Diagnostic[]) {
+		let parser = new DockerfileParser();
+		let dockerfile = parser.parse(document);
+		let directive = dockerfile.getDirective();
+		if (directive === null) {
+			return {
+				escape: '\\',
+				dc: 0
+			}
+		}
 
-						directiveMark = -1;
-						while (true) {
-							dc++;
-							if (dc === text.length) {
-								// end of file
-								var value = text.substring(directiveMark, dc).trim();
-								if (value === '`' || value === '\\') {
-									escapeCharacter = value;
-								} else {
-									// the defined escape directive was not a single character
-									problems.push(this.createInvalidEscapeDirective(directiveMark, directiveMark + value.length, value));
-								}
-								break directiveCheck;
-							}
-
-							switch (text.charAt(dc)) {
-								case '\r':
-								case '\n':
-									if (directiveMark !== -1) {
-										value = text.substring(directiveMark, dc).trim();
-										if (value === '`' || value === '\\') {
-											escapeCharacter = value;
-										} else {
-											problems.push(this.createInvalidEscapeDirective(directiveMark, directiveMark + value.length, value));
-										}
-									}
-									dc++;
-									break directiveCheck;
-								default:
-									if (directiveMark === -1) {
-										directiveMark = dc;
-									}
-									break;
-							}
-						}
-					}
-
-					// not a parser directive, just eat this comment line
-					for (let i = dc; i < text.length; i++) {
-						switch (text.charAt(i)) {
-							case '\r':
-							case '\n':
-								dc = i + 1;
-								break directiveCheck;
-						}
-					}
-					// reached EOF
-					dc = text.length;
-					break directiveCheck;
-				default:
-					if (inComment) {
-						// flag the first non-whitespace character as the name of the directive
-						if (directiveMark === -1) {
-							directiveMark = dc;
-						}
-						directiveEnd = dc;
-						break;
-					}
-					break directiveCheck;
+		let directiveName = directive.getDirective();
+		let value = directive.getValue();
+		if (directiveName !== DIRECTIVE_ESCAPE) {
+			// Dockerfiles currently only support the 'escape' directive
+			let range = directive.getNameRange();
+			problems.push(this.createUnknownDirective(document.offsetAt(range.start), document.offsetAt(range.end), directiveName));
+		} else {
+			if (value !== null && value !== '\\' && value !== '`') {
+				// the defined escape directive was not a single character
+				let range = directive.getValueRange();
+				problems.push(this.createInvalidEscapeDirective(document.offsetAt(range.start), document.offsetAt(range.end), value));
 			}
 		}
 
 		return {
-			escape: escapeCharacter,
-			dc: dc
-		}
+			escape: value === '\\' || value === '`' ? value : '\\',
+			dc: document.offsetAt(directive.getRange().end)
+		};
 	}
 
 	validate(keywords: string[], document: TextDocument): Diagnostic[] {
@@ -143,7 +68,7 @@ export class Validator {
 		let text = document.getText();
 		let problems: Diagnostic[] = [];
 		let hasFrom = false;
-		let parsed = this.parseDirective(text, problems);
+		let parsed = this.parseDirective(document, problems);
 		let escape = parsed.escape;
 		let firstInstruction = false;
 		let dc = parsed.dc;

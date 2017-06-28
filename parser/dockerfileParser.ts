@@ -87,7 +87,12 @@ export class DockerfileParser {
 										valueEnd = valueStart + 1;
 									}
 								}
+
 								let lineRange = Range.create(document.positionAt(commentStart), document.positionAt(valueEnd));
+								if (directiveStart === -1) {
+									return new Comment(document, lineRange);
+								}
+
 								let nameRange = Range.create(document.positionAt(directiveStart), document.positionAt(directiveEnd));
 								let valueRange = null;
 								if (valueStart !== -1) {
