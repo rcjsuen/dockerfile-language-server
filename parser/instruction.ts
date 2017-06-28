@@ -7,9 +7,9 @@ import { Line } from './line';
 
 export class Instruction extends Line {
 
-	private instruction: string;
+	private readonly instruction: string;
 
-	private instructionRange: Range;
+	private readonly instructionRange: Range;
 
 	constructor(document: TextDocument, range: Range, instruction: string, instructionRange: Range) {
 		super(document, range);

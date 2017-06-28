@@ -6,8 +6,8 @@ import { TextDocument, Range } from 'vscode-languageserver';
 
 export class Line {
 
-	protected document: TextDocument;
-	private range: Range;
+	protected readonly document: TextDocument;
+	private readonly range: Range;
 
 	constructor(document: TextDocument, range: Range) {
 		this.document = document;

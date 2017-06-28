@@ -11,9 +11,9 @@ import { Util, DIRECTIVE_ESCAPE } from '../src/docker';
 
 export class Dockerfile {
 
-	private comments: Comment[] = [];
+	private readonly comments: Comment[] = [];
 	private directive: Directive = null;
-	private instructions: Instruction[] = [];
+	private readonly instructions: Instruction[] = [];
 
 	public addComment(comment: Comment): void {
 		this.comments.push(comment);

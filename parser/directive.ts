@@ -7,9 +7,9 @@ import { Line } from './line';
 
 export class Directive extends Line {
 
-	private nameRange: Range;
+	private readonly nameRange: Range;
 
-	private valueRange: Range;
+	private readonly valueRange: Range;
 
 	constructor(document: TextDocument, range: Range, nameRange: Range, valueRange: Range) {
 		super(document, range);
