@@ -82,6 +82,18 @@ describe("Dockerfile hover", function() {
 			document = createDocument("#escape\n");
 			hover = onHover(document, 0, 4);
 			assert.equal(hover, null);
+
+			document = createDocument("\n#escape");
+			hover = onHover(document, 1, 4);
+			assert.equal(hover, null);
+
+			document = createDocument("\r#escape");
+			hover = onHover(document, 1, 4);
+			assert.equal(hover, null);
+
+			document = createDocument("\r\n#escape");
+			hover = onHover(document, 1, 4);
+			assert.equal(hover, null);
 		});
 	});
 
@@ -191,6 +203,10 @@ describe("Dockerfile hover", function() {
 
 			document = createDocument("ONBUILD \\\r\nEXPOSE 8080");
 			hover = onHover(document, 1, 3);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("#escape=`\nONBUILD \\\nEXPOSE 8080");
+			hover = onHover(document, 2, 3);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
 

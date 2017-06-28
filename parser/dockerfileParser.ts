@@ -9,12 +9,20 @@ import { Comment } from './comment';
 import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Line } from './line';
+import { Onbuild } from './instructions/onbuild';
 import { Dockerfile } from './dockerfile';
 import { Util, DIRECTIVE_ESCAPE } from '../src/docker';
 
 export class DockerfileParser {
 
 	private escapeChar: string;
+
+	private createInstruction(document: TextDocument, lineRange: Range, instruction: string, instructionRange: Range) {
+		if (instruction.toUpperCase() === "ONBUILD") {
+			return new Onbuild(document, this.escapeChar, lineRange, instruction, instructionRange);
+		}
+		return new Instruction(document, lineRange, instruction, instructionRange);
+	}
 
 	private getDirectiveSymbol(document: TextDocument, buffer: string, textDocumentURI: string): Line {
 		let line = null;
@@ -192,7 +200,7 @@ export class DockerfileParser {
 											i = k;
 											lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(k));
 											instructionRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-											dockerfile.addInstruction(new Instruction(document, lineRange, instruction, instructionRange));
+											dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, instructionRange));
 											continue lineCheck;
 										case this.escapeChar:
 											if (buffer.charAt(k + 1) === '\n') {
@@ -210,7 +218,7 @@ export class DockerfileParser {
 								// reached EOF
 								lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(buffer.length));
 								instructionRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-								dockerfile.addInstruction(new Instruction(document, lineRange, instruction, instructionRange));
+								dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, instructionRange));
 								break lineCheck;
 							case '\r':
 								if (buffer.charAt(j + 1) === '\n') {
@@ -228,7 +236,7 @@ export class DockerfileParser {
 					}
 					// reached EOF
 					lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(buffer.length));
-					dockerfile.addInstruction(new Instruction(document, lineRange, instruction, lineRange));
+					dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, lineRange));
 					break lineCheck;
 			}
 		}
