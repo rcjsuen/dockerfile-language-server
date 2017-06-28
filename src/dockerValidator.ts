@@ -5,6 +5,7 @@
 import {
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
+import { Dockerfile } from '../parser/dockerfile';
 import { DockerfileParser } from '../parser/dockerfileParser';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
 
@@ -32,9 +33,7 @@ export class Validator {
 		return text.charAt(offset) === escape && offset !== text.length - 1 && (text.charAt(offset + 1) === '\r' || text.charAt(offset + 1) === '\n');
 	}
 
-	parseDirective(document: TextDocument, problems: Diagnostic[]) {
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
+	parseDirective(dockerfile: Dockerfile, document: TextDocument, problems: Diagnostic[]) {
 		let directive = dockerfile.getDirective();
 		if (directive === null) {
 			return {
@@ -68,10 +67,21 @@ export class Validator {
 		let text = document.getText();
 		let problems: Diagnostic[] = [];
 		let hasFrom = false;
-		let parsed = this.parseDirective(document, problems);
+		let parser = new DockerfileParser();
+		let dockerfile = parser.parse(document);
+		let parsed = this.parseDirective(dockerfile, document, problems);
 		let escape = parsed.escape;
 		let firstInstruction = false;
 		let dc = parsed.dc;
+
+		for (let instruction of dockerfile.getInstructions()) {
+			let keyword = instruction.getKeyword();
+			if (keywords.indexOf(keyword) === -1) {
+				let range = instruction.getInstructionRange();
+				// invalid instruction found
+				problems.push(this.createUnknownInstruction(document.offsetAt(range.start), document.offsetAt(range.end), keyword));
+			}
+		}
 
 		lineCheck: for (let i = dc; i < text.length; i++) {
 			// skip generic whitespace
@@ -168,7 +178,6 @@ export class Validator {
 						default:
 							if (keywords.indexOf(uppercaseInstruction) === -1) {
 								// invalid instruction found
-								problems.push(this.createUnknownInstruction(i, j, uppercaseInstruction));
 								unknown = true;
 
 								for (var k = j + 1; k < text.length; k++) {
@@ -240,9 +249,7 @@ export class Validator {
 			j = j + 1;
 		}
 
-		if (keywords.indexOf(uppercaseInstruction) === -1) {
-			problems.push(this.createUnknownInstruction(i, j, uppercaseInstruction));
-		} else {
+		if (keywords.indexOf(uppercaseInstruction) !== -1) {
 			problems.push(this.createMissingArgument(i, j));
 			if (instruction !== uppercaseInstruction) {
 				problems.push(this.createUppercaseInstruction(i, j));
