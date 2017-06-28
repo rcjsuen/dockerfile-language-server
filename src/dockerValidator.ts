@@ -73,7 +73,11 @@ export class Validator {
 		let escape = parsed.escape;
 		let firstInstruction = false;
 		let dc = parsed.dc;
-
+		let instructions = dockerfile.getInstructions();
+		if (instructions.length !== 0 && instructions[0].getKeyword() !== "FROM") {
+			let range = instructions[0].getInstructionRange();
+			problems.push(this.createFROMNotFirst(document.offsetAt(range.start), document.offsetAt(range.end)));
+		}
 		for (let instruction of dockerfile.getInstructions()) {
 			let keyword = instruction.getKeyword();
 			if (keywords.indexOf(keyword) === -1) {
@@ -147,7 +151,6 @@ export class Validator {
 					if (!firstInstruction) {
 						firstInstruction = true;
 						if (uppercaseInstruction !== "FROM") {
-							problems.push(this.createFROMNotFirst(i, j));
 							// don't need to flag about a missing FROM, as the user
 							// has already been told that the first instruction must be a FROM
 							hasFrom = true;
