@@ -228,6 +228,36 @@ describe("Dockerfile hover", function() {
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
 
+		it("ONBUILD EXPOSE incomplete", function() {
+			let document = createDocument("ONBUILD EXPOSE");
+			let hover = onHover(document, 0, 9);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("ONBUILD EXPOSE\n");
+			hover = onHover(document, 0, 9);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("ONBUILD EXPOSE\r");
+			hover = onHover(document, 0, 9);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("ONBUILD EXPOSE\r\n");
+			hover = onHover(document, 0, 9);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+		});
+
+		it("ONBUILD EXP\\OSE", function() {
+			let document = createDocument("ONBUILD EXPOS\\E");
+			let hover = onHover(document, 0, 9);
+			assert.equal(hover, null);
+		});
+
+		it("ONBUILD with no trigger", function() {
+			let document = createDocument("ONBUILD   \r\n");
+			let hover = onHover(document, 0, 9);
+			assert.equal(hover, null);
+		});
+
 		it("invalid nesting", function() {
 			let document = createDocument("RUN EXPOSE 8080");
 			let hover = onHover(document, 0, 7);
