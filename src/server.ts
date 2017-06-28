@@ -151,7 +151,9 @@ connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDo
 		}
 		buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
 	}
-	documents[didChangeTextDocumentParams.textDocument.uri] = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
+	document = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
+	documents[didChangeTextDocumentParams.textDocument.uri] = document;
+	validateTextDocument(document);
 });
 
 connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
