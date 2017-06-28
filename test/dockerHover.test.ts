@@ -60,6 +60,10 @@ describe("Dockerfile hover", function() {
 			let document = createDocument("#escape=`");
 			let hover = onHover(document, 0, 4);
 			assert.equal(hover, markdownDocumentation.getMarkdown("escape"));
+
+			document = createDocument("# escape=`");
+			hover = onHover(document, 0, 1);
+			assert.equal(hover, null);
 		});
 
 		it("invalid directive definition", function() {
@@ -70,6 +74,14 @@ describe("Dockerfile hover", function() {
 			document = createDocument("#escape ");
 			hover = onHover(document, 0, 4);
 			assert.equal(hover, null);
+
+			document = createDocument("#escape=");
+			hover = onHover(document, 0, 4);
+			assert.equal(hover, markdownDocumentation.getMarkdown("escape"));
+
+			document = createDocument("#escape=ab");
+			hover = onHover(document, 0, 4);
+			assert.equal(hover, markdownDocumentation.getMarkdown("escape"));
 
 			document = createDocument("#escape\t");
 			hover = onHover(document, 0, 4);
