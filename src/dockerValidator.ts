@@ -50,8 +50,8 @@ export class Validator {
 			let range = directive.getNameRange();
 			problems.push(this.createUnknownDirective(document.offsetAt(range.start), document.offsetAt(range.end), directiveName));
 		} else {
-			if (value !== null && value !== '\\' && value !== '`') {
-				// the defined escape directive was not a single character
+			// if the directive's value is invalid or isn't the empty string, flag it
+			if (value !== '\\' && value !== '`' && value !== "") {
 				let range = directive.getValueRange();
 				problems.push(this.createInvalidEscapeDirective(document.offsetAt(range.start), document.offsetAt(range.end), value));
 			}

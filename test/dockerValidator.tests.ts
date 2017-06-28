@@ -583,6 +583,16 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 0);
 			});
 
+			it("whitespace directive", function() {
+				let diagnostics = validate("#escape= \nFROM node");
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveEscapeInvalid(diagnostics[0], " ", 0, 8, 0, 9);
+				
+				diagnostics = validate("#escape=\t\nFROM node");
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveEscapeInvalid(diagnostics[0], "\t", 0, 8, 0, 9);
+			});
+
 			it("EOF", function() {
 				let diagnostics = validate("#escape=");
 				assert.equal(diagnostics.length, 1);

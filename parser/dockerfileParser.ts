@@ -57,6 +57,8 @@ export class DockerfileParser {
 								if (directiveEnd === -1) {
 									directiveEnd = j;
 								}
+								// assume the line ends with the file
+								let lineEnd = buffer.length;
 								directiveValue: for (let k = j + 1; k < buffer.length; k++) {
 									char = buffer.charAt(k);
 									switch (char) {
@@ -65,6 +67,8 @@ export class DockerfileParser {
 											if (valueStart !== -1 && valueEnd === -1) {
 												valueEnd = k;
 											}
+											// line break found, reset
+											lineEnd = k;
 											break directiveValue;
 										case '\t':
 										case ' ':
@@ -80,24 +84,24 @@ export class DockerfileParser {
 									}
 								}
 
-								let value = null;
-								if (valueStart !== -1) {
-									if (valueEnd === -1) {
-										// reached EOF
-										valueEnd = valueStart + 1;
-									}
-								}
-
-								let lineRange = Range.create(document.positionAt(commentStart), document.positionAt(valueEnd));
+								let lineRange = Range.create(document.positionAt(commentStart), document.positionAt(lineEnd));
 								if (directiveStart === -1) {
+									// no directive, it's a regular comment
 									return new Comment(document, lineRange);
 								}
 
-								let nameRange = Range.create(document.positionAt(directiveStart), document.positionAt(directiveEnd));
-								let valueRange = null;
-								if (valueStart !== -1) {
-									valueRange = Range.create(document.positionAt(valueStart), document.positionAt(valueEnd));
+								let value = null;
+								if (valueStart === -1) {
+									// no non-whitespace characters found, highlight all the characters then
+									valueStart = j + 1;
+									valueEnd = lineEnd;
+								} else if (valueEnd === -1) {
+									// reached EOF
+									valueEnd = buffer.length;
 								}
+
+								let nameRange = Range.create(document.positionAt(directiveStart), document.positionAt(directiveEnd));
+								let valueRange = Range.create(document.positionAt(valueStart), document.positionAt(valueEnd));
 								return new Directive(document, lineRange, nameRange, valueRange);
 							default:
 								if (directiveStart === -1) {
