@@ -17,4 +17,8 @@ export class Line {
 	public getRange(): Range {
 		return this.range;
 	}
+
+	public getTextContent(): string {
+		return this.document.getText().substring(this.document.offsetAt(this.range.start), this.document.offsetAt(this.range.end));
+	}
 }

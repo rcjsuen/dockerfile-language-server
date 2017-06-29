@@ -186,11 +186,13 @@ export class DockerfileParser {
 							case this.escapeChar:
 								char = buffer.charAt(j + 1);
 								if (char === '\r') {
+									instructionEnd = j;
 									if (buffer.charAt(j + 2) === '\n') {
 										j++;
 									}
 									j++;
 								} else if (char === '\n') {
+									instructionEnd = j;
 									j++;
 								} else {
 									instruction = instruction + this.escapeChar;
@@ -230,21 +232,31 @@ export class DockerfileParser {
 								dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, instructionRange));
 								break lineCheck;
 							case '\r':
+								if (instructionEnd === -1) {
+									instructionEnd = j;
+								}
 								if (buffer.charAt(j + 1) === '\n') {
 									j++;
 								}
 							case '\n':
-								lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(j));
+								if (instructionEnd === -1) {
+									instructionEnd = j;
+								}
+								lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
 								dockerfile.addInstruction(new Instruction(document, lineRange, instruction, lineRange));
 								i = j;
 								continue lineCheck;
 							default:
+								instructionEnd = j + 1;
 								instruction = instruction + char;
 								break;
 						}
 					}
 					// reached EOF
-					lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(buffer.length));
+					if (instructionEnd === -1) {
+						instructionEnd = buffer.length;
+					}
+					lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
 					dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, lineRange));
 					break lineCheck;
 			}

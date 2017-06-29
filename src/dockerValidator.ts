@@ -6,6 +6,7 @@ import {
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
 import { Dockerfile } from '../parser/dockerfile';
+import { Instruction } from '../parser/instruction';
 import { DockerfileParser } from '../parser/dockerfileParser';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
 
@@ -62,6 +63,81 @@ export class Validator {
 		};
 	}
 
+	checkArguments(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[]): boolean {
+		let range = instruction.getInstructionRange();
+		let args = instruction.getTextContent().substring(instruction.getInstruction().length);
+		let missing = true;
+		for (let i = 0; i < args.length; i++) {
+			if (Util.isWhitespace(args.charAt(i))) {
+				continue;
+			} else if (args.charAt(i) === escapeChar) {
+				if (args.charAt(i + 1) === '\r' || args.charAt(i + 1) === '\n') {
+					i++;
+				} else {
+					missing = false;
+					break;
+				}
+			} else {
+				missing = false;
+				break;
+			}
+		}
+		if (missing) {
+			problems.push(this.createMissingArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+			return false;
+		}
+		return true;
+	}
+
+	private checkSingleArgument(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[]): void {
+		let range = instruction.getInstructionRange();
+		let extra = instruction.getInstruction().length;
+		let content = instruction.getTextContent();
+		let args = content.substring(extra);
+		let found = false;
+		let second = false;
+		let errStart = -1;
+		for (let i = 0; i < args.length; i++) {
+			if (Util.isWhitespace(args.charAt(i))) {
+				if (second) {
+					errStart = document.offsetAt(range.start) + extra + errStart;
+					problems.push(this.createExtraArgument(errStart, document.offsetAt(range.start) + extra + i));
+					return;
+				}
+				if (found) {
+					second = true;
+				}
+			} else if (args.charAt(i) === escapeChar) {
+				if (args.charAt(i + 1) === '\r') {
+					if (args.charAt(i + 2) === '\n') {
+						i++;
+					}
+					i++;
+				} else if (args.charAt(i + 1) === '\n') {
+					i++;
+				} else {
+					if (!found) {
+						found = true;
+					}
+				}
+			} else {
+				if (!found) {
+					found = true;
+				}
+
+				if (second && errStart === -1) {
+					errStart = i;
+				}
+
+			}
+		}
+
+		if (errStart !== -1) {
+			errStart = document.offsetAt(range.start) + extra + errStart;
+			problems.push(this.createExtraArgument(errStart, document.offsetAt(range.start) + extra + args.length));
+		}
+	}
+
 	validate(keywords: string[], document: TextDocument): Diagnostic[] {
 		this.document = document;
 		let text = document.getText();
@@ -88,6 +164,16 @@ export class Validator {
 				let range = instruction.getInstructionRange();
 				// warn about uppercase convention if the keyword doesn't match the actual instruction
 				problems.push(this.createUppercaseInstruction(document.offsetAt(range.start), document.offsetAt(range.end)));
+			} else {
+				if (this.checkArguments(document, escape, instruction, problems)) {
+					switch (keyword) {
+						case "FROM":
+						case "WORKDIR":
+						case "USER":
+							this.checkSingleArgument(document, escape, instruction, problems);
+							break;
+					}
+				}
 			}
 		}
 
@@ -163,24 +249,32 @@ export class Validator {
 						case "EXPOSE":
 							jump = this.parseEXPOSE(escape, i, j, text, problems);
 							break;
-						case "FROM":
-							hasFrom = true;
-							jump = this.parseSingleArgumentNoChecks(escape, i, j, text, problems);
-							break;
 						case "MAINTAINER":
 							jump = this.parseMAINTAINER(escape, i, j, text, problems);
 							break;
 						case "STOPSIGNAL":
 							jump = this.parseSTOPSIGNAL(escape, i, j, text, problems);
 							break;
+						case "FROM":
+							hasFrom = true;
 						case "USER":
-							jump = this.parseSingleArgumentNoChecks(escape, i, j, text, problems);
-							break;
+						case "WORKDIR":
+							for (var k = j + 1; k < text.length; k++) {
+								if (this.shouldSkipNewline(text, k, escape)) {
+									k++;
+									continue;
+								}
+
+								if (text.charAt(k) === '\r' || text.charAt(k) === '\n') {
+									// adjust offset and go to the next line
+									i = k;
+									continue lineCheck;
+								}
+							}
+							// reached EOF
+							break lineCheck;
 						case "VOLUME":
 							jump = this.parseVOLUME(escape, i, j, text, problems);
-							break;
-						case "WORKDIR":
-							jump = this.parseSingleArgumentNoChecks(escape, i, j, text, problems);
 							break;
 						default:
 							if (keywords.indexOf(uppercaseInstruction) === -1) {
@@ -211,9 +305,6 @@ export class Validator {
 										}
 										continue;
 									} else if (text.charAt(k) === '\r' || text.charAt(k) === '\n') {
-										if (!check) {
-											problems.push(this.createMissingArgument(i, j));
-										}
 										i = k;
 										continue lineCheck;
 									} else if (text.charAt(k) !== ' ' && text.charAt(k) !== '\t') {
@@ -221,9 +312,6 @@ export class Validator {
 									}
 								}
 								// only possible to get here if we've reached the end of the file
-								if (!check) {
-									problems.push(this.createMissingArgument(i, j));
-								}
 								return problems;
 							}
 					}
@@ -246,10 +334,6 @@ export class Validator {
 	markFinalLine(keywords, escape, text, i, j, instruction, uppercaseInstruction, problems, hasFrom) {
 		if (!Util.isWhitespace(text.charAt(j)) && text.charAt(j) !== escape) {
 			j = j + 1;
-		}
-
-		if (keywords.indexOf(uppercaseInstruction) !== -1) {
-			problems.push(this.createMissingArgument(i, j));
 		}
 
 		if (!hasFrom && uppercaseInstruction !== "FROM") {
@@ -297,10 +381,6 @@ export class Validator {
 			} else if (text.charAt(i) === '\r' || text.charAt(i) === '\n') {
 				if (!flagged) {
 					if (wordStart === -1) {
-						if (!valid) {
-							// nothing found at all
-							problems.push(this.createMissingArgument(lineStart, offset));
-						}
 					} else if (!isValid(word)) {
 						problems.push(invalidFunction(wordStart, i, word));
 					}
@@ -326,10 +406,6 @@ export class Validator {
 						i++;
 					}
 					if (wordStart === -1) {
-						if (!valid) {
-							// nothing found at all
-							problems.push(this.createMissingArgument(lineStart, offset));
-						}
 					} else if (!isValid(word)) {
 						problems.push(invalidFunction(wordStart, i, word));
 					}
@@ -346,10 +422,6 @@ export class Validator {
 				i++;
 			}
 			if (wordStart === -1) {
-				if (!valid) {
-					// nothing found at all
-					problems.push(this.createMissingArgument(lineStart, offset));
-				}
 			} else if (!isValid(word)) {
 				problems.push(invalidFunction(wordStart, i, word));
 			}
@@ -479,14 +551,6 @@ export class Validator {
 		return last + 1;
 	}
 
-	parseSingleArgumentNoChecks(escape: string, lineStart: number, offset: number, text: string, problems: Diagnostic[]) {
-		return this.parseSingleArgument(escape, lineStart, offset, text, problems, function() {
-			return true;
-		}, function() {
-			return true;
-		});
-	}
-
 	parseSingleArgument(escape: string, lineStart: number, offset: number, text: string, problems: Diagnostic[], isValid: Function, invalidFunction: Function) {
 		var wordStart = -1;
 		var flagged = false;
@@ -525,7 +589,6 @@ export class Validator {
 						}
 					} else if (wordStart === -1) {
 						// nothing found at all
-						problems.push(this.createMissingArgument(lineStart, offset));
 					} else if (!isValid(word)) {
 						problems.push(invalidFunction(wordStart, i));
 					}
@@ -553,7 +616,6 @@ export class Validator {
 						}
 					} else if (wordStart === -1) {
 						// nothing found at all
-						problems.push(this.createMissingArgument(lineStart, offset));
 					} else if (!isValid(word)) {
 						problems.push(invalidFunction(wordStart, i));
 					}
@@ -575,7 +637,6 @@ export class Validator {
 				}
 			} else if (wordStart === -1) {
 				// nothing found at all
-				problems.push(this.createMissingArgument(lineStart, offset));
 			} else if (!isValid(word)) {
 				problems.push(invalidFunction(wordStart, i));
 			}
