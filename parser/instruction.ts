@@ -3,7 +3,9 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
+import { Util } from '../src/docker';
 import { Line } from './line';
+import { Argument } from './argument';
 
 export class Instruction extends Line {
 
@@ -27,5 +29,54 @@ export class Instruction extends Line {
 
 	public getKeyword(): string {
 		return this.getInstruction().toUpperCase();
+	}
+
+	public getArgments(escapeChar: string): Argument[] {
+		let args = [];
+		let range = this.getInstructionRange();
+		let extra = this.instruction.length;
+		let content = this.getTextContent();
+		let fullArgs = content.substring(extra);
+		let offset = this.document.offsetAt(range.start) + extra;
+		let found = -1;
+		let second = false;
+		let errStart = -1;
+		let validated = false;
+		let escapedArg = "";
+		for (let i = 0; i < fullArgs.length; i++) {
+			let char = fullArgs.charAt(i);
+			if (Util.isWhitespace(char)) {
+				if (found !== -1) {
+					args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + i))));
+					escapedArg = "";
+					found = -1;
+				}
+			} else if (char === escapeChar) {
+				if (fullArgs.charAt(i + 1) === '\r') {
+					if (fullArgs.charAt(i + 2) === '\n') {
+						i++;
+					}
+					i++;
+				} else if (fullArgs.charAt(i + 1) === '\n') {
+					i++;
+				} else {
+					escapedArg = escapedArg + char;
+					if (found === -1) {
+						found = i;
+					}
+				}
+			} else {
+				escapedArg = escapedArg + char;
+				if (found === -1) {
+					found = i;
+				}
+			}
+		}
+
+		if (found !== -1) {
+			args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + fullArgs.length))));			
+		}
+
+		return args;
 	}
 }

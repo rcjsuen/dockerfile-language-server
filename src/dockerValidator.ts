@@ -89,52 +89,18 @@ export class Validator {
 		return true;
 	}
 
-	private checkSingleArgument(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[]): void {
-		let range = instruction.getInstructionRange();
-		let extra = instruction.getInstruction().length;
-		let content = instruction.getTextContent();
-		let args = content.substring(extra);
-		let found = false;
-		let second = false;
-		let errStart = -1;
-		for (let i = 0; i < args.length; i++) {
-			if (Util.isWhitespace(args.charAt(i))) {
-				if (second) {
-					errStart = document.offsetAt(range.start) + extra + errStart;
-					problems.push(this.createExtraArgument(errStart, document.offsetAt(range.start) + extra + i));
-					return;
-				}
-				if (found) {
-					second = true;
-				}
-			} else if (args.charAt(i) === escapeChar) {
-				if (args.charAt(i + 1) === '\r') {
-					if (args.charAt(i + 2) === '\n') {
-						i++;
-					}
-					i++;
-				} else if (args.charAt(i + 1) === '\n') {
-					i++;
-				} else {
-					if (!found) {
-						found = true;
-					}
-				}
-			} else {
-				if (!found) {
-					found = true;
-				}
-
-				if (second && errStart === -1) {
-					errStart = i;
-				}
-
+	private checkSingleArgument(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[], singleOnly: boolean, validate: Function, createDiagnostic?: Function): void {
+		let args = instruction.getArgments(escapeChar);
+		if (args.length !== 0) {
+			if (!validate(args[0].getValue())) {
+				let range = args[0].getRange();
+				problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
 			}
-		}
 
-		if (errStart !== -1) {
-			errStart = document.offsetAt(range.start) + extra + errStart;
-			problems.push(this.createExtraArgument(errStart, document.offsetAt(range.start) + extra + args.length));
+			if (args.length > 1 && singleOnly) {
+				let range = args[1].getRange();
+				problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+			}
 		}
 	}
 
@@ -170,7 +136,23 @@ export class Validator {
 						case "FROM":
 						case "WORKDIR":
 						case "USER":
-							this.checkSingleArgument(document, escape, instruction, problems);
+							this.checkSingleArgument(document, escape, instruction, problems, true, function(argument) {
+								return true;
+							});
+							break;
+						case "STOPSIGNAL":
+							this.checkSingleArgument(document, escape, instruction, problems, true, function(argument) {
+								if (argument.indexOf("SIG") === 0) {
+									return true;
+								}
+								
+								for (var i = 0; i < argument.length; i++) {
+									if ('0' > argument.charAt(i) || '9' < argument.charAt(i)) {
+										return false;
+									}
+								}
+								return true;
+							}, this.createInvalidStopSignal.bind(this));
 							break;
 					}
 				}
@@ -252,11 +234,9 @@ export class Validator {
 						case "MAINTAINER":
 							jump = this.parseMAINTAINER(escape, i, j, text, problems);
 							break;
-						case "STOPSIGNAL":
-							jump = this.parseSTOPSIGNAL(escape, i, j, text, problems);
-							break;
 						case "FROM":
 							hasFrom = true;
+						case "STOPSIGNAL":
 						case "USER":
 						case "WORKDIR":
 							for (var k = j + 1; k < text.length; k++) {
