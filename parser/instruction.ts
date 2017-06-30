@@ -40,9 +40,6 @@ export class Instruction extends Line {
 		let offset = this.document.offsetAt(range.start) + extra;
 		let found = -1;
 		let escapeMarker = -1;
-		let second = false;
-		let errStart = -1;
-		let validated = false;
 		let escapedArg = "";
 		for (let i = 0; i < fullArgs.length; i++) {
 			let char = fullArgs.charAt(i);

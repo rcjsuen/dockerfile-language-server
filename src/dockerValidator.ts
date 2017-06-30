@@ -245,7 +245,6 @@ export class Validator {
 						}
 					}
 
-					var unknown = false;
 					var jump = -1;
 					switch (uppercaseInstruction) {
 						case "MAINTAINER":
@@ -277,8 +276,6 @@ export class Validator {
 						default:
 							if (keywords.indexOf(uppercaseInstruction) === -1) {
 								// invalid instruction found
-								unknown = true;
-
 								for (var k = j + 1; k < text.length; k++) {
 									if (this.shouldSkipNewline(text, k, escape)) {
 										k++;
@@ -355,21 +352,6 @@ export class Validator {
 			}
 		}
 		return text.length;
-	}
-
-	parseSTOPSIGNAL(escape: string, lineStart: number, offset: number, text: string, problems: Diagnostic[]): number {
-		return this.parseSingleArgument(escape, lineStart, offset, text, problems, function(string) {
-			if (string.indexOf("SIG") === 0) {
-				return true;
-			}
-			
-			for (var i = 0; i < string.length; i++) {
-				if ('0' > string.charAt(i) || '9' < string.charAt(i)) {
-					return false;
-				}
-			}
-			return true;
-		}, this.createInvalidStopSignal.bind(this));
 	}
 
 	parseVOLUME(escape: string, lineStart: number, offset: number, text: string, problems: Diagnostic[]): number {
