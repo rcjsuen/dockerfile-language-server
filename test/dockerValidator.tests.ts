@@ -703,9 +703,45 @@ describe("Docker Validator Tests", function() {
 			assert.equal(diagnostics.length, 1);
 			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
 
+			diagnostics = validate("FROM node\nEXPOSE a\r");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE a\r\n");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
 			diagnostics = validate("FROM node\nEXPOSE a\\\n ");
 			assert.equal(diagnostics.length, 1);
 			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE ab\\\n ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
+
+			diagnostics = validate("FROM node\nEXPOSE a\r");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE a\\\r ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE ab\\\r ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
+
+			diagnostics = validate("FROM node\nEXPOSE a\r\n");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE a\\\r\n ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE ab\\\r\n ");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
 
 			diagnostics = validate("FROM node\nEXPOSE -8000");
 			assert.equal(diagnostics.length, 1);

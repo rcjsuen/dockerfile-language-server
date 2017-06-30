@@ -92,14 +92,23 @@ export class Validator {
 	private checkSingleArgument(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[], singleOnly: boolean, validate: Function, createDiagnostic?: Function): void {
 		let args = instruction.getArgments(escapeChar);
 		if (args.length !== 0) {
-			if (!validate(args[0].getValue())) {
-				let range = args[0].getRange();
-				problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
-			}
+			if (singleOnly) {
+				if (!validate(args[0].getValue())) {
+					let range = args[0].getRange();
+					problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
+				}
 
-			if (args.length > 1 && singleOnly) {
-				let range = args[1].getRange();
-				problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+				if (args.length > 1) {
+					let range = args[1].getRange();
+					problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+				}
+			} else {
+				for (let arg of args) {
+					if (!validate(arg.getValue())) {
+						let range = arg.getRange();
+						problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), arg.getValue()));
+					}
+				}
 			}
 		}
 	}
@@ -153,6 +162,17 @@ export class Validator {
 								}
 								return true;
 							}, this.createInvalidStopSignal.bind(this));
+							break;
+						case "EXPOSE":
+							this.checkSingleArgument(document, escape, instruction, problems, false, function(argument) {
+								for (var i = 0; i < argument.length; i++) {
+									if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
+										return false;
+									}
+								}
+
+								return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-';
+							}, this.createInvalidPort.bind(this));
 							break;
 					}
 				}
@@ -228,14 +248,12 @@ export class Validator {
 					var unknown = false;
 					var jump = -1;
 					switch (uppercaseInstruction) {
-						case "EXPOSE":
-							jump = this.parseEXPOSE(escape, i, j, text, problems);
-							break;
 						case "MAINTAINER":
 							jump = this.parseMAINTAINER(escape, i, j, text, problems);
 							break;
 						case "FROM":
 							hasFrom = true;
+						case "EXPOSE":
 						case "STOPSIGNAL":
 						case "USER":
 						case "WORKDIR":
@@ -319,94 +337,6 @@ export class Validator {
 		if (!hasFrom && uppercaseInstruction !== "FROM") {
 			problems.push(this.createMissingFrom());
 		}
-	}
-
-	parseEXPOSE(escape, lineStart, offset, text, problems) {
-		return this.parseDisjointArguments(escape, lineStart, offset, text, problems, function(string) {
-			for (var i = 0; i < string.length; i++) {
-				if (string.charAt(i) !== '-' && ('0' > string.charAt(i) || '9' < string.charAt(i))) {
-					return false;
-				}
-			}
-
-			return string.charAt(0) !== '-' && string.charAt(string.length - 1) !== '-';
-		}, this.createInvalidPort.bind(this));
-	}
-
-	parseDisjointArguments(escape, lineStart, offset, text, problems, isValid: Function, invalidFunction: Function) {
-		var wordStart = -1;
-		var wordEnd = -1;
-		var flagged = false;
-		var valid = false;
-		var word = "";
-		for (var i = offset + 1; i < text.length; i++) {
-			if (this.shouldSkipNewline(text, i, escape)) {
-				i++;
-				if (text.charAt(i) === '\r' && text.charAt(i + 1) === '\n') {
-					i++;
-				}
-				continue;
-			}
-
-			if (text.charAt(i) === ' ' || text.charAt(i) === '\t') {
-				if (!flagged && wordStart !== -1) {
-					valid = isValid(word);
-					if (!valid) {
-						problems.push(invalidFunction(wordStart, wordEnd + 1, word));
-						flagged = true;
-					}
-				}
-				word = "";
-				wordStart = -1;
-			} else if (text.charAt(i) === '\r' || text.charAt(i) === '\n') {
-				if (!flagged) {
-					if (wordStart === -1) {
-					} else if (!isValid(word)) {
-						problems.push(invalidFunction(wordStart, i, word));
-					}
-				}
-
-				// have the parser jump to the next line
-				return i;
-			} else {
-				if (wordStart === -1) {
-					wordStart = i;
-					wordEnd = i;
-				} else {
-					wordEnd = i;
-				}
-				word = word + text.charAt(i);
-			}
-
-			if (i === text.length - 1) {
-				// reached end of the file
-				if (!flagged) {
-					if (wordStart === i || !Util.isWhitespace(text.charAt(i))) {
-						// increase the index to include the last character if not whitespace
-						i++;
-					}
-					if (wordStart === -1) {
-					} else if (!isValid(word)) {
-						problems.push(invalidFunction(wordStart, i, word));
-					}
-				}
-				// reached end of the file have the parser skip ahead
-				return i;
-			}
-		}
-
-		// reached end of the file
-		if (!flagged) {
-			if (wordStart === i || !Util.isWhitespace(text.charAt(i))) {
-				// increase the index to include the last character if not whitespace
-				i++;
-			}
-			if (wordStart === -1) {
-			} else if (!isValid(word)) {
-				problems.push(invalidFunction(wordStart, i, word));
-			}
-		}
-		return i;
 	}
 
 	parseMAINTAINER(escape, lineStart: number, offset: number, text, problems: Diagnostic[]): number {

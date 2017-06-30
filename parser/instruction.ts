@@ -39,6 +39,7 @@ export class Instruction extends Line {
 		let fullArgs = content.substring(extra);
 		let offset = this.document.offsetAt(range.start) + extra;
 		let found = -1;
+		let escapeMarker = -1;
 		let second = false;
 		let errStart = -1;
 		let validated = false;
@@ -47,17 +48,23 @@ export class Instruction extends Line {
 			let char = fullArgs.charAt(i);
 			if (Util.isWhitespace(char)) {
 				if (found !== -1) {
-					args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + i))));
+					if (escapeMarker === -1) {
+						args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + i))));
+					} else {
+						args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + escapeMarker))));
+					}
 					escapedArg = "";
 					found = -1;
 				}
 			} else if (char === escapeChar) {
 				if (fullArgs.charAt(i + 1) === '\r') {
+					escapeMarker = i;
 					if (fullArgs.charAt(i + 2) === '\n') {
 						i++;
 					}
 					i++;
 				} else if (fullArgs.charAt(i + 1) === '\n') {
+					escapeMarker = i;
 					i++;
 				} else {
 					escapedArg = escapedArg + char;
@@ -66,6 +73,7 @@ export class Instruction extends Line {
 					}
 				}
 			} else {
+				escapeMarker = -1;
 				escapedArg = escapedArg + char;
 				if (found === -1) {
 					found = i;
