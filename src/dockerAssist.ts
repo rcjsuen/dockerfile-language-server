@@ -5,10 +5,11 @@
 'use strict';
 
 import {
-	TextDocument, TextEdit, Range,
+	TextDocument, TextEdit, Range, Position,
 	CompletionItem, CompletionItemKind, InsertTextFormat
 } from 'vscode-languageserver';
 import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
+import { DockerfileParser } from '../parser/dockerfileParser';
 
 export class DockerAssist {
 
@@ -54,7 +55,9 @@ export class DockerAssist {
 		this.snippetSupport = snippetSupport;
 	}
 
-	computeProposals(buffer: string, offset: number): CompletionItem[] {
+	computeProposals(document: TextDocument, position: Position): CompletionItem[] {
+		let buffer = document.getText();
+		let offset = document.offsetAt(position);
 		var firstCommentIdx = -1;
 		var escapeCharacter = "\\";
 		directiveCheck: for (var i = 0; i < buffer.length; i++) {
@@ -112,34 +115,43 @@ export class DockerAssist {
 			}
 		}
 
+		let parser = new DockerfileParser();
+		let dockerfile = parser.parse(document);
+		// directive only possible on the first line
+		if (position.line === 0) {
+			let comments = dockerfile.getComments();
+			if (comments.length !== 0) {
+				let commentRange = comments[0].getRange();
+				// check if the first comment is on the first line
+				if (commentRange.start.line === 0) {
+					// is the user inside the comment
+					if (commentRange.start.character < position.character) {
+						let range = comments[0].getContentRange();
+						if (range === null || position.character <= range.start.character) {
+							// in whitespace
+							return [ this.createEscape("", offset, DIRECTIVE_ESCAPE) ];
+						}
+						let comment = comments[0].getContent();
+						if (position.character <= range.end.character) {
+							// within the content
+							let prefix = comment.substring(0, position.character - range.start.character);
+							// substring check
+							if (DIRECTIVE_ESCAPE.indexOf(prefix.toLowerCase()) === 0) {
+								return [ this.createEscape(prefix, offset, DIRECTIVE_ESCAPE) ];
+							}
+						}
+						return [];
+					}
+				}
+			}
+		}
+
 		let prefix = this.calculateTruePrefix(buffer, offset, escapeCharacter);
 
 		// start from the offset and walk back
 		commentCheck: for (i = offset - 1; i >= 0; i--) {
 			switch (buffer.charAt(i)) {
 				case '#':
-					if (i === firstCommentIdx) {
-						// we're in the first comment, might need to suggest
-						// the escape directive as a proposal
-						let leadingString = buffer.substring(i + 1, offset);
-						let found = false;
-						for (let j = 0; j < leadingString.length; j++) {
-							if (leadingString.charAt(j) !== ' ' && leadingString.charAt(j) !== '\\') {
-								leadingString = leadingString.substring(j);
-								found = true;
-								break;
-							}
-						}
-
-						if (!found) {
-							leadingString = "";
-						}
-
-						let directivePrefix = leadingString.toLowerCase();
-						if (DIRECTIVE_ESCAPE.indexOf(directivePrefix) === 0) {
-							return [ this.createEscape(directivePrefix, offset, DIRECTIVE_ESCAPE) ];
-						}
-					}
 					// in a comment, no proposals to suggest
 					return [];
 				case ' ':

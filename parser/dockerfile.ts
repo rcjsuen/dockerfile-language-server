@@ -19,6 +19,10 @@ export class Dockerfile {
 		this.comments.push(comment);
 	}
 
+	public getComments(): Comment[] {
+		return this.comments;
+	}
+
 	public addInstruction(instruction: Instruction): void {
 		this.instructions.push(instruction);
 	}

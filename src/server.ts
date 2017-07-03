@@ -77,7 +77,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document) {
 		let assist = new DockerAssist(document, snippetSupport);
-		return assist.computeProposals(document.getText(), document.offsetAt(textDocumentPosition.position));
+		return assist.computeProposals(document, textDocumentPosition.position);
 	}
 	return null;
 });

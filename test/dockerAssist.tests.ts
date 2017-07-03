@@ -16,9 +16,10 @@ function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
 }
 
-function compute(content, offset): CompletionItem[] {
-	let assist = new DockerAssist(createDocument(content), true);
-	return assist.computeProposals(content, offset);
+function compute(content: string, offset): CompletionItem[] {
+	let document = createDocument(content);
+	let assist = new DockerAssist(document, true);
+	return assist.computeProposals(document, document.positionAt(offset));
 }
 
 function assertOnlyFROM(proposals, line, number, prefixLength) {
@@ -382,6 +383,9 @@ describe('Docker Content Assist Tests', function() {
 
 		it('outside comment', function() {
 			var proposals = compute("# abc", 0);
+			assertOnlyFROM(proposals, 0, 0, 0);
+			
+			proposals = compute(" # abc", 0);
 			assertOnlyFROM(proposals, 0, 0, 0);
 		});
 	});
