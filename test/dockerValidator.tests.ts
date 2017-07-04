@@ -23,6 +23,18 @@ function validate(content: string) {
 	return validator.validate(KEYWORDS, createDocument(content));
 }
 
+function assertDiagnostics(diagnostics: Diagnostic[], codes: ValidationCode[], functions: Function[], args: any[][]) {
+	diagnosticCheck: for (let diagnostic of diagnostics) {
+		for (let i = 0; i < codes.length; i++) {
+			if (diagnostic.code === codes[i]) {
+				args[i].unshift(diagnostic);
+				functions[i].apply(null, args[i]);
+				continue diagnosticCheck;
+			}
+		}
+	}
+}
+
 function assertFirstNotFROM(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.FROM_NOT_FIRST);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -510,6 +522,13 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node\nSTOPSIGNAL\\\r\n9 ");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("\\FROM node");
+				assert.equal(diagnostics.length, 2);
+				assertDiagnostics(diagnostics,
+					[ ValidationCode.UNKNOWN_INSTRUCTION, ValidationCode.FROM_NOT_FIRST ],
+					[ assertInstructionUnknown, assertFirstNotFROM ],
+					[ [ "\\FROM", 0, 0, 0, 5 ], [ 0, 0, 0, 5 ] ]);
 			});
 
 			/**

@@ -139,17 +139,6 @@ export class DockerfileParser {
 		lineCheck: for (let i = offset; i < buffer.length; i++) {
 			let char = buffer.charAt(i);
 			switch (char) {
-				case this.escapeChar:
-					char = buffer.charAt(i + 1);
-					if (char === '\r') {
-						if (buffer.charAt(i + 2) === '\n') {
-							i++;
-						}
-						i++;
-					} else if (char === '\n') {
-						i++;
-					}
-					break;
 				case ' ':
 				case '\t':
 				case '\r':
