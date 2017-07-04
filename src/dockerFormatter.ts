@@ -8,6 +8,7 @@ import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
 import { Util } from '../src/docker';
+import { DockerfileParser } from '../parser/dockerfileParser';
 
 export class DockerFormatter {
 
@@ -57,7 +58,9 @@ export class DockerFormatter {
 		let indentation = this.getIndentation(options);
 		let edits = [];
 		let buffer = document.getText();
-		let escapeChar = Util.getEscapeDirective(buffer);
+		let parser = new DockerfileParser();
+		let dockerfile = parser.parse(document);
+		let escapeChar = dockerfile.getEscapeCharacter();
 		let indent = false;
 		let comment = false;
 		let parseStart = 0;
@@ -128,7 +131,9 @@ export class DockerFormatter {
 
 	public formatDocument(document: TextDocument, options?: FormattingOptions): TextEdit[] {
 		let buffer = document.getText();
-		let escapeChar = Util.getEscapeDirective(buffer);
+		let parser = new DockerfileParser();
+		let dockerfile = parser.parse(document);
+		let escapeChar = dockerfile.getEscapeCharacter();
 		return this.format(document, buffer, escapeChar, false, 0, options);
 	}
 
