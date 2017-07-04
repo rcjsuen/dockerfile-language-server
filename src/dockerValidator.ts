@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import {
-	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity
+	TextDocument, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
 import { Dockerfile } from '../parser/dockerfile';
 import { Instruction } from '../parser/instruction';
