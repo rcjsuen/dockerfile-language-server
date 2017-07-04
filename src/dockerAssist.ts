@@ -356,7 +356,7 @@ export class DockerAssist {
 	}
 
 	createHEALTHCHECK_NONE(prefix: string, offset: number): CompletionItem {
-		return this.createKeywordCompletionItem("HEALTHCHECK", "HEALTHCHECK NONE", prefix, offset, "HEALTHCHECK NONE", "HEALTHCHECK_NONE");
+		return this.createPlainTextCompletionItem("HEALTHCHECK NONE", prefix, offset, "HEALTHCHECK NONE", "HEALTHCHECK_NONE");
 	}
 
 	createLABEL(prefix: string, offset: number, markdown: string): CompletionItem {
@@ -412,6 +412,17 @@ export class DockerAssist {
 			label: label,
 			kind: CompletionItemKind.Keyword,
 			insertTextFormat: this.snippetSupport ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
+		};
+	}
+
+	private createPlainTextCompletionItem(label: string, prefix: string, offset: number, insertText: string, markdown: string): CompletionItem {
+		let textEdit = this.createTextEdit(prefix, offset, insertText);
+		return {
+			data: markdown,
+			textEdit: textEdit,
+			label: label,
+			kind: CompletionItemKind.Keyword,
+			insertTextFormat: InsertTextFormat.PlainText,
 		};
 	}
 

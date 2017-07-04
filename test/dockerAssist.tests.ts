@@ -188,7 +188,7 @@ function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: nu
 function assertHEALTHCHECK_NONE(item: CompletionItem, line: number, character: number, prefixLength: number) {
 	assert.equal(item.label, "HEALTHCHECK NONE");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+	assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
 	assert.equal(item.textEdit.newText, "HEALTHCHECK NONE");
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
