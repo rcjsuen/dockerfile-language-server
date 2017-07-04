@@ -15,6 +15,16 @@ export class Dockerfile {
 	private directive: Directive = null;
 	private readonly instructions: Instruction[] = [];
 
+	public getEscapeCharacter(): string {
+		if (this.directive !== null && this.directive.getDirective() === DIRECTIVE_ESCAPE) {
+			let value = this.directive.getValue();
+			if (value === '\\' || value === '`') {
+				return value;
+			}
+		}
+		return '\\';
+	}
+
 	public addComment(comment: Comment): void {
 		this.comments.push(comment);
 	}

@@ -58,69 +58,13 @@ export class DockerAssist {
 	computeProposals(document: TextDocument, position: Position): CompletionItem[] {
 		let buffer = document.getText();
 		let offset = document.offsetAt(position);
-		var firstCommentIdx = -1;
-		var escapeCharacter = "\\";
-		directiveCheck: for (var i = 0; i < buffer.length; i++) {
-			switch (buffer.charAt(i)) {
-				case '#':
-					firstCommentIdx = i;
-					// in the first comment of the file, look for directives
-					var directive = "";
-					var capture = false;
-					escapeCheck: for (var j = i + 1; j < buffer.length; j++) {
-						var char = buffer.charAt(j);
-						switch (char) {
-							case ' ':
-							case '\t':
-								// ignore whitespace if directive is well-formed or hasn't been found yet
-								if (directive !== DIRECTIVE_ESCAPE && directive !== "") {
-									break escapeCheck;
-								}
-								continue;
-							case '=':
-								if (directive === DIRECTIVE_ESCAPE) {
-									// '=' found and the directive that has been declared is the escape directive,
-									// record its value so we know what the escape character of this Dockerfile is
-									capture = true;
-								} else {
-									// unknown directive found, stop searching
-									break escapeCheck;
-								}
-								break;
-							default:
-								if (capture) {
-									// the escape directive should be a single character and followed by whitespace,
-									// it should also either be a backslash or a backtick
-									if ((j + 1 === buffer.length || Util.isWhitespace(buffer.charAt(j + 1)))
-										&& (char === '\\' || char === '`')) {
-										escapeCharacter = char;
-									}
-									break escapeCheck;
-								}
-								directive = directive + char.toLowerCase();
-								break;
-						}
-					}
-					break directiveCheck;
-				case ' ':
-				case '\t':
-					// ignore whitespace
-					continue;
-				case '\r':
-				case '\n':
-					break directiveCheck;
-				default:
-					// not a comment then not a directive
-					break directiveCheck;
-			}
-		}
-
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
+		let escapeCharacter = dockerfile.getEscapeCharacter();
 		// directive only possible on the first line
-		if (position.line === 0) {
-			let comments = dockerfile.getComments();
-			if (comments.length !== 0) {
+		let comments = dockerfile.getComments();
+		if (comments.length !== 0) {
+			if (position.line === 0) {
 				let commentRange = comments[0].getRange();
 				// check if the first comment is on the first line
 				if (commentRange.start.line === 0) {
@@ -143,45 +87,31 @@ export class DockerAssist {
 						return [];
 					}
 				}
+			} else {
+				for (let comment of comments) {
+					let range = comment.getRange();
+					if (range.start.line === position.line) {
+						if (range.start.character < position.character && position.character <= range.end.character) {
+							// inside a comment
+							return [];
+						}
+					}
+				}
 			}
 		}
 
 		let prefix = this.calculateTruePrefix(buffer, offset, escapeCharacter);
 
-		// start from the offset and walk back
-		commentCheck: for (i = offset - 1; i >= 0; i--) {
-			switch (buffer.charAt(i)) {
-				case '#':
-					// in a comment, no proposals to suggest
-					return [];
-				case ' ':
-				case '\t':
-					// ignore whitespace
-					continue;
-				case '\r':
-				case '\n':
-					// walked back to the beginning of this line, not in a comment
-					break commentCheck;
-			}
-		}
-
-		// get every line in the file
-		var split = buffer.trim().split("\n");
-		var fromOnly = split.some(function (line) {
-			var trimmed = line.trim();
-			// check if it's a comment or an empty line
-			return trimmed.length !== 0 && trimmed.charAt(0) !== '#';
-		});
-		if (!fromOnly) {
-			// if we only have empty lines and comments, only suggest FROM
+		// if we only have empty lines and comments, only suggest FROM
+		if (prefix === "" && dockerfile.getInstructions().length === 0) {
 			return [ this.createFROM(prefix, offset, "FROM") ];
 		}
 
 		var previousWord = "";
 		var whitespace = false;
 		var lineStart = 0;
-		lineCheck: for (i = offset - 1; i >= 0; i--) {
-			char = buffer.charAt(i);
+		lineCheck: for (let i = offset - 1; i >= 0; i--) {
+			let char = buffer.charAt(i);
 			switch (char) {
 				case '\n':
 					if (buffer.charAt(i - 1) === escapeCharacter) {
@@ -218,8 +148,8 @@ export class DockerAssist {
 		}
 
 		let lineEnd = -1;
-		for (i = offset; i < buffer.length; i++) {
-			char = buffer.charAt(i);
+		for (let i = offset; i < buffer.length; i++) {
+			let char = buffer.charAt(i);
 			if (char === '\r' || char === '\n') {
 				lineEnd = i;
 				break;
@@ -243,7 +173,7 @@ export class DockerAssist {
 
 		var suggestions = [];
 		var uppercasePrefix = prefix.toUpperCase();
-		for (i = 0; i < KEYWORDS.length; i++) {
+		for (let i = 0; i < KEYWORDS.length; i++) {
 			if (KEYWORDS[i] === uppercasePrefix) {
 				// prefix is a keyword already, nothing to suggest
 				return [];
