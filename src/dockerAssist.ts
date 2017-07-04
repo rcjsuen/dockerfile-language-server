@@ -153,10 +153,7 @@ export class DockerAssist {
 			return [];
 		}
 
-		if (lineStart + line.indexOf(prefix) + prefix.length === offset) {
-			return this.createProposals(suggestions, previousWord, prefix, offset);
-		}
-		return [];
+		return this.createProposals(suggestions, previousWord, prefix, offset);
 	}
 
 	createProposals(keywords: string[], previousWord: string, prefix: string, offset: number): CompletionItem[] {
