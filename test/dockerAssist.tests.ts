@@ -16,9 +16,12 @@ function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
 }
 
-function compute(content: string, offset): CompletionItem[] {
+function compute(content: string, offset: number, snippetSupport?: boolean): CompletionItem[] {
+	if (snippetSupport === undefined) {
+		snippetSupport = true;
+	}
 	let document = createDocument(content);
-	let assist = new DockerAssist(document, true);
+	let assist = new DockerAssist(document, snippetSupport);
 	return assist.computeProposals(document, document.positionAt(offset));
 }
 
@@ -27,29 +30,39 @@ function assertOnlyFROM(proposals, line, number, prefixLength) {
 	assertFROM(proposals[0], line, number, prefixLength);
 }
 
-function assertADD(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertADD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "ADD source dest");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "ADD ${1:source} ${2:dest}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "ADD ${1:source} ${2:dest}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "ADD");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertARG_NameOnly(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertARG_NameOnly(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "ARG name");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "ARG ${1:name}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "ARG ${1:name}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "ARG");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertARG_DefaultValue(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertARG_DefaultValue(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "ARG name=defaultValue");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -60,77 +73,112 @@ function assertARG_DefaultValue(item: CompletionItem, line: number, character: n
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertCMD(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertCMD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "CMD [ \"executable\" ]");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "CMD [ \"${1:executable}\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "CMD [ \"${1:executable}\" ]");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "CMD");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertCOPY(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertCOPY(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "COPY source dest");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "COPY ${1:source} ${2:dest}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "COPY ${1:source} ${2:dest}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "COPY");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertENTRYPOINT(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertENTRYPOINT(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "ENTRYPOINT [ \"executable\" ]");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "ENTRYPOINT [ \"${1:executable}\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "ENTRYPOINT [ \"${1:executable}\" ]");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "ENTRYPOINT");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertENV(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertENV(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "ENV key=value");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "ENV ${1:key}=${2:value}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "ENV ${1:key}=${2:value}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "ENV");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertEXPOSE(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertEXPOSE(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "EXPOSE port");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "EXPOSE ${1:port}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "EXPOSE ${1:port}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "EXPOSE");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertFROM(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertFROM(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "FROM baseImage");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "FROM ${1:baseImage}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "FROM ${1:baseImage}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "FROM");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "HEALTHCHECK --interval=30s --timeout=30s --retries=3 CMD [ \"executable\" ]");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --retries=${3:3} CMD [ \"${4:executable}\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --retries=${3:3} CMD [ \"${4:executable}\" ]");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "HEALTHCHECK");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
@@ -148,99 +196,144 @@ function assertHEALTHCHECK_NONE(item: CompletionItem, line: number, character: n
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertLABEL(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertLABEL(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "LABEL key=\"value\"");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "LABEL ${1:key}=\"${2:value}\"");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "LABEL ${1:key}=\"${2:value}\"");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "LABEL");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertMAINTAINER(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertMAINTAINER(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "MAINTAINER name");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "MAINTAINER ${1:name}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "MAINTAINER ${1:name}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "MAINTAINER");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertONBUILD(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertONBUILD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "ONBUILD INSTRUCTION");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "ONBUILD ${1:INSTRUCTION}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "ONBUILD ${1:INSTRUCTION}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "ONBUILD");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertRUN(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertRUN(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "RUN command");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "RUN ${1:command}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "RUN ${1:command}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "RUN");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertSHELL(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertSHELL(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "SHELL [ \"executable\" ]");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "SHELL [ \"${1:executable}\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "SHELL [ \"${1:executable}\" ]");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "SHELL");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertSTOPSIGNAL(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertSTOPSIGNAL(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "STOPSIGNAL signal");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "STOPSIGNAL ${1:signal}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "STOPSIGNAL ${1:signal}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "STOPSIGNAL");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertUSER(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertUSER(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "USER daemon");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "USER ${1:daemon}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "USER ${1:daemon}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "USER");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertVOLUME(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertVOLUME(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "VOLUME [ \"/data\" ]");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "VOLUME [ \"${1:/data}\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "VOLUME [ \"${1:/data}\" ]");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "VOLUME");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertWORKDIR(item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertWORKDIR(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "WORKDIR /path");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
-	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-	assert.equal(item.textEdit.newText, "WORKDIR ${1:/path}");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "WORKDIR ${1:/path}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "WORKDIR");
+	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
@@ -263,68 +356,68 @@ function assertDirectiveEscape(item: CompletionItem, line: number, character: nu
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertProposals(proposals, offset, prefix, prefixLength) {
+function assertProposals(proposals: CompletionItem[], offset: number, prefix: number, prefixLength: number, snippetSupport?: boolean) {
 	for (var i = 0; i < proposals.length; i++) {
 		switch (proposals[i].data) {
 			case "ADD":
-				assertADD(proposals[i], offset, prefix, prefixLength);
+				assertADD(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "ARG_DefaultValue":
-				assertARG_DefaultValue(proposals[i], offset, prefix, prefixLength);
+				assertARG_DefaultValue(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "ARG_NameOnly":
-				assertARG_NameOnly(proposals[i++], offset, prefix, prefixLength);
+				assertARG_NameOnly(proposals[i++], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "CMD":
-				assertCMD(proposals[i], offset, prefix, prefixLength);
+				assertCMD(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "COPY":
-				assertCOPY(proposals[i], offset, prefix, prefixLength);
+				assertCOPY(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "ENTRYPOINT":
-				assertENTRYPOINT(proposals[i], offset, prefix, prefixLength);
+				assertENTRYPOINT(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "ENV":
-				assertENV(proposals[i], offset, prefix, prefixLength);
+				assertENV(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "EXPOSE":
-				assertEXPOSE(proposals[i], offset, prefix, prefixLength);
+				assertEXPOSE(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "FROM":
-				assertFROM(proposals[i], offset, prefix, prefixLength);
+				assertFROM(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "HEALTHCHECK_CMD":
-				assertHEALTHCHECK_CMD(proposals[i++], offset, prefix, prefixLength);
+				assertHEALTHCHECK_CMD(proposals[i++], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "HEALTHCHECK_NONE":
 				assertHEALTHCHECK_NONE(proposals[i], offset, prefix, prefixLength);
 				break;
 			case "LABEL":
-				assertLABEL(proposals[i], offset, prefix, prefixLength);
+				assertLABEL(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "MAINTAINER":
-				assertMAINTAINER(proposals[i], offset, prefix, prefixLength);
+				assertMAINTAINER(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "ONBUILD":
-				assertONBUILD(proposals[i], offset, prefix, prefixLength);
+				assertONBUILD(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "RUN":
-				assertRUN(proposals[i], offset, prefix, prefixLength);
+				assertRUN(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "SHELL":
-				assertSHELL(proposals[i], offset, prefix, prefixLength);
+				assertSHELL(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "STOPSIGNAL":
-				assertSTOPSIGNAL(proposals[i], offset, prefix, prefixLength);
+				assertSTOPSIGNAL(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "USER":
-				assertUSER(proposals[i], offset, prefix, prefixLength);
+				assertUSER(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "VOLUME":
-				assertVOLUME(proposals[i], offset, prefix, prefixLength);
+				assertVOLUME(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			case "WORKDIR":
-				assertWORKDIR(proposals[i], offset, prefix, prefixLength);
+				assertWORKDIR(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
 			default:
 				throw new Error("Unknown proposal name: " + proposals[i].data);
@@ -340,11 +433,14 @@ function assertONBUILDProposals(proposals, offset, prefix, prefixLength) {
 	assertProposals(proposals, offset, prefix, prefixLength);
 }
 
-function assertAllProposals(proposals, offset, prefix, prefixLength) {
+function assertAllProposals(proposals, offset, prefix, prefixLength, snippetSupport?: boolean) {
+	if (snippetSupport === undefined) {
+		snippetSupport = true;
+	}
 	// +1 for two ARG proposals
 	// +1 for two HEALTHCHECK proposals
 	assert.equal(proposals.length, KEYWORDS.length + 2);
-	assertProposals(proposals, offset, prefix, prefixLength);
+	assertProposals(proposals, offset, prefix, prefixLength, snippetSupport);
 }
 
 describe('Docker Content Assist Tests', function() {
@@ -410,6 +506,9 @@ describe('Docker Content Assist Tests', function() {
 		it('all', function() {
 			var proposals = compute("FROM node\n", 10);
 			assertAllProposals(proposals, 1, 0, 0);
+
+			proposals = compute("FROM node\n", 10, false);
+			assertAllProposals(proposals, 1, 0, 0, false);
 
 			proposals = compute("FROM node\n", 0);
 			assertAllProposals(proposals, 0, 0, 0);
