@@ -483,6 +483,12 @@ describe('Docker Content Assist Tests', function() {
 			
 			proposals = compute(" # abc", 0);
 			assertOnlyFROM(proposals, 0, 0, 0);
+
+			proposals = compute("\n#FROM", 0);
+			assertOnlyFROM(proposals, 0, 0, 0);
+
+			proposals = compute("\n#FROM", 1);
+			assertOnlyFROM(proposals, 1, 0, 0);
 		});
 	});
 
