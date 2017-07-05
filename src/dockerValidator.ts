@@ -160,6 +160,14 @@ export class Validator {
 				// warn about uppercase convention if the keyword doesn't match the actual instruction
 				problems.push(this.createUppercaseInstruction(document.offsetAt(range.start), document.offsetAt(range.end)));
 			} else {
+				if (keyword === "MAINTAINER") {
+					let range = instruction.getInstructionRange();
+					let diagnostic = this.createMaintainerDeprecated(document.offsetAt(range.start), document.offsetAt(range.start));
+					if (diagnostic) {
+						problems.push(diagnostic);
+					}
+				}
+
 				if (this.checkArguments(document, escape, instruction, problems)) {
 					switch (keyword) {
 						case "FROM":
@@ -257,8 +265,6 @@ export class Validator {
 					var jump = -1;
 					switch (uppercaseInstruction) {
 						case "MAINTAINER":
-							jump = this.parseMAINTAINER(escape, i, j, text, problems);
-							break;
 						case "FROM":
 						case "EXPOSE":
 						case "STOPSIGNAL":
@@ -328,27 +334,6 @@ export class Validator {
 		}
 
 		return problems;
-	}
-
-	parseMAINTAINER(escape, lineStart: number, offset: number, text, problems: Diagnostic[]): number {
-		let diagnostic = this.createMaintainerDeprecated(lineStart, offset);
-		if (diagnostic) {
-			problems.push(diagnostic);
-		}
-		for (let i = offset; i < text.length; i++) {
-			if (this.shouldSkipNewline(text, i, escape)) {
-				i++;
-				if (text.charAt(i) === '\r' && text.charAt(i + 1) === '\n') {
-					i++;
-				}
-				continue;
-			}
-			
-			if (text.charAt(i) === '\r' || text.charAt(i) === '\n') {
-				return i;
-			}
-		}
-		return text.length;
 	}
 
 	parseVOLUME(escape: string, lineStart: number, offset: number, text: string, problems: Diagnostic[]): number {
