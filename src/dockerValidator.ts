@@ -14,8 +14,7 @@ export enum ValidationCode {
 	DEFAULT,
 	LOWERCASE,
 	EXTRA_ARGUMENT,
-	FROM_NOT_FIRST,
-	FROM_MISSING,
+	NO_SOURCE_IMAGE,
 	MISSING_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
@@ -117,7 +116,6 @@ export class Validator {
 		this.document = document;
 		let text = document.getText();
 		let problems: Diagnostic[] = [];
-		let hasFrom = false;
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let parsed = this.parseDirective(dockerfile, document, problems);
@@ -125,9 +123,13 @@ export class Validator {
 		let firstInstruction = false;
 		let dc = parsed.dc;
 		let instructions = dockerfile.getInstructions();
-		if (instructions.length !== 0 && instructions[0].getKeyword() !== "FROM") {
+		if (instructions.length === 0) {
+			// no instructions in this file
+			problems.push(this.createNoSourceImage(0, 0));
+		} else if (instructions.length !== 0 && instructions[0].getKeyword() !== "FROM") {
+			// first instruction is not a FROM
 			let range = instructions[0].getInstructionRange();
-			problems.push(this.createFROMNotFirst(document.offsetAt(range.start), document.offsetAt(range.end)));
+			problems.push(this.createNoSourceImage(document.offsetAt(range.start), document.offsetAt(range.end)));
 		}
 		for (let instruction of dockerfile.getInstructions()) {
 			let keyword = instruction.getKeyword();
@@ -209,7 +211,6 @@ export class Validator {
 						j++;
 					}
 					if (j === text.length - 1) {
-						this.markFinalLine(keywords, escape, text, i, last + 1, instruction, instruction.toUpperCase(), problems, hasFrom);
 						return problems;
 					}
 					start = j + 1;
@@ -228,21 +229,11 @@ export class Validator {
 
 					var uppercaseInstruction = instruction.toUpperCase();
 					if (j === text.length - 1) {
-						if (Util.isWhitespace(text.charAt(j))) {
-							this.markFinalLine(keywords, escape, text, i, last + 1, instruction, uppercaseInstruction, problems, hasFrom);
-						} else {
-							this.markFinalLine(keywords, escape, text, i, j, instruction, uppercaseInstruction, problems, hasFrom);
-						}
 						return problems;
 					}
 
 					if (!firstInstruction) {
 						firstInstruction = true;
-						if (uppercaseInstruction !== "FROM") {
-							// don't need to flag about a missing FROM, as the user
-							// has already been told that the first instruction must be a FROM
-							hasFrom = true;
-						}
 					}
 
 					var jump = -1;
@@ -251,7 +242,6 @@ export class Validator {
 							jump = this.parseMAINTAINER(escape, i, j, text, problems);
 							break;
 						case "FROM":
-							hasFrom = true;
 						case "EXPOSE":
 						case "STOPSIGNAL":
 						case "USER":
@@ -319,21 +309,7 @@ export class Validator {
 			}
 		}
 
-		if (!hasFrom) {
-			problems.push(this.createMissingFrom());
-		}
-
 		return problems;
-	}
-
-	markFinalLine(keywords, escape, text, i, j, instruction, uppercaseInstruction, problems, hasFrom) {
-		if (!Util.isWhitespace(text.charAt(j)) && text.charAt(j) !== escape) {
-			j = j + 1;
-		}
-
-		if (!hasFrom && uppercaseInstruction !== "FROM") {
-			problems.push(this.createMissingFrom());
-		}
 	}
 
 	parseMAINTAINER(escape, lineStart: number, offset: number, text, problems: Diagnostic[]): number {
@@ -447,8 +423,7 @@ export class Validator {
 		"directiveUnknown": "Unknown directive: ${0}",
 		"directiveEscapeInvalid": "invalid ESCAPE '${0}'. Must be ` or \\",
 
-		"missingFROM": "FROM instruction not found",
-		"firstNotFROM": "First instruction must be FROM",
+		"noSourceImage": "No source image provided with `FROM`",
 
 		"invalidPort": "Invalid containerPort: ${0}",
 		"invalidStopSignal": "Invalid stop signal",
@@ -475,12 +450,8 @@ export class Validator {
 		return Validator.formatMessage(Validator.dockerProblems["directiveEscapeInvalid"], value);
 	}
 
-	public static getDiagnosticMessage_MissingFROM() {
-		return Validator.dockerProblems["missingFROM"];
-	}
-
-	public static getDiagnosticMessage_FirstNotFROM() {
-		return Validator.dockerProblems["firstNotFROM"];
+	public static getDiagnosticMessage_NoSourceImage() {
+		return Validator.dockerProblems["noSourceImage"];
 	}
 
 	public static getDiagnosticMessage_InvalidPort(port: string) {
@@ -515,10 +486,6 @@ export class Validator {
 		return Validator.dockerProblems["unexpectedToken"];
 	}
 
-	createMissingFrom(): Diagnostic {
-		return this.createError(0, 0, Validator.getDiagnosticMessage_MissingFROM(), ValidationCode.FROM_MISSING);
-	}
-
 	createUnknownDirective(start: number, end: number, directive: string): Diagnostic {
 		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive), ValidationCode.UNKNOWN_DIRECTIVE);
 	}
@@ -547,8 +514,8 @@ export class Validator {
 		return this.createError(start, end, Validator.getDiagnosticMessage_UnexpectedToken());
 	}
 
-	createFROMNotFirst(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_FirstNotFROM(), ValidationCode.FROM_NOT_FIRST);
+	createNoSourceImage(start: number, end: number): Diagnostic {
+		return this.createError(start, end, Validator.getDiagnosticMessage_NoSourceImage(), ValidationCode.NO_SOURCE_IMAGE);
 	}
 
 	createUnknownInstruction(start: number, end: number, instruction: string): Diagnostic {

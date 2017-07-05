@@ -35,22 +35,11 @@ function assertDiagnostics(diagnostics: Diagnostic[], codes: ValidationCode[], f
 	}
 }
 
-function assertFirstNotFROM(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.FROM_NOT_FIRST);
+function assertNoSourceImage(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.NO_SOURCE_IMAGE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
-	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FirstNotFROM());
-	assert.equal(diagnostic.range.start.line, startLine);
-	assert.equal(diagnostic.range.start.character, startCharacter);
-	assert.equal(diagnostic.range.end.line, endLine);
-	assert.equal(diagnostic.range.end.character, endCharacter);
-}
-
-function assertMissingFROM(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.FROM_MISSING);
-	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
-	assert.equal(diagnostic.source, source);
-	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_MissingFROM());
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_NoSourceImage());
 	assert.equal(diagnostic.range.start.line, startLine);
 	assert.equal(diagnostic.range.start.character, startCharacter);
 	assert.equal(diagnostic.range.end.line, endLine);
@@ -224,39 +213,39 @@ describe("Docker Validator Tests", function() {
 		it("empty file", function() {
 			let diagnostics = validate("");
 			assert.equal(diagnostics.length, 1);
-			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 		});
 
 		it("whitespace only", function() {
 			let diagnostics = validate(" \t\r\n");
 			assert.equal(diagnostics.length, 1);
-			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 		});
 
 		it("comments only", function() {
 			let diagnostics = validate("# This is a comment");
 			assert.equal(diagnostics.length, 1);
-			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 
 			diagnostics = validate("#=This is a comment");
 			assert.equal(diagnostics.length, 1);
-			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 		});
 
 		it("directive only", function() {
 			let diagnostics = validate("# escape=`");
 			assert.equal(diagnostics.length, 1);
-			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 
 			diagnostics = validate("# escape=\\");
 			assert.equal(diagnostics.length, 1);
-			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 		});
 
 		it("FROM in comment", function() {
 			let diagnostics = validate("# FROM node");
 			assert.equal(diagnostics.length, 1);
-			assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+			assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 		});
 	});
 
@@ -526,8 +515,8 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("\\FROM node");
 				assert.equal(diagnostics.length, 2);
 				assertDiagnostics(diagnostics,
-					[ ValidationCode.UNKNOWN_INSTRUCTION, ValidationCode.FROM_NOT_FIRST ],
-					[ assertInstructionUnknown, assertFirstNotFROM ],
+					[ ValidationCode.UNKNOWN_INSTRUCTION, ValidationCode.NO_SOURCE_IMAGE ],
+					[ assertInstructionUnknown, assertNoSourceImage ],
 					[ [ "\\FROM", 0, 0, 0, 5 ], [ 0, 0, 0, 5 ] ]);
 			});
 
@@ -546,25 +535,25 @@ describe("Docker Validator Tests", function() {
 			it("one line", function() {
 				let diagnostics = validate("EXPOSE 8080");
 				assert.equal(diagnostics.length, 1);
-				assertFirstNotFROM(diagnostics[0], 0, 0, 0, 6);
+				assertNoSourceImage(diagnostics[0], 0, 0, 0, 6);
 			});
 
 			it("two lines", function() {
 				let diagnostics = validate("EXPOSE 8080\n# another line");
 				assert.equal(diagnostics.length, 1);
-				assertFirstNotFROM(diagnostics[0], 0, 0, 0, 6);
+				assertNoSourceImage(diagnostics[0], 0, 0, 0, 6);
 			});
 
 			it("two instructions", function() {
 				let diagnostics = validate("EXPOSE 8080\nEXPOSE 8081");
 				assert.equal(diagnostics.length, 1);
-				assertFirstNotFROM(diagnostics[0], 0, 0, 0, 6);
+				assertNoSourceImage(diagnostics[0], 0, 0, 0, 6);
 			});
 
 			it("comments ignored", function() {
 				let diagnostics = validate("# FROM node\nEXPOSE 8080");
 				assert.equal(diagnostics.length, 1);
-				assertFirstNotFROM(diagnostics[0], 1, 0, 1, 6);
+				assertNoSourceImage(diagnostics[0], 1, 0, 1, 6);
 			});
 		});
 	});
@@ -615,13 +604,13 @@ describe("Docker Validator Tests", function() {
 			it("EOF", function() {
 				let diagnostics = validate("#escape=");
 				assert.equal(diagnostics.length, 1);
-				assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 			});
 
 			it("EOF newline", function() {
 				let diagnostics = validate("#escape=\n");
 				assert.equal(diagnostics.length, 1);
-				assertMissingFROM(diagnostics[0], 0, 0, 0, 0);
+				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 			});
 		});
 
