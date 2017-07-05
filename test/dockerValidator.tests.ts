@@ -576,6 +576,15 @@ describe("Docker Validator Tests", function() {
 				assertDirectiveUnknown(diagnostics[0], "key", 0, 2, 0, 5);
 			});
 
+			it("simple EOF", function() {
+				let diagnostics = validate("# key=value");
+				assert.equal(diagnostics.length, 2);
+				assertDiagnostics(diagnostics,
+					[ ValidationCode.UNKNOWN_DIRECTIVE, ValidationCode.NO_SOURCE_IMAGE ],
+					[ assertDirectiveUnknown, assertNoSourceImage ],
+					[ [ "key", 0, 2, 0, 5 ], [ 0, 0, 0, 0 ] ]);
+			});
+
 			it("whitespace", function() {
 				let diagnostics = validate("# key = value\nFROM node");
 				assert.equal(diagnostics.length, 1);
