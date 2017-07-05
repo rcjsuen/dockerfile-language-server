@@ -9,6 +9,7 @@ import { Dockerfile } from '../parser/dockerfile';
 import { Instruction } from '../parser/instruction';
 import { DockerfileParser } from '../parser/dockerfileParser';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
+import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
 	DEFAULT,
@@ -20,12 +21,29 @@ export enum ValidationCode {
 	INVALID_PORT,
 	INVALID_STOPSIGNAL,
 	UNKNOWN_DIRECTIVE,
-	UNKNOWN_INSTRUCTION
+	UNKNOWN_INSTRUCTION,
+	DEPRECATED_MAINTAINER
+}
+
+export enum ValidationSeverity {
+	IGNORE,
+	WARNING,
+	ERROR
 }
 
 export class Validator {
 
 	private document: TextDocument;
+
+	private settings: ValidatorSettings = {
+		deprecatedMaintainer: ValidationSeverity.WARNING
+	};
+
+	constructor(settings?: ValidatorSettings) {
+		if (settings) {
+			this.settings = settings;
+		}
+	}
 
 	shouldSkipNewline(text: string, offset: number, escape: string) {
 		// only skip ahead if at an escape character,
@@ -313,7 +331,10 @@ export class Validator {
 	}
 
 	parseMAINTAINER(escape, lineStart: number, offset: number, text, problems: Diagnostic[]): number {
-		problems.push(this.createMaintainerDeprecated(lineStart, offset));
+		let diagnostic = this.createMaintainerDeprecated(lineStart, offset);
+		if (diagnostic) {
+			problems.push(diagnostic);
+		}
 		for (let i = offset; i < text.length; i++) {
 			if (this.shouldSkipNewline(text, i, escape)) {
 				i++;
@@ -531,7 +552,17 @@ export class Validator {
 	}
 
 	createMaintainerDeprecated(start: number, end: number): Diagnostic {
-		return this.createWarning(start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer());
+		let severity = null;
+		if (this.settings.deprecatedMaintainer === ValidationSeverity.ERROR) {
+			severity = DiagnosticSeverity.Error;
+		} else if (this.settings.deprecatedMaintainer === ValidationSeverity.WARNING) {
+			severity = DiagnosticSeverity.Warning;
+		}
+
+		if (severity) {
+			return this.createDiagnostic(severity, start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer(), ValidationCode.DEPRECATED_MAINTAINER);
+		}
+		return null;
 	}
 
 	createWarning(start: number, end: number, description: string, code?: ValidationCode): Diagnostic {

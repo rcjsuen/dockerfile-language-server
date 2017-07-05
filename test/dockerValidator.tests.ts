@@ -8,12 +8,14 @@ import * as assert from "assert";
 import {
 	TextDocument, Position, Range, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
-import { Validator, ValidationCode } from '../src/dockerValidator';
+import { Validator, ValidationCode, ValidationSeverity } from '../src/dockerValidator';
 import { KEYWORDS } from '../src/docker';
 
 let source = "dockerfile-lsp";
 let uri = "uri://host/Dockerfile.sample";
-let validator = new Validator();
+let validator = new Validator({
+	deprecatedMaintainer: ValidationSeverity.IGNORE
+});
 
 function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
@@ -308,6 +310,10 @@ describe("Docker Validator Tests", function() {
 				testCasingStyle("LAbel", "key=value");
 			});
 
+			it("MAINTAINER", function() {
+				testCasingStyle("maINTaiNER", "authorName");
+			});
+
 			it("ONBUILD", function() {
 				testCasingStyle("onBUILD", "HEALTHCHECK NONE");
 			});
@@ -449,6 +455,10 @@ describe("Docker Validator Tests", function() {
 
 			it("LABEL", function() {
 				return testMissingArgumentLoop("LABEL");
+			});
+
+			it("MAINTAINER", function() {
+				return testMissingArgumentLoop("MAINTAINER");
 			});
 
 			it("ONBUILD", function() {
