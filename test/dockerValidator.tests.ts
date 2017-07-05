@@ -828,12 +828,17 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM node\nEXPOSE -");
 			assert.equal(diagnostics.length, 1);
 			assertInvalidPort(diagnostics[0], "-", 1, 7, 1, 8);
+
+			diagnostics = validate("FROM node\nEXPOSE \\a");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "\\a", 1, 7, 1, 9);
 		});
 	});
 
 	describe("MAINTAINER", function() {
 		it("default", function() {
-			let diagnostics = validate("FROM node\nMAINTAINER author", ValidatorSettingsDefaults);
+			let validator = new Validator();
+			let diagnostics = validator.validate(KEYWORDS, createDocument("FROM node\nMAINTAINER author"));
 			assert.equal(diagnostics.length, 1);
 			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, 10);
 		});

@@ -12,7 +12,6 @@ import { Util, DIRECTIVE_ESCAPE } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
-	DEFAULT,
 	LOWERCASE,
 	EXTRA_ARGUMENT,
 	NO_SOURCE_IMAGE,
@@ -105,23 +104,21 @@ export class Validator {
 
 	private checkSingleArgument(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[], singleOnly: boolean, validate: Function, createDiagnostic?: Function): void {
 		let args = instruction.getArgments(escapeChar);
-		if (args.length !== 0) {
-			if (singleOnly) {
-				if (!validate(args[0].getValue())) {
-					let range = args[0].getRange();
-					problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
-				}
+		if (singleOnly) {
+			if (!validate(args[0].getValue())) {
+				let range = args[0].getRange();
+				problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
+			}
 
-				if (args.length > 1) {
-					let range = args[1].getRange();
-					problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
-				}
-			} else {
-				for (let arg of args) {
-					if (!validate(arg.getValue())) {
-						let range = arg.getRange();
-						problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), arg.getValue()));
-					}
+			if (args.length > 1) {
+				let range = args[1].getRange();
+				problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+			}
+		} else {
+			for (let arg of args) {
+				if (!validate(arg.getValue())) {
+					let range = arg.getRange();
+					problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), arg.getValue()));
 				}
 			}
 		}
@@ -327,9 +324,6 @@ export class Validator {
 	}
 
 	createDiagnostic(severity: DiagnosticSeverity, start: number, end: number, description: string, code?: ValidationCode): Diagnostic {
-		if (!code) {
-			code = ValidationCode.DEFAULT;
-		}
 		return {
 			range: {
 				start: this.document.positionAt(start),
