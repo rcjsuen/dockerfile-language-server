@@ -262,7 +262,6 @@ export class Validator {
 						firstInstruction = true;
 					}
 
-					var jump = -1;
 					switch (uppercaseInstruction) {
 						case "MAINTAINER":
 						case "FROM":
@@ -284,9 +283,6 @@ export class Validator {
 							}
 							// reached EOF
 							break lineCheck;
-						case "VOLUME":
-							jump = this.parseVOLUME(escape, i, j, text, problems);
-							break;
 						default:
 							if (keywords.indexOf(uppercaseInstruction) === -1) {
 								// invalid instruction found
@@ -324,9 +320,6 @@ export class Validator {
 								return problems;
 							}
 					}
-
-					i = jump;
-					continue lineCheck;
 				} else {
 					last = j;
 				}
@@ -334,95 +327,6 @@ export class Validator {
 		}
 
 		return problems;
-	}
-
-	parseVOLUME(escape: string, lineStart: number, offset: number, text: string, problems: Diagnostic[]): number {
-		var json = true;
-		for (let i = offset + 1; i < text.length; i++) {
-			if (this.shouldSkipNewline(text, i, escape)) {
-				i++;
-				if (text.charAt(i) === '\r' && text.charAt(i + 1) === '\n') {
-					i++;
-				}
-				continue;
-			}
-
-			if (text.charAt(i) === '\r' || text.charAt(i) === '\n') {
-				return i;
-			} else if (text.charAt(i) === '[' && json) {
-				return this.parseJSON(escape, i, text, problems);
-			} else if (text.charAt(i) !== ' ' && text.charAt(i) !== '\t') {
-				json = false;
-			}
-		}
-		return text.length;
-	}
-
-	parseJSON(escape: string, offset: number, text: string, problems: Diagnostic[]) {
-		var inString = false;
-		var end = false;
-		var last = -1;
-		var expectComma = false;
-		var flagged = false;
-		for (var i = offset + 1; i < text.length; i++) {
-			// only handle escapes if we're not inside a JSON string
-			if (!inString && this.shouldSkipNewline(text, i, escape)) {
-				i++;
-				if (text.charAt(i) === '\r' && text.charAt(i + 1) === '\n') {
-					i++;
-				}
-				continue;
-			}
-
-			switch (text.charAt(i)) {
-				case '"':
-					if (expectComma && !flagged) {
-						problems.push(this.createUnexpectedToken(i, i + 1));
-						return i;
-					}
-					inString = !inString;
-					last = i;
-
-					expectComma = !inString;
-					break;
-				case ' ':
-				case '\t':
-					// ignore whitespace
-					break;
-				case ']':
-					if (!inString) {
-						end = true;
-					}
-					last = i;
-					break;
-				case '\r':
-				case '\n':
-					if (!end && !flagged) {
-						problems.push(this.createUnexpectedToken(last, last + 1));
-					}
-					return i;
-				case ',':
-					if (expectComma) {
-						expectComma = false;
-					}
-					last = i;
-					break;
-				default:
-					last = i;
-					if (!inString && !flagged) {
-						problems.push(this.createUnexpectedToken(last, last + 1));
-						flagged = true;
-					}
-					break;
-			}
-		}
-
-		if (!flagged) {
-			if (inString || !end) {
-				problems.push(this.createUnexpectedToken(last, last + 1));
-			}
-		}
-		return last + 1;
 	}
 
 	private static dockerProblems = {
@@ -440,8 +344,6 @@ export class Validator {
 		"instructionCasing": "Instructions should be written in uppercase letters",
 
 		"deprecatedMaintainer": "MAINTAINER has been deprecated",
-
-		"unexpectedToken": "Unexpected token"
 	};
 	
 	private static formatMessage(text: string, variable: string): string {
@@ -488,10 +390,6 @@ export class Validator {
 		return Validator.dockerProblems["deprecatedMaintainer"];
 	}
 
-	public static getDiagnosticMessage_UnexpectedToken() {
-		return Validator.dockerProblems["unexpectedToken"];
-	}
-
 	createUnknownDirective(start: number, end: number, directive: string): Diagnostic {
 		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive), ValidationCode.UNKNOWN_DIRECTIVE);
 	}
@@ -514,10 +412,6 @@ export class Validator {
 
 	createExtraArgument(start: number, end: number): Diagnostic {
 		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.EXTRA_ARGUMENT);
-	}
-
-	createUnexpectedToken(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_UnexpectedToken());
 	}
 
 	createNoSourceImage(start: number, end: number): Diagnostic {
