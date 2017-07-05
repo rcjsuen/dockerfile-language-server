@@ -1178,4 +1178,112 @@ describe('Docker Content Assist Tests', function() {
 			});
 		});
 	})
+
+	describe('ONBUILD nesting', function() {
+		it('all', function() {
+			var proposals = compute("FROM node\nONBUILD ", 18);
+			assertONBUILDProposals(proposals, 1, 8, 0);
+		});
+
+		describe('prefix', function() {
+
+			/**
+			 * Test that an ONBUILD can be followed by a WORKDIR.
+			 */
+			it('ONBUILD W', function() {
+				var proposals = compute("FROM node\nONBUILD W", 19);
+				assert.equal(proposals.length, 1);
+				assertWORKDIR(proposals[0], 1, 8, 1, true);
+
+				proposals = compute("FROM node\nONBUILD w", 19);
+				assert.equal(proposals.length, 1);
+				assertWORKDIR(proposals[0], 1, 8, 1, true);
+
+				proposals = compute("FROM node\nonbuild W", 19);
+				assert.equal(proposals.length, 1);
+				assertWORKDIR(proposals[0], 1, 8, 1, true);
+
+				proposals = compute("FROM node\nonbuild w", 19);
+				assert.equal(proposals.length, 1);
+				assertWORKDIR(proposals[0], 1, 8, 1, true);
+			});
+
+			/**
+			 * Test that an ONBUILD cannot be followed by a FROM.
+			 */
+			it('ONBUILD F', function() {
+				var proposals = compute("FROM node\nONBUILD F", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nONBUILD f", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nonbuild F", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nonbuild f", 19);
+				assert.equal(proposals.length, 0);
+			});
+
+			/**
+			 * Test that an ONBUILD cannot be followed by a MAINTAINER.
+			 */
+			it('ONBUILD M', function() {
+				var proposals = compute("FROM node\nONBUILD M", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nONBUILD m", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nonbuild M", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nonbuild m", 19);
+				assert.equal(proposals.length, 0);
+			});
+
+			/**
+			 * Test that an ONBUILD cannot be followed by a ONBUILD.
+			 */
+			it('ONBUILD M', function() {
+				var proposals = compute("FROM node\nONBUILD O", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nONBUILD o", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nonbuild O", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nonbuild o", 19);
+				assert.equal(proposals.length, 0);
+			});
+
+			it('false ONBUILD instruction', function() {
+				var proposals = compute("FROM node\nRUN echo \"ONBUILD W", 29);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nRUN echo \" ONBUILD W", 30);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\n\"ONBUILD ", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\n\" ONBUILD ", 20);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\n\O NBUILD ", 19);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\n\\ O NBUILD ", 20);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\n\"O NBUILD ", 20);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\n\" O NBUILD ", 21);
+				assert.equal(proposals.length, 0);
+			});
+		});
+	});
 });
