@@ -45,12 +45,6 @@ export class Validator {
 		}
 	}
 
-	shouldSkipNewline(text: string, offset: number, escape: string) {
-		// only skip ahead if at an escape character,
-		// the next character is a newline, and not at the end of the file
-		return text.charAt(offset) === escape && offset !== text.length - 1 && (text.charAt(offset + 1) === '\r' || text.charAt(offset + 1) === '\n');
-	}
-
 	parseDirective(dockerfile: Dockerfile, document: TextDocument, problems: Diagnostic[]) {
 		let directive = dockerfile.getDirective();
 		if (directive === null) {
@@ -203,125 +197,6 @@ export class Validator {
 							}, this.createInvalidPort.bind(this));
 							break;
 					}
-				}
-			}
-		}
-
-		lineCheck: for (let i = dc; i < text.length; i++) {
-			// skip generic whitespace
-			if (Util.isWhitespace(text.charAt(i))) {
-				continue;
-			}
-
-			if (text.charAt(i) === '#') {
-				// skip comments
-				for (let j = i + 1; j < text.length; j++) {
-					if (text.charAt(j) === '\r' || text.charAt(j) === '\n') {
-						i = j;
-						continue lineCheck;
-					}
-				}
-
-				// a comment was the last line of the file, we're done
-				break lineCheck;
-			}
-
-			var instruction = "";
-			var start = i;
-			var last = -1;
-			for (var j = i + 1; j < text.length; j++) {
-				if (this.shouldSkipNewline(text, j, escape)) {
-					instruction = instruction + text.substring(start, j);
-					j++;
-					if (text.charAt(j) === '\r' && text.charAt(j + 1) === '\n') {
-						j++;
-					}
-					if (j === text.length - 1) {
-						return problems;
-					}
-					start = j + 1;
-					continue;
-				}
-
-				if (Util.isWhitespace(text.charAt(j)) || j === text.length - 1) {
-					// first word of the line
-					if (j === text.length - 1 && !Util.isWhitespace(text.charAt(j))) {
-						// if parsing is at the end and the last character is not a whitespace,
-						// then extend the instruction to include the last character
-						instruction = instruction + text.substring(start, j + 1);
-					} else {
-						instruction = instruction + text.substring(start, j);
-					}
-
-					var uppercaseInstruction = instruction.toUpperCase();
-					if (j === text.length - 1) {
-						return problems;
-					}
-
-					if (!firstInstruction) {
-						firstInstruction = true;
-					}
-
-					switch (uppercaseInstruction) {
-						case "MAINTAINER":
-						case "FROM":
-						case "EXPOSE":
-						case "STOPSIGNAL":
-						case "USER":
-						case "WORKDIR":
-							for (var k = j + 1; k < text.length; k++) {
-								if (this.shouldSkipNewline(text, k, escape)) {
-									k++;
-									continue;
-								}
-
-								if (text.charAt(k) === '\r' || text.charAt(k) === '\n') {
-									// adjust offset and go to the next line
-									i = k;
-									continue lineCheck;
-								}
-							}
-							// reached EOF
-							break lineCheck;
-						default:
-							if (keywords.indexOf(uppercaseInstruction) === -1) {
-								// invalid instruction found
-								for (var k = j + 1; k < text.length; k++) {
-									if (this.shouldSkipNewline(text, k, escape)) {
-										k++;
-										continue;
-									}
-
-									if (text.charAt(k) === '\r' || text.charAt(k) === '\n') {
-										// adjust offset and go to the next line
-										i = k;
-										continue lineCheck;
-									}
-								}
-								// reached EOF
-								return problems;
-							} else {
-								var check = false;
-								for (var k = j + 1; k < text.length; k++) {
-									if (this.shouldSkipNewline(text, k, escape)) {
-										k++;
-										if (text.charAt(k) === '\r' && text.charAt(k + 1) === '\n') {
-											k++;
-										}
-										continue;
-									} else if (text.charAt(k) === '\r' || text.charAt(k) === '\n') {
-										i = k;
-										continue lineCheck;
-									} else if (text.charAt(k) !== ' ' && text.charAt(k) !== '\t') {
-										check = true;
-									}
-								}
-								// only possible to get here if we've reached the end of the file
-								return problems;
-							}
-					}
-				} else {
-					last = j;
 				}
 			}
 		}
