@@ -31,18 +31,21 @@ export enum ValidationSeverity {
 	ERROR
 }
 
+export const ValidatorSettingsDefaults: ValidatorSettings = {
+	deprecatedMaintainer: ValidationSeverity.WARNING
+}
+
 export class Validator {
 
 	private document: TextDocument;
 
-	private settings: ValidatorSettings = {
-		deprecatedMaintainer: ValidationSeverity.WARNING
-	};
+	private settings: ValidatorSettings;
 
 	constructor(settings?: ValidatorSettings) {
-		if (settings) {
-			this.settings = settings;
+		if (!settings) {
+			settings = ValidatorSettingsDefaults;
 		}
+		this.settings = settings;
 	}
 
 	parseDirective(dockerfile: Dockerfile, document: TextDocument, problems: Diagnostic[]) {

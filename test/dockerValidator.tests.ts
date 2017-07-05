@@ -8,20 +8,24 @@ import * as assert from "assert";
 import {
 	TextDocument, Position, Range, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
-import { Validator, ValidationCode, ValidationSeverity } from '../src/dockerValidator';
+import { Validator, ValidationCode, ValidationSeverity, ValidatorSettingsDefaults } from '../src/dockerValidator';
+import { ValidatorSettings } from '../src/dockerValidatorSettings';
 import { KEYWORDS } from '../src/docker';
 
 let source = "dockerfile-lsp";
 let uri = "uri://host/Dockerfile.sample";
-let validator = new Validator({
-	deprecatedMaintainer: ValidationSeverity.IGNORE
-});
 
 function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
 }
 
-function validate(content: string) {
+function validate(content: string, settings?: ValidatorSettings) {
+	if (!settings) {
+		settings = {
+			deprecatedMaintainer: ValidationSeverity.IGNORE
+		};
+	}
+	let validator = new Validator(settings);
 	return validator.validate(KEYWORDS, createDocument(content));
 }
 
@@ -134,6 +138,13 @@ function assertDirectiveEscapeInvalid(diagnostic: Diagnostic, value: string, sta
 	assert.equal(diagnostic.range.start.character, startCharacter);
 	assert.equal(diagnostic.range.end.line, endLine);
 	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
+function assertDeprecatedMaintainer(diagnostic: Diagnostic, severity: DiagnosticSeverity, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.DEPRECATED_MAINTAINER);
+	assert.equal(diagnostic.severity, severity);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_DeprecatedMaintainer());
 }
 
 function testValidArgument(instruction: string, argument: string) {
@@ -813,6 +824,31 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM node\nEXPOSE -");
 			assert.equal(diagnostics.length, 1);
 			assertInvalidPort(diagnostics[0], "-", 1, 7, 1, 8);
+		});
+	});
+
+	describe("MAINTAINER", function() {
+		it("default", function() {
+			let diagnostics = validate("FROM node\nMAINTAINER author", ValidatorSettingsDefaults);
+			assert.equal(diagnostics.length, 1);
+			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, 10);
+		});
+
+		it("ignore", function() {
+			let diagnostics = validate("FROM node\nMAINTAINER author", { deprecatedMaintainer: ValidationSeverity.IGNORE });
+			assert.equal(diagnostics.length, 0);
+		});
+
+		it("warning", function() {
+			let diagnostics = validate("FROM node\nMAINTAINER author", { deprecatedMaintainer: ValidationSeverity.WARNING });
+			assert.equal(diagnostics.length, 1);
+			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, 10);
+		});
+
+		it("error", function() {
+			let diagnostics = validate("FROM node\nMAINTAINER author", { deprecatedMaintainer: ValidationSeverity.ERROR });
+			assert.equal(diagnostics.length, 1);
+			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Error, 1, 0, 1, 10);
 		});
 	});
 
