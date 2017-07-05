@@ -145,6 +145,10 @@ function assertDeprecatedMaintainer(diagnostic: Diagnostic, severity: Diagnostic
 	assert.equal(diagnostic.severity, severity);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_DeprecatedMaintainer());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
 function testValidArgument(instruction: string, argument: string) {

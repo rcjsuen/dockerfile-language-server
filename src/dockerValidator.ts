@@ -159,7 +159,7 @@ export class Validator {
 			} else {
 				if (keyword === "MAINTAINER") {
 					let range = instruction.getInstructionRange();
-					let diagnostic = this.createMaintainerDeprecated(document.offsetAt(range.start), document.offsetAt(range.start));
+					let diagnostic = this.createMaintainerDeprecated(document.offsetAt(range.start), document.offsetAt(range.end));
 					if (diagnostic) {
 						problems.push(diagnostic);
 					}
