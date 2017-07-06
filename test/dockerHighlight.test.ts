@@ -78,6 +78,17 @@ describe("Dockerfile Document Highlight tests", function() {
 				ranges = computeHighlightRanges(document, Position.create(2, 22));
 				assert.equal(ranges.length, 0);
 			});
+
+			it("COPY bootstrap", function() {
+				let document = createDocument("FROM node AS bootstrap\nCOPY bootstrap /git/build/");
+				// cursor after the AS source image
+				let ranges = computeHighlightRanges(document, Position.create(0, 17));
+				assert.equal(ranges.length, 1);
+				assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 13, 0, 22);
+				// cursor on COPY bootstrap
+				ranges = computeHighlightRanges(document, Position.create(1, 10));
+				assert.equal(ranges.length, 0);
+			});
 		});
 	});
 });

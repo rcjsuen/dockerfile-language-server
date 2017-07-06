@@ -35,7 +35,7 @@ export class DockerHighlight {
 			let source = undefined;
 			for (let instruction of dockerfile.getCOPYs()) {
 				let range = instruction.getFromValueRange();
-				if (range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
+				if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
 					source = instruction.getFromValue();
 					break;
 				}

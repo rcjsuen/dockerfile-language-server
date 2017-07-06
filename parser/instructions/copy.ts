@@ -21,6 +21,9 @@ export class Copy extends Instruction {
 
 	public getFromValueRange(): Range {
 		let range = this.getFromRange();
+		if (range === null) {
+			return null;
+		}
 		return Range.create(Position.create(range.start.line, range.start.character + 7), range.end);
 	}
 
