@@ -102,8 +102,8 @@ export class Validator {
 		return true;
 	}
 
-	private checkSingleArgument(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[], singleOnly: boolean, validate: Function, createDiagnostic?: Function): void {
-		let args = instruction.getArgments(escapeChar);
+	private checkSingleArgument(document: TextDocument, instruction: Instruction, problems: Diagnostic[], singleOnly: boolean, validate: Function, createDiagnostic?: Function): void {
+		let args = instruction.getArgments();
 		if (singleOnly) {
 			if (!validate(args[0].getValue())) {
 				let range = args[0].getRange();
@@ -167,12 +167,12 @@ export class Validator {
 						case "FROM":
 						case "WORKDIR":
 						case "USER":
-							this.checkSingleArgument(document, escape, instruction, problems, true, function(argument) {
+							this.checkSingleArgument(document, instruction, problems, true, function(argument) {
 								return true;
 							});
 							break;
 						case "STOPSIGNAL":
-							this.checkSingleArgument(document, escape, instruction, problems, true, function(argument) {
+							this.checkSingleArgument(document, instruction, problems, true, function(argument) {
 								if (argument.indexOf("SIG") === 0) {
 									return true;
 								}
@@ -186,7 +186,7 @@ export class Validator {
 							}, this.createInvalidStopSignal.bind(this));
 							break;
 						case "EXPOSE":
-							this.checkSingleArgument(document, escape, instruction, problems, false, function(argument) {
+							this.checkSingleArgument(document, instruction, problems, false, function(argument) {
 								for (var i = 0; i < argument.length; i++) {
 									if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
 										return false;

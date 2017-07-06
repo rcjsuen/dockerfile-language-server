@@ -9,12 +9,15 @@ import { Argument } from './argument';
 
 export class Instruction extends Line {
 
+	protected readonly escapeChar: string;
+
 	private readonly instruction: string;
 
 	private readonly instructionRange: Range;
 
-	constructor(document: TextDocument, range: Range, instruction: string, instructionRange: Range) {
+	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range);
+		this.escapeChar = escapeChar;
 		this.instruction = instruction;
 		this.instructionRange = instructionRange;
 	}
@@ -31,7 +34,7 @@ export class Instruction extends Line {
 		return this.getInstruction().toUpperCase();
 	}
 
-	public getArgments(escapeChar: string): Argument[] {
+	public getArgments(): Argument[] {
 		let args = [];
 		let range = this.getInstructionRange();
 		let extra = this.instruction.length;
@@ -53,7 +56,7 @@ export class Instruction extends Line {
 					escapedArg = "";
 					found = -1;
 				}
-			} else if (char === escapeChar) {
+			} else if (char === this.escapeChar) {
 				if (fullArgs.charAt(i + 1) === '\r') {
 					escapeMarker = i;
 					if (fullArgs.charAt(i + 2) === '\n') {

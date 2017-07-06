@@ -10,7 +10,7 @@ import {
 	CompletionItem, CompletionItemKind, InsertTextFormat,
 	CodeActionParams, Command, ExecuteCommandParams, 
 	DocumentSymbolParams, SymbolInformation, Diagnostic,
-	DocumentFormattingParams,
+	DocumentFormattingParams, DocumentHighlight,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams
 } from 'vscode-languageserver';
 import { Validator, ValidationCode } from './dockerValidator';
@@ -21,6 +21,7 @@ import { MarkdownDocumentation } from './dockerMarkdown';
 import { PlainTextDocumentation } from './dockerPlainText';
 import { DockerSymbols } from './dockerSymbols';
 import { DockerFormatter } from './dockerFormatter';
+import { DockerHighlight } from './dockerHighlight';
 import { KEYWORDS } from './docker';
 
 let markdown = new MarkdownDocumentation();
@@ -62,7 +63,8 @@ connection.onInitialize((params): InitializeResult => {
 			},
 			documentFormattingProvider: true,
 			hoverProvider: true,
-			documentSymbolProvider: true
+			documentSymbolProvider: true,
+			documentHighlightProvider: true
 		}
 	}
 });
@@ -93,6 +95,15 @@ connection.onHover((textDocumentPosition: TextDocumentPositionParams): Hover => 
 		return hoverProvider.onHover(document, textDocumentPosition);
 	}
 	return null;
+});
+
+connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams): DocumentHighlight[] => {
+	let document = documents[textDocumentPosition.textDocument.uri];
+	if (document) {
+		let highlightProvider = new DockerHighlight();
+		return highlightProvider.computeHighlightRanges(document, textDocumentPosition.position);
+	}
+	return [];
 });
 
 connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {

@@ -7,11 +7,8 @@ import { Instruction } from '../instruction';
 
 export class Onbuild extends Instruction {
 
-	private readonly escapeChar: string;
-
-	constructor(document: TextDocument, escapeChar: string, range: Range, instruction: string, instructionRange: Range) {
-		super(document, range, instruction, instructionRange);
-		this.escapeChar = escapeChar;
+	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
+		super(document, range, escapeChar, instruction, instructionRange);
 	}
 
 	public getTrigger(): string {

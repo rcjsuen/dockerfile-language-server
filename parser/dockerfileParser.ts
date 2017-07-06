@@ -9,6 +9,8 @@ import { Comment } from './comment';
 import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Line } from './line';
+import { Copy } from './instructions/copy';
+import { From } from './instructions/from';
 import { Onbuild } from './instructions/onbuild';
 import { Dockerfile } from './dockerfile';
 import { Util, DIRECTIVE_ESCAPE } from '../src/docker';
@@ -18,10 +20,15 @@ export class DockerfileParser {
 	private escapeChar: string;
 
 	private createInstruction(document: TextDocument, lineRange: Range, instruction: string, instructionRange: Range) {
-		if (instruction.toUpperCase() === "ONBUILD") {
-			return new Onbuild(document, this.escapeChar, lineRange, instruction, instructionRange);
+		switch (instruction.toUpperCase()) {
+			case "COPY":
+				return new Copy(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "FROM":
+				return new From(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "ONBUILD":
+				return new Onbuild(document, lineRange, this.escapeChar, instruction, instructionRange);
 		}
-		return new Instruction(document, lineRange, instruction, instructionRange);
+		return new Instruction(document, lineRange, this.escapeChar, instruction, instructionRange);
 	}
 
 	private getDirectiveSymbol(document: TextDocument, buffer: string, textDocumentURI: string): Line {
@@ -232,7 +239,7 @@ export class DockerfileParser {
 									instructionEnd = j;
 								}
 								lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-								dockerfile.addInstruction(new Instruction(document, lineRange, instruction, lineRange));
+								dockerfile.addInstruction(new Instruction(document, lineRange, this.escapeChar, instruction, lineRange));
 								i = j;
 								continue lineCheck;
 							default:
