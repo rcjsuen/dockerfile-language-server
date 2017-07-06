@@ -27,15 +27,7 @@ export class Copy extends Instruction {
 		return Range.create(Position.create(range.start.line, range.start.character + 7), range.end);
 	}
 
-	public getFrom(): string {
-		let range = this.getFromRange();
-		if (range === null) {
-			return null;
-		}
-		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
-	}
-
-	public getFromRange(): Range {
+	private getFromRange(): Range {
 		let args = this.getArguments();
 		if (args.length > 1 && args[0].getValue().toLowerCase().indexOf("--from=") === 0) {
 			return args[0].getRange();
