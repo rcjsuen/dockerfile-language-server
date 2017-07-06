@@ -34,7 +34,7 @@ export class Instruction extends Line {
 		return this.getInstruction().toUpperCase();
 	}
 
-	public getArgments(): Argument[] {
+	public getArguments(): Argument[] {
 		let args = [];
 		let range = this.getInstructionRange();
 		let extra = this.instruction.length;

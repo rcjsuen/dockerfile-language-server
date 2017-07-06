@@ -103,7 +103,7 @@ export class Validator {
 	}
 
 	private checkSingleArgument(document: TextDocument, instruction: Instruction, problems: Diagnostic[], singleOnly: boolean, validate: Function, createDiagnostic?: Function): void {
-		let args = instruction.getArgments();
+		let args = instruction.getArguments();
 		if (singleOnly) {
 			if (!validate(args[0].getValue())) {
 				let range = args[0].getRange();

@@ -33,7 +33,7 @@ export class Copy extends Instruction {
 	}
 
 	public getFromRange(): Range {
-		let args = this.getArgments();
+		let args = this.getArguments();
 		if (args.length > 1 && args[0].getValue().toLowerCase().indexOf("--from=") === 0) {
 			return args[0].getRange();
 		}
