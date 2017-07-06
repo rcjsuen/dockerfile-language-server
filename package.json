@@ -22,7 +22,6 @@
     "watch": "tsc --watch -p .",
     "test": "mocha out/test",
     "nyc": "nyc mocha out/test",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "compile": "installServerIntoExtension ../vscode-docker-lsp ./package.json ./tsconfig.vscode.json && tsc --watch -p ./tsconfig.vscode.json"
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   }
 }
