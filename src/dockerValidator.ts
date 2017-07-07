@@ -76,7 +76,7 @@ export class Validator {
 		};
 	}
 
-	checkArguments(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[]): boolean {
+	private hasArguments(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[]): boolean {
 		let range = instruction.getInstructionRange();
 		let args = instruction.getTextContent().substring(instruction.getInstruction().length);
 		let missing = true;
@@ -102,24 +102,50 @@ export class Validator {
 		return true;
 	}
 
-	private checkSingleArgument(document: TextDocument, instruction: Instruction, problems: Diagnostic[], singleOnly: boolean, validate: Function, createDiagnostic?: Function): void {
+	/**
+	 * Checks the arguments of the given instruction.
+	 * 
+	 * @param document the document being validated
+	 * @param instruction the instruction to validate
+	 * @param problems an array of identified problems in the document
+	 * @param expectedArgCount an array of expected number of arguments
+	 *                         for the instruction, if its length is 1
+	 *                         and its value is -1, any number of
+	 *                         arguments greater than zero is valid
+	 * @param validate the function to use to validate an argument
+	 * @param createDiagnostic the function to use to create a
+	 *                         diagnostic if an argument is invalid
+	 */
+	private checkArguments(document: TextDocument, instruction: Instruction, problems: Diagnostic[], expectedArgCount: number[], validate: Function, createDiagnostic?: Function): void {
 		let args = instruction.getArguments();
-		if (singleOnly) {
-			if (!validate(args[0].getValue())) {
-				let range = args[0].getRange();
-				problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
-			}
-
-			if (args.length > 1) {
-				let range = args[1].getRange();
-				problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+		if (expectedArgCount[0] === -1) {
+			for (let i = 0; i < args.length; i++) {
+				if (!validate(i, args[i].getValue())) {
+					let range = args[i].getRange();
+					problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), args[i].getValue()));
+				}
 			}
 		} else {
-			for (let arg of args) {
-				if (!validate(arg.getValue())) {
-					let range = arg.getRange();
-					problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), arg.getValue()));
+			for (let i = 0; i < expectedArgCount.length; i++) {
+				if (expectedArgCount[i] === args.length) {
+					for (let j = 0; j < args.length; j++) {
+						if (!validate(j, args[j].getValue())) {
+							let range = args[j].getRange();
+							problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
+						}
+					}
+					return;
 				}
+			}
+
+			let extra = false;
+			for (let i = 0; i < expectedArgCount.length; i++) {
+				extra = expectedArgCount[i] < args.length || extra;
+			}
+
+			if (extra) {
+				let range = args[args.length - 1].getRange();
+				problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
 			}
 		}
 	}
@@ -162,17 +188,24 @@ export class Validator {
 					}
 				}
 
-				if (this.checkArguments(document, escape, instruction, problems)) {
+				if (this.hasArguments(document, escape, instruction, problems)) {
 					switch (keyword) {
-						case "FROM":
 						case "WORKDIR":
 						case "USER":
-							this.checkSingleArgument(document, instruction, problems, true, function(argument) {
+							this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
+								return true;
+							});
+							break;
+						case "FROM":
+							this.checkArguments(document, instruction, problems, [ 1, 3 ], function(index, argument) {
+								if (index === 1) {
+									return argument.toUpperCase() === "AS";
+								}
 								return true;
 							});
 							break;
 						case "STOPSIGNAL":
-							this.checkSingleArgument(document, instruction, problems, true, function(argument) {
+							this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
 								if (argument.indexOf("SIG") === 0) {
 									return true;
 								}
@@ -186,7 +219,7 @@ export class Validator {
 							}, this.createInvalidStopSignal.bind(this));
 							break;
 						case "EXPOSE":
-							this.checkSingleArgument(document, instruction, problems, false, function(argument) {
+							this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
 								for (var i = 0; i < argument.length; i++) {
 									if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
 										return false;

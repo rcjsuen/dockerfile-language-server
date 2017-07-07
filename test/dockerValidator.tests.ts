@@ -835,6 +835,31 @@ describe("Docker Validator Tests", function() {
 		});
 	});
 
+	describe("FROM", function() {
+		describe("source image", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM node");
+				assert.equal(diagnostics.length, 0);
+			});
+		});
+
+		describe("build stage", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM node AS setup");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node As setup");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node aS setup");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node as setup");
+				assert.equal(diagnostics.length, 0);
+			});
+		});
+	});
+
 	describe("MAINTAINER", function() {
 		it("default", function() {
 			let validator = new Validator();
