@@ -76,32 +76,6 @@ export class Validator {
 		};
 	}
 
-	private hasArguments(document: TextDocument, escapeChar: string, instruction: Instruction, problems: Diagnostic[]): boolean {
-		let range = instruction.getInstructionRange();
-		let args = instruction.getTextContent().substring(instruction.getInstruction().length);
-		let missing = true;
-		for (let i = 0; i < args.length; i++) {
-			if (Util.isWhitespace(args.charAt(i))) {
-				continue;
-			} else if (args.charAt(i) === escapeChar) {
-				if (args.charAt(i + 1) === '\r' || args.charAt(i + 1) === '\n') {
-					i++;
-				} else {
-					missing = false;
-					break;
-				}
-			} else {
-				missing = false;
-				break;
-			}
-		}
-		if (missing) {
-			problems.push(this.createMissingArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
-			return false;
-		}
-		return true;
-	}
-
 	/**
 	 * Checks the arguments of the given instruction.
 	 * 
@@ -118,7 +92,11 @@ export class Validator {
 	 */
 	private checkArguments(document: TextDocument, instruction: Instruction, problems: Diagnostic[], expectedArgCount: number[], validate: Function, createDiagnostic?: Function): void {
 		let args = instruction.getArguments();
-		if (expectedArgCount[0] === -1) {
+		if (args.length === 0) {
+			// all instructions are expected to have at least one argument
+			let range = instruction.getInstructionRange();
+			problems.push(this.createMissingArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+		} else if (expectedArgCount[0] === -1) {
 			for (let i = 0; i < args.length; i++) {
 				if (!validate(i, args[i].getValue())) {
 					let range = args[i].getRange();
@@ -188,48 +166,51 @@ export class Validator {
 					}
 				}
 
-				if (this.hasArguments(document, escape, instruction, problems)) {
-					switch (keyword) {
-						case "WORKDIR":
-						case "USER":
-							this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
+				switch (keyword) {
+					case "WORKDIR":
+					case "USER":
+						this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
+							return true;
+						});
+						break;
+					case "FROM":
+						this.checkArguments(document, instruction, problems, [ 1, 3 ], function(index, argument) {
+							if (index === 1) {
+								return argument.toUpperCase() === "AS";
+							}
+							return true;
+						});
+						break;
+					case "STOPSIGNAL":
+						this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
+							if (argument.indexOf("SIG") === 0) {
 								return true;
-							});
-							break;
-						case "FROM":
-							this.checkArguments(document, instruction, problems, [ 1, 3 ], function(index, argument) {
-								if (index === 1) {
-									return argument.toUpperCase() === "AS";
+							}
+							
+							for (var i = 0; i < argument.length; i++) {
+								if ('0' > argument.charAt(i) || '9' < argument.charAt(i)) {
+									return false;
 								}
-								return true;
-							});
-							break;
-						case "STOPSIGNAL":
-							this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
-								if (argument.indexOf("SIG") === 0) {
-									return true;
+							}
+							return true;
+						}, this.createInvalidStopSignal.bind(this));
+						break;
+					case "EXPOSE":
+						this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
+							for (var i = 0; i < argument.length; i++) {
+								if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
+									return false;
 								}
-								
-								for (var i = 0; i < argument.length; i++) {
-									if ('0' > argument.charAt(i) || '9' < argument.charAt(i)) {
-										return false;
-									}
-								}
-								return true;
-							}, this.createInvalidStopSignal.bind(this));
-							break;
-						case "EXPOSE":
-							this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
-								for (var i = 0; i < argument.length; i++) {
-									if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
-										return false;
-									}
-								}
+							}
 
-								return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-';
-							}, this.createInvalidPort.bind(this));
-							break;
-					}
+							return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-';
+						}, this.createInvalidPort.bind(this));
+						break;
+					default:
+						this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
+							return true;
+						});
+						break;
 				}
 			}
 		}
