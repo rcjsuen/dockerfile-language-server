@@ -263,8 +263,8 @@ export class Validator {
 		return Validator.formatMessage(Validator.dockerProblems["invalidPort"], port);
 	}
 
-	public static getDiagnosticMessage_InvalidStopsignal() {
-		return Validator.dockerProblems["invalidStopsignal"];
+	public static getDiagnosticMessage_InvalidStopsignal(signal: string) {
+		return Validator.formatMessage(Validator.dockerProblems["invalidStopSignal"], signal);
 	}
 
 	public static getDiagnosticMessage_InstructionExtraArgument() {
@@ -303,8 +303,8 @@ export class Validator {
 		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_PORT);
 	}
 
-	createInvalidStopSignal(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidStopsignal(), ValidationCode.INVALID_STOPSIGNAL);
+	createInvalidStopSignal(start: number, end: number, signal: string): Diagnostic {
+		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidStopsignal(signal), ValidationCode.INVALID_STOPSIGNAL);
 	}
 
 	createMissingArgument(start: number, end: number): Diagnostic {
