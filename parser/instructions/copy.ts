@@ -29,7 +29,7 @@ export class Copy extends Instruction {
 
 	private getFromRange(): Range {
 		let args = this.getArguments();
-		if (args.length > 1 && args[0].getValue().toLowerCase().indexOf("--from=") === 0) {
+		if (args.length >= 1 && args[0].getValue().toLowerCase().indexOf("--from=") === 0) {
 			return args[0].getRange();
 		}
 		return null;

@@ -48,6 +48,17 @@ describe("Dockerfile Document Highlight tests", function() {
 				assertLocation(location, document.uri, 0, 13, 0, 22);
 			});
 
+			it("COPY incomplete", function() {
+				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=bootstrap");
+				// cursor in the FROM
+				let location = computeDefinition(document, Position.create(0, 17));
+				assertLocation(location, document.uri, 0, 13, 0, 22);
+
+				// cursor in the COPY
+				location = computeDefinition(document, Position.create(2, 16));
+				assertLocation(location, document.uri, 0, 13, 0, 22);
+			});
+
 			it("source mismatch", function() {
 				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=bootstrap2 /git/bin/app .");
 				// cursor in the FROM

@@ -54,6 +54,21 @@ describe("Dockerfile Document Highlight tests", function() {
 				assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 12, 2, 21);
 			});
 
+			it("COPY incomplete", function() {
+				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=bootstrap");
+				// cursor in the FROM
+				let ranges = computeHighlightRanges(document, Position.create(0, 17));
+				assert.equal(ranges.length, 2);
+				assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 13, 0, 22);
+				assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 12, 2, 21);
+
+				// cursor in the COPY
+				ranges = computeHighlightRanges(document, Position.create(2, 16));
+				assert.equal(ranges.length, 2);
+				assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 13, 0, 22);
+				assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 12, 2, 21);
+			});
+
 			it("source mismatch", function() {
 				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=bootstrap2 /git/bin/app .");
 				// cursor in the FROM

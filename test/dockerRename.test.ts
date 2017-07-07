@@ -50,6 +50,21 @@ describe("Dockerfile Document Rename tests", function() {
 				assertEdit(edits[1], "renamed", 2, 12, 2, 21);
 			});
 
+			it("COPY incomplete", function() {
+				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=bootstrap");
+				// cursor in the FROM
+				let edits = rename(document, Position.create(0, 17), "renamed");
+				assert.equal(2, edits.length);
+				assertEdit(edits[0], "renamed", 0, 13, 0, 22);
+				assertEdit(edits[1], "renamed", 2, 12, 2, 21);
+
+				// cursor in the COPY
+				edits = rename(document, Position.create(2, 16), "renamed");
+				assert.equal(2, edits.length);
+				assertEdit(edits[0], "renamed", 0, 13, 0, 22);
+				assertEdit(edits[1], "renamed", 2, 12, 2, 21);
+			});
+
 			it("source mismatch", function() {
 				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=bootstrap2 /git/bin/app .");
 				// cursor in the FROM
