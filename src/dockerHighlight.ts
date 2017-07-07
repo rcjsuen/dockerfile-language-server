@@ -12,49 +12,28 @@ import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { Copy } from '../parser/instructions/copy';
 import { From } from '../parser/instructions/from';
 import { DockerfileParser } from '../parser/dockerfileParser';
+import { DockerDefinition } from './dockerDefinition';
 
 export class DockerHighlight {
 
 	public computeHighlightRanges(document: TextDocument, position: Position): DocumentHighlight[] {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
-		let froms: From[] = [];
-		let copies: Copy[] = [];
-		let stage = undefined;
+		let provider = new DockerDefinition();
+		let location = provider.computeDefinition(document, position);
 		let highlights = [];
-		for (let instruction of dockerfile.getFROMs()) {
-			let range = instruction.getBuildStageRange();
-			if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
-				highlights.push(DocumentHighlight.create(range, DocumentHighlightKind.Write));
-				stage = instruction.getBuildStage();
-				break;
-			}
-		}
-
-		if (stage === undefined) {
-			let source = undefined;
+		let stage = undefined;
+		if (location === null) {
 			for (let instruction of dockerfile.getCOPYs()) {
 				let range = instruction.getFromValueRange();
 				if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
-					source = instruction.getFromValue();
+					stage = instruction.getFromValue();
 					break;
 				}
 			}
-
-			if (source) {
-				for (let instruction of dockerfile.getFROMs()) {
-					if (instruction.getBuildStage() === source) {
-						let range = instruction.getBuildStageRange();
-						highlights.push(DocumentHighlight.create(range, DocumentHighlightKind.Write));
-						stage = instruction.getBuildStage();
-						break;
-					}
-				}
-
-				if (stage === undefined) {
-					stage = source;
-				}
-			}
+		} else {
+			highlights.push(DocumentHighlight.create(location.range, DocumentHighlightKind.Write));
+			stage = document.getText().substring(document.offsetAt(location.range.start), document.offsetAt(location.range.end));
 		}
 
 		if (stage !== undefined) {
