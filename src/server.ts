@@ -11,7 +11,7 @@ import {
 	CodeActionParams, Command, ExecuteCommandParams, 
 	DocumentSymbolParams, SymbolInformation, Diagnostic,
 	DocumentFormattingParams, DocumentHighlight,
-	RenameParams, WorkspaceEdit,
+	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams
 } from 'vscode-languageserver';
 import { Validator, ValidationCode } from './dockerValidator';
@@ -24,6 +24,7 @@ import { DockerSymbols } from './dockerSymbols';
 import { DockerFormatter } from './dockerFormatter';
 import { DockerHighlight } from './dockerHighlight';
 import { DockerRename } from './dockerRename';
+import { DockerDefinition } from './dockerDefinition';
 import { KEYWORDS } from './docker';
 
 let markdown = new MarkdownDocumentation();
@@ -31,6 +32,7 @@ let hoverProvider = new DockerHover(markdown);
 let commandsProvider = new DockerCommands();
 let symbolsProvider = new DockerSymbols();
 let formatterProvider = new DockerFormatter();
+let definitionProvider = new DockerDefinition();
 let documentationResolver = new PlainTextDocumentation();
 
 let connection: IConnection = createConnection();
@@ -67,7 +69,8 @@ connection.onInitialize((params): InitializeResult => {
 			hoverProvider: true,
 			documentSymbolProvider: true,
 			documentHighlightProvider: true,
-			renameProvider: true
+			renameProvider: true,
+			definitionProvider: true
 		}
 	}
 });
@@ -127,6 +130,15 @@ connection.onExecuteCommand((params: ExecuteCommandParams): void => {
 			connection.workspace.applyEdit(edit);
 		}
 	}
+});
+
+connection.onDefinition((textDocumentPosition: TextDocumentPositionParams): Location => {
+	let uri = textDocumentPosition.textDocument.uri;
+	let document = documents[uri];
+	if (document) {
+		return definitionProvider.computeDefinition(document, textDocumentPosition.position);
+	}
+	return null;
 });
 
 connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {

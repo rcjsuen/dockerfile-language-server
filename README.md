@@ -8,6 +8,7 @@ written in TypeScript.
 Supported features:
 - code actions
 - code completion
+- definition
 - diagnostics
 - document highlight
 - document symbols
