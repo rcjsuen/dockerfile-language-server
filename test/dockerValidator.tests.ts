@@ -64,10 +64,10 @@ function assertInvalidPort(diagnostic: Diagnostic, port: string, startLine: numb
 }
 
 function assertInvalidStopSignal(diagnostic: Diagnostic, signal: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.INVALID_STOPSIGNAL);
+	assert.equal(diagnostic.code, ValidationCode.INVALID_SIGNAL);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
-	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidStopsignal(signal));
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidSignal(signal));
 	assert.equal(diagnostic.range.start.line, startLine);
 	assert.equal(diagnostic.range.start.character, startCharacter);
 	assert.equal(diagnostic.range.end.line, endLine);

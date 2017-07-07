@@ -19,7 +19,7 @@ export enum ValidationCode {
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
-	INVALID_STOPSIGNAL,
+	INVALID_SIGNAL,
 	UNKNOWN_DIRECTIVE,
 	UNKNOWN_INSTRUCTION,
 	DEPRECATED_MAINTAINER
@@ -111,7 +111,7 @@ export class Validator {
 					for (let j = 0; j < args.length; j++) {
 						if (!validate(j, args[j].getValue())) {
 							let range = args[j].getRange();
-							problems.push(createInvalidDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
+							problems.push(createInvalidDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), args[i].getValue()));
 						}
 					}
 					return;
@@ -233,7 +233,7 @@ export class Validator {
 		"instructionRequiresOneOrThreeArguments": "${0} requires either one or three arguments",
 
 		"invalidPort": "Invalid containerPort: ${0}",
-		"invalidStopSignal": "Invalid stop signal",
+		"invalidStopSignal": "Invalid signal: ${0}",
 
 		"instructionExtraArgument": "Instruction has an extra argument",
 		"instructionMissingArgument": "Instruction has no arguments",
@@ -263,7 +263,7 @@ export class Validator {
 		return Validator.formatMessage(Validator.dockerProblems["invalidPort"], port);
 	}
 
-	public static getDiagnosticMessage_InvalidStopsignal(signal: string) {
+	public static getDiagnosticMessage_InvalidSignal(signal: string) {
 		return Validator.formatMessage(Validator.dockerProblems["invalidStopSignal"], signal);
 	}
 
@@ -304,7 +304,7 @@ export class Validator {
 	}
 
 	createInvalidStopSignal(start: number, end: number, signal: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidStopsignal(signal), ValidationCode.INVALID_STOPSIGNAL);
+		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidSignal(signal), ValidationCode.INVALID_SIGNAL);
 	}
 
 	createMissingArgument(start: number, end: number): Diagnostic {
