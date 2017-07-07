@@ -9,9 +9,11 @@ Supported features:
 - code actions
 - code completion
 - diagnostics
+- document highlight
 - document symbols
 - formatting
 - hovers
+- rename
 
 ## Setup Instructions
 
