@@ -13,9 +13,10 @@ import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
 	LOWERCASE,
-	EXTRA_ARGUMENT,
+	ARGUMENT_MISSING,
+	ARGUMENT_EXTRA,
+	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	NO_SOURCE_IMAGE,
-	MISSING_ARGUMENT,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_PORT,
 	INVALID_STOPSIGNAL,
@@ -90,7 +91,8 @@ export class Validator {
 	 * @param createDiagnostic the function to use to create a
 	 *                         diagnostic if an argument is invalid
 	 */
-	private checkArguments(document: TextDocument, instruction: Instruction, problems: Diagnostic[], expectedArgCount: number[], validate: Function, createDiagnostic?: Function): void {
+	private checkArguments(document: TextDocument, instruction: Instruction, problems: Diagnostic[], expectedArgCount: number[],
+			validate: Function, createInvalidDiagnostic?: Function, createIncompleteDiagnostic?: Function): void {
 		let args = instruction.getArguments();
 		if (args.length === 0) {
 			// all instructions are expected to have at least one argument
@@ -100,7 +102,7 @@ export class Validator {
 			for (let i = 0; i < args.length; i++) {
 				if (!validate(i, args[i].getValue())) {
 					let range = args[i].getRange();
-					problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), args[i].getValue()));
+					problems.push(createInvalidDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), args[i].getValue()));
 				}
 			}
 		} else {
@@ -109,7 +111,7 @@ export class Validator {
 					for (let j = 0; j < args.length; j++) {
 						if (!validate(j, args[j].getValue())) {
 							let range = args[j].getRange();
-							problems.push(createDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
+							problems.push(createInvalidDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
 						}
 					}
 					return;
@@ -123,7 +125,11 @@ export class Validator {
 
 			if (extra) {
 				let range = args[args.length - 1].getRange();
-				problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+				if (createIncompleteDiagnostic) {
+					problems.push(createIncompleteDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
+				} else {
+					problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+				}
 			}
 		}
 	}
@@ -179,7 +185,7 @@ export class Validator {
 								return argument.toUpperCase() === "AS";
 							}
 							return true;
-						});
+						}, null, this.createRequiresOneOrThreeArguments.bind(this));
 						break;
 					case "STOPSIGNAL":
 						this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
@@ -224,6 +230,8 @@ export class Validator {
 
 		"noSourceImage": "No source image provided with `FROM`",
 
+		"instructionRequiresOneOrThreeArguments": "${0} requires either one or three arguments",
+
 		"invalidPort": "Invalid containerPort: ${0}",
 		"invalidStopSignal": "Invalid stop signal",
 
@@ -267,6 +275,10 @@ export class Validator {
 		return Validator.dockerProblems["instructionMissingArgument"];
 	}
 
+	public static getDiagnosticMessage_InstructionRequiresOneOrThreeArguments() {
+		return Validator.dockerProblems["instructionRequiresOneOrThreeArguments"];
+	}
+
 	public static getDiagnosticMessage_InstructionUnknown(instruction: string) {
 		return Validator.formatMessage(Validator.dockerProblems["instructionUnknown"], instruction);
 	}
@@ -296,11 +308,15 @@ export class Validator {
 	}
 
 	createMissingArgument(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionMissingArgument(), ValidationCode.MISSING_ARGUMENT);
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionMissingArgument(), ValidationCode.ARGUMENT_MISSING);
 	}
 
 	createExtraArgument(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.EXTRA_ARGUMENT);
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.ARGUMENT_EXTRA);
+	}
+
+	public createRequiresOneOrThreeArguments(start: number, end: number): Diagnostic {
+		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionRequiresOneOrThreeArguments(), ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE);
 	}
 
 	createNoSourceImage(start: number, end: number): Diagnostic {

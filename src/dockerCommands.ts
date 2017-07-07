@@ -34,7 +34,7 @@ export class DockerCommands {
 							]
 						}
 					];
-				case ValidationCode.EXTRA_ARGUMENT:
+				case ValidationCode.ARGUMENT_EXTRA:
 					return [
 						{
 							title: "Remove extra argument",

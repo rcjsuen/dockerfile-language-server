@@ -21,7 +21,7 @@ function createDocument(content: string): any {
 }
 
 function createExtraArgument(): Diagnostic {
-	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.EXTRA_ARGUMENT);
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.ARGUMENT_EXTRA);
 }
 
 function createInvalidEscapeDirective(): Diagnostic {

@@ -86,7 +86,7 @@ function assertInstructionCasing(diagnostic: Diagnostic, startLine: number, star
 }
 
 function assertInstructionExtraArgument(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.EXTRA_ARGUMENT);
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_EXTRA);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InstructionExtraArgument());
@@ -97,10 +97,21 @@ function assertInstructionExtraArgument(diagnostic: Diagnostic, startLine: numbe
 }
 
 function assertInstructionMissingArgument(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.MISSING_ARGUMENT);
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_MISSING);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InstructionMissingArgument());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
+function assertInstructionRequiresOneOrThreeArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InstructionRequiresOneOrThreeArguments());
 	assert.equal(diagnostic.range.start.line, startLine);
 	assert.equal(diagnostic.range.start.character, startCharacter);
 	assert.equal(diagnostic.range.end.line, endLine);
@@ -359,55 +370,55 @@ describe("Docker Validator Tests", function() {
 		});
 
 		describe("extra argument", function() {
-			function testExtraArgument(prefix: string) {
+			function testExtraArgument(prefix: string, assertDiagnostic: Function) {
 				let length = prefix.length;
 				let diagnostics = validate("FROM node\n" + prefix + " extra");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 1, length + 1, 1, length + 6);
+				assertDiagnostic(diagnostics[0], 1, length + 1, 1, length + 6);
 
 				diagnostics = validate("FROM node\n" + prefix + " extra\r");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 1, length + 1, 1, length + 6);
+				assertDiagnostic(diagnostics[0], 1, length + 1, 1, length + 6);
 
 				diagnostics = validate("FROM node\n" + prefix + " extra ");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 1, length + 1, 1, length + 6);
+				assertDiagnostic(diagnostics[0], 1, length + 1, 1, length + 6);
 
 				diagnostics = validate("FROM node\n" + prefix + " extra\t");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 1, length + 1, 1, length + 6);
+				assertDiagnostic(diagnostics[0], 1, length + 1, 1, length + 6);
 
 				diagnostics = validate("FROM node\n" + prefix + " extra\n");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 1, length + 1, 1, length + 6);
+				assertDiagnostic(diagnostics[0], 1, length + 1, 1, length + 6);
 
 				diagnostics = validate("FROM node\n" + prefix + " \\\nextra");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 2, 0, 2, 5);
+				assertDiagnostic(diagnostics[0], 2, 0, 2, 5);
 
 				diagnostics = validate("FROM node\n" + prefix + " \\\r\nextra");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 2, 0, 2, 5);
+				assertDiagnostic(diagnostics[0], 2, 0, 2, 5);
 
 				diagnostics = validate("FROM node\n" + prefix + " \\\r\nextra");
 				assert.equal(diagnostics.length, 1);
-				assertInstructionExtraArgument(diagnostics[0], 2, 0, 2, 5);
+				assertDiagnostic(diagnostics[0], 2, 0, 2, 5);
 			}
 
 			it("FROM", function() {
-				testExtraArgument("FROM node");
+				testExtraArgument("FROM node", assertInstructionRequiresOneOrThreeArguments);
 			});
 
 			it("STOPSIGNAL", function() {
-				testExtraArgument("STOPSIGNAL SIGTERM");
+				testExtraArgument("STOPSIGNAL SIGTERM", assertInstructionExtraArgument);
 			});
 
 			it("USER", function() {
-				testExtraArgument("USER daemon");
+				testExtraArgument("USER daemon", assertInstructionExtraArgument);
 			});
 
 			it("WORKDIR", function() {
-				testExtraArgument("WORKDIR /path/docker");
+				testExtraArgument("WORKDIR /path/docker", assertInstructionExtraArgument);
 			});
 		});
 
@@ -856,6 +867,32 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("FROM node as setup");
 				assert.equal(diagnostics.length, 0);
+			});
+		});
+
+		describe("wrong args number", function() {
+			it("two", function() {
+				let diagnostics = validate("FROM node AS");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionRequiresOneOrThreeArguments(diagnostics[0], 0, 10, 0, 12);
+
+				diagnostics = validate("FROM node As \\\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionRequiresOneOrThreeArguments(diagnostics[0], 0, 10, 0, 12);
+
+				diagnostics = validate("FROM node test");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionRequiresOneOrThreeArguments(diagnostics[0], 0, 10, 0, 14);
+			});
+
+			it("four", function() {
+				let diagnostics = validate("FROM node AS setup again");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionRequiresOneOrThreeArguments(diagnostics[0], 0, 19, 0, 24);
+
+				diagnostics = validate("FROM node As \\\nsetup two");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionRequiresOneOrThreeArguments(diagnostics[0], 1, 6, 1, 9);
 			});
 		});
 	});
