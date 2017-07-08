@@ -30,10 +30,7 @@ export class Directive extends Line {
 	}
 
 	public getValue(): string | null {
-		if (this.valueRange !== null) {
-			return this.document.getText().substring(this.document.offsetAt(this.valueRange.start), this.document.offsetAt(this.valueRange.end));
-		}
-		return null;
+		return this.document.getText().substring(this.document.offsetAt(this.valueRange.start), this.document.offsetAt(this.valueRange.end));
 	}
 
 	public getDirective(): string {
