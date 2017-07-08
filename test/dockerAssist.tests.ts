@@ -1241,9 +1241,9 @@ describe('Docker Content Assist Tests', function() {
 			});
 
 			/**
-			 * Test that an ONBUILD cannot be followed by a ONBUILD.
+			 * Test that an ONBUILD cannot be followed by an ONBUILD.
 			 */
-			it('ONBUILD M', function() {
+			it('ONBUILD O', function() {
 				var proposals = compute("FROM node\nONBUILD O", 19);
 				assert.equal(proposals.length, 0);
 
