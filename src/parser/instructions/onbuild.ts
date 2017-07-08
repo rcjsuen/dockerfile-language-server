@@ -20,52 +20,7 @@ export class Onbuild extends Instruction {
 	}
 
 	public getTriggerRange(): Range | null {
-		let range = this.getRange();
-		let text = this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
-		let skip = this.document.offsetAt(range.start) + this.getInstruction().length;
-		text = text.substring(skip);
-		let start = -1;
-		let end = -1;
-		triggerCheck: for (let i = 0; i < text.length; i++) {
-			switch (text.charAt(i)) {
-				case ' ':
-				case '\t':
-					if (start !== -1) {
-						end = i;
-						break triggerCheck;
-					}
-					break;
-				case this.escapeChar:
-					let char = text.charAt(i + 1);
-					if (char === '\r') {
-						if (text.charAt(i + 2) === '\n') {
-							i++;
-						}
-						i++;
-					} else if (char === '\n') {
-						i++;
-					}
-					break;
-				case '\r':
-				case '\n':
-					if (start !== -1) {
-						end = i;
-						break triggerCheck;
-					}
-					break triggerCheck;
-				default:
-					if (start === -1) {
-						start = i;
-					}
-					break;
-			}
-		}
-		if (start === -1) {
-			return null;
-		} else if (end === -1) {
-			// reached EOF
-			end = text.length;
-		}
-		return Range.create(this.document.positionAt(skip + start), this.document.positionAt(skip + end));
+		let args = this.getArguments();
+		return args.length > 0 ? args[0].getRange() : null;
 	}
 }
