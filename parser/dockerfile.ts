@@ -7,6 +7,7 @@
 import { Comment } from './comment';
 import { Directive } from './directive';
 import { Instruction } from './instruction';
+import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
 import { Util, DIRECTIVE_ESCAPE } from '../src/docker';
@@ -41,6 +42,19 @@ export class Dockerfile {
 
 	public getInstructions(): Instruction[] {
 		return this.instructions;
+	}
+
+	/**
+	 * Gets all the ARG instructions that are defined in this Dockerfile.
+	 */
+	public getARGs(): Arg[] {
+		let args = [];
+		for (let instruction of this.instructions) {
+			if (instruction instanceof Arg) {
+				args.push(instruction);
+			}
+		}
+		return args;
 	}
 
 	/**

@@ -9,6 +9,7 @@ import { Comment } from './comment';
 import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Line } from './line';
+import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
 import { Onbuild } from './instructions/onbuild';
@@ -21,6 +22,8 @@ export class DockerfileParser {
 
 	private createInstruction(document: TextDocument, lineRange: Range, instruction: string, instructionRange: Range) {
 		switch (instruction.toUpperCase()) {
+			case "ARG":
+				return new Arg(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "COPY":
 				return new Copy(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "FROM":

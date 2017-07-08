@@ -603,6 +603,34 @@ describe("Docker Validator Tests", function() {
 				assertNoSourceImage(diagnostics[0], 1, 0, 1, 6);
 			});
 		});
+
+		describe("ARG before FROM", function() {
+			it("single", function() {
+				let diagnostics = validate("ARG x\nFROM node");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("double", function() {
+				let diagnostics = validate("ARG x\nARG y\nFROM node");
+				assert.equal(diagnostics.length, 0);
+			});
+		});
+
+		describe("ARG before EXPOSE", function() {
+			it("invalid", function() {
+				let diagnostics = validate("ARG x\nEXPOSE 8080");
+				assert.equal(diagnostics.length, 1);
+				assertNoSourceImage(diagnostics[0], 1, 0, 1, 6);
+			});
+		});
+
+		describe("ARG only", function() {
+			it("invalid", function() {
+				let diagnostics = validate("ARG x\nARG y\nARG z");
+				assert.equal(diagnostics.length, 1);
+				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
+			});
+		});
 	});
 
 	describe("directives", function() {

@@ -148,16 +148,21 @@ export class Validator {
 		let firstInstruction = false;
 		let dc = parsed.dc;
 		let instructions = dockerfile.getInstructions();
-		if (instructions.length === 0) {
-			// no instructions in this file
+		if (instructions.length === 0 || dockerfile.getARGs().length === instructions.length) {
+			// no instructions in this file, or only ARGs
 			problems.push(Validator.createNoSourceImage(document.positionAt(0), document.positionAt(0)));
-		} else if (instructions.length !== 0 && instructions[0].getKeyword() !== "FROM") {
-			// first instruction is not a FROM
-			let range = instructions[0].getInstructionRange();
-			problems.push(Validator.createNoSourceImage(range.start, range.end));
 		}
+		let hasFrom = false;
 		for (let instruction of dockerfile.getInstructions()) {
 			let keyword = instruction.getKeyword();
+			if (keyword === "FROM") {
+				hasFrom = true;
+			} else if (!hasFrom && keyword !== "ARG") {
+				// first non-ARG instruction is not a FROM
+				let range = instruction.getInstructionRange();
+				problems.push(Validator.createNoSourceImage(range.start, range.end));
+				hasFrom = true;
+			}
 			if (keywords.indexOf(keyword) === -1) {
 				let range = instruction.getInstructionRange();
 				// invalid instruction found
