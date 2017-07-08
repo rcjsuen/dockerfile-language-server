@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
-import { Util } from '../src/docker';
+import { Util } from '../docker';
 import { Line } from './line';
 import { Argument } from './argument';
 

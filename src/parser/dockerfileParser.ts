@@ -14,7 +14,7 @@ import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
 import { Onbuild } from './instructions/onbuild';
 import { Dockerfile } from './dockerfile';
-import { DIRECTIVE_ESCAPE } from '../src/docker';
+import { DIRECTIVE_ESCAPE } from '../docker';
 
 export class DockerfileParser {
 

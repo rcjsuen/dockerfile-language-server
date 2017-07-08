@@ -7,7 +7,7 @@
 import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
-import { DockerfileParser } from '../parser/dockerfileParser';
+import { DockerfileParser } from './parser/dockerfileParser';
 
 export class DockerFormatter {
 

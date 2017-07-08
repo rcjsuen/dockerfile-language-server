@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
 import { Line } from './line';
-import { Util } from '../src/docker';
+import { Util } from '../docker';
 
 export class Comment extends Line {
 

@@ -5,9 +5,9 @@
 import {
 	TextDocument, Position, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
-import { Dockerfile } from '../parser/dockerfile';
-import { Instruction } from '../parser/instruction';
-import { DockerfileParser } from '../parser/dockerfileParser';
+import { Dockerfile } from './parser/dockerfile';
+import { Instruction } from './parser/instruction';
+import { DockerfileParser } from './parser/dockerfileParser';
 import { DIRECTIVE_ESCAPE } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
 

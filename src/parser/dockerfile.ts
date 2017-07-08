@@ -10,7 +10,7 @@ import { Instruction } from './instruction';
 import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
-import { DIRECTIVE_ESCAPE } from '../src/docker';
+import { DIRECTIVE_ESCAPE } from '../docker';
 
 export class Dockerfile {
 

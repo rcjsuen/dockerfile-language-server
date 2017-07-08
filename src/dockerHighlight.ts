@@ -7,7 +7,7 @@
 import {
 	TextDocument, Position, DocumentHighlight, DocumentHighlightKind
 } from 'vscode-languageserver';
-import { DockerfileParser } from '../parser/dockerfileParser';
+import { DockerfileParser } from './parser/dockerfileParser';
 import { DockerDefinition } from './dockerDefinition';
 
 export class DockerHighlight {

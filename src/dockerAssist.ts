@@ -9,7 +9,7 @@ import {
 	CompletionItem, CompletionItemKind, InsertTextFormat
 } from 'vscode-languageserver';
 import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
-import { DockerfileParser } from '../parser/dockerfileParser';
+import { DockerfileParser } from './parser/dockerfileParser';
 
 export class DockerAssist {
 

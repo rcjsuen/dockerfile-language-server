@@ -7,8 +7,8 @@
 import {
 	TextDocument, TextDocumentPositionParams, Hover
 } from 'vscode-languageserver';
-import { DockerfileParser } from '../parser/dockerfileParser';
-import { Onbuild } from '../parser/instructions/onbuild';
+import { DockerfileParser } from './parser/dockerfileParser';
+import { Onbuild } from './parser/instructions/onbuild';
 import { DIRECTIVE_ESCAPE } from './docker';
 import { MarkdownDocumentation } from './dockerMarkdown';
 

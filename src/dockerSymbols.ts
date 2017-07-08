@@ -7,7 +7,7 @@
 import {
 	TextDocument, SymbolInformation, SymbolKind, Range
 } from 'vscode-languageserver';
-import { DockerfileParser } from '../parser/dockerfileParser';
+import { DockerfileParser } from './parser/dockerfileParser';
 
 export class DockerSymbols {
 

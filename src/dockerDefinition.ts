@@ -5,7 +5,7 @@
 'use strict';
 
 import { TextDocument, Position, Location } from 'vscode-languageserver';
-import { DockerfileParser } from '../parser/dockerfileParser';
+import { DockerfileParser } from './parser/dockerfileParser';
 
 export class DockerDefinition {
 
