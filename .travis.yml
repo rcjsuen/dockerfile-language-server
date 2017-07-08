@@ -31,3 +31,4 @@ script:
 
 after_success:
   - npm run coverage
+  - npm pack

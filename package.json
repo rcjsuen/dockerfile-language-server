@@ -1,9 +1,21 @@
 {
   "name": "dockerfile-language-server-nodejs",
   "description": "A language server for Dockerfiles powered by NodeJS, TypeScript, and VSCode technologies.",
+  "keywords": [
+    "language",
+    "server",
+    "docker",
+    "dockerfile",
+    "moby"
+  ],
   "version": "0.0.1",
   "author": "Remy Suen",
   "license": "MIT",
+  "bugs": "https://github.com/rcjsuen/dockerfile-language-server-nodejs/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rcjsuen/dockerfile-language-server-nodejs.git"
+  },
   "engines": {
     "node": "*"
   },
