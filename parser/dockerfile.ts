@@ -10,12 +10,12 @@ import { Instruction } from './instruction';
 import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
-import { Util, DIRECTIVE_ESCAPE } from '../src/docker';
+import { DIRECTIVE_ESCAPE } from '../src/docker';
 
 export class Dockerfile {
 
 	private readonly comments: Comment[] = [];
-	private directive: Directive = null;
+	private directive: Directive | null = null;
 	private readonly instructions: Instruction[] = [];
 
 	public getEscapeCharacter(): string {
@@ -87,7 +87,7 @@ export class Dockerfile {
 		this.directive = directive;
 	}
 
-	public getDirective(): Directive {
+	public getDirective(): Directive | null {
 		return this.directive;
 	}
 

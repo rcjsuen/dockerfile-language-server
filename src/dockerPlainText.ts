@@ -34,7 +34,7 @@ export class PlainTextDocumentation {
 		"proposalHealthcheckNone": "Disable the HEALTHCHECK instruction inherited from the base image if one exists. There can only be one HEALTHCHECK instruction in a Dockerfile.\n\nSince Docker 1.12"
 	};
 
-	private markdowns;
+	private markdowns: any;
 
 	constructor() {
 		this.markdowns = {

@@ -9,7 +9,7 @@ import {
 } from 'vscode-languageserver';
 import { DockerfileParser } from '../parser/dockerfileParser';
 import { Onbuild } from '../parser/instructions/onbuild';
-import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
+import { DIRECTIVE_ESCAPE } from './docker';
 import { MarkdownDocumentation } from './dockerMarkdown';
 
 export class DockerHover {
@@ -20,14 +20,11 @@ export class DockerHover {
 		this.markdown = markdown;
 	}
 
-	onHover(document: TextDocument, textDocumentPosition: TextDocumentPositionParams): Hover {
-		let buffer = document.getText();
+	onHover(document: TextDocument, textDocumentPosition: TextDocumentPositionParams): Hover | null {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let directive = dockerfile.getDirective();
 
-		let wordStart = 0;
-		let wordEnd = buffer.length;
 		if (textDocumentPosition.position.line === 0 && directive !== null && directive.getDirective() === DIRECTIVE_ESCAPE) {
 			let range = directive.getNameRange();
 			if (range.start.character <= textDocumentPosition.position.character && textDocumentPosition.position.character <= range.end.character) {

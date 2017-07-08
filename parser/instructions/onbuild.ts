@@ -11,7 +11,7 @@ export class Onbuild extends Instruction {
 		super(document, range, escapeChar, instruction, instructionRange);
 	}
 
-	public getTrigger(): string {
+	public getTrigger(): string | null {
 		let range = this.getTriggerRange();
 		if (range === null) {
 			return null;
@@ -19,7 +19,7 @@ export class Onbuild extends Instruction {
 		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
 	}
 
-	public getTriggerRange(): Range {
+	public getTriggerRange(): Range | null {
 		let range = this.getRange();
 		let text = this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
 		let skip = this.document.offsetAt(range.start) + this.getInstruction().length;

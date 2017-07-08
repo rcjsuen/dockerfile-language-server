@@ -2,14 +2,10 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
 import {
-	TextEdit, TextDocument,
-	InitializeResult, TextDocumentPositionParams, TextDocumentSyncKind,
-	CompletionItem, CompletionItemKind, InsertTextFormat, Hover,
-	CodeActionParams, Command, Position, Range, FormattingOptions
+	TextEdit, TextDocument, Position, Range, FormattingOptions
 } from 'vscode-languageserver';
 import { DockerFormatter } from '../src/dockerFormatter';
 

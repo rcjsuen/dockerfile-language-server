@@ -8,7 +8,7 @@ import {
 import { Dockerfile } from '../parser/dockerfile';
 import { Instruction } from '../parser/instruction';
 import { DockerfileParser } from '../parser/dockerfileParser';
-import { Util, DIRECTIVE_ESCAPE } from './docker';
+import { DIRECTIVE_ESCAPE } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
@@ -52,10 +52,7 @@ export class Validator {
 	parseDirective(dockerfile: Dockerfile, document: TextDocument, problems: Diagnostic[]) {
 		let directive = dockerfile.getDirective();
 		if (directive === null) {
-			return {
-				escape: '\\',
-				dc: 0
-			}
+			return;
 		}
 
 		let directiveName = directive.getDirective();
@@ -64,24 +61,16 @@ export class Validator {
 			// Dockerfiles currently only support the 'escape' directive
 			let range = directive.getNameRange();
 			problems.push(Validator.createUnknownDirective(range.start, range.end, directiveName));
-		} else {
+		} else  if (value !== '\\' && value !== '`' && value !== "") {
 			// if the directive's value is invalid or isn't the empty string, flag it
-			if (value !== '\\' && value !== '`' && value !== "") {
-				let range = directive.getValueRange();
-				problems.push(Validator.createInvalidEscapeDirective(range.start, range.end, value));
-			}
+			let range = directive.getValueRange();
+			problems.push(Validator.createInvalidEscapeDirective(range.start, range.end, value));
 		}
-
-		return {
-			escape: value === '\\' || value === '`' ? value : '\\',
-			dc: document.offsetAt(directive.getRange().end)
-		};
 	}
 
 	/**
 	 * Checks the arguments of the given instruction.
 	 * 
-	 * @param document the document being validated
 	 * @param instruction the instruction to validate
 	 * @param problems an array of identified problems in the document
 	 * @param expectedArgCount an array of expected number of arguments
@@ -92,7 +81,7 @@ export class Validator {
 	 * @param createIncompleteDiagnostic the function to use to create a diagnostic
 	 *                                   if the number of arguments is incorrect
 	 */
-	private checkArguments(document: TextDocument, instruction: Instruction, problems: Diagnostic[], expectedArgCount: number[],
+	private checkArguments(instruction: Instruction, problems: Diagnostic[], expectedArgCount: number[],
 			validate: Function, createIncompleteDiagnostic?: Function): void {
 		let args = instruction.getArguments();
 		if (args.length === 0) {
@@ -139,14 +128,10 @@ export class Validator {
 
 	validate(keywords: string[], document: TextDocument): Diagnostic[] {
 		this.document = document;
-		let text = document.getText();
 		let problems: Diagnostic[] = [];
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
-		let parsed = this.parseDirective(dockerfile, document, problems);
-		let escape = parsed.escape;
-		let firstInstruction = false;
-		let dc = parsed.dc;
+		this.parseDirective(dockerfile, document, problems);
 		let instructions = dockerfile.getInstructions();
 		if (instructions.length === 0 || dockerfile.getARGs().length === instructions.length) {
 			// no instructions in this file, or only ARGs
@@ -183,12 +168,12 @@ export class Validator {
 				switch (keyword) {
 					case "WORKDIR":
 					case "USER":
-						this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
+						this.checkArguments(instruction, problems, [ 1 ], function() {
 							return null;
 						});
 						break;
 					case "FROM":
-						this.checkArguments(document, instruction, problems, [ 1, 3 ], function(index, argument) {
+						this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string) {
 							if (index === 1) {
 								return argument.toUpperCase() === "AS" ? null : Validator.createInvalidAs;
 							}
@@ -196,7 +181,7 @@ export class Validator {
 						}, Validator.createRequiresOneOrThreeArguments);
 						break;
 					case "STOPSIGNAL":
-						this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
+						this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
 							if (argument.indexOf("SIG") === 0) {
 								return null;
 							}
@@ -210,7 +195,7 @@ export class Validator {
 						});
 						break;
 					case "EXPOSE":
-						this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
+						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
 							for (var i = 0; i < argument.length; i++) {
 								if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
 									return Validator.createInvalidPort;
@@ -221,7 +206,7 @@ export class Validator {
 						});
 						break;
 					default:
-						this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
+						this.checkArguments(instruction, problems, [ -1 ], function() {
 							return null;
 						});
 						break;
@@ -352,8 +337,8 @@ export class Validator {
 		return Validator.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
 	}
 
-	createMaintainerDeprecated(start: Position, end: Position): Diagnostic {
-		let severity = null;
+	createMaintainerDeprecated(start: Position, end: Position): Diagnostic | null {
+		let severity: any = null;
 		if (this.settings.deprecatedMaintainer === ValidationSeverity.ERROR) {
 			severity = DiagnosticSeverity.Error;
 		} else if (this.settings.deprecatedMaintainer === ValidationSeverity.WARNING) {

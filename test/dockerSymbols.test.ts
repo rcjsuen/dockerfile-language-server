@@ -2,12 +2,9 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
-import {
-	TextDocument, Position, Range, SymbolKind,
-} from 'vscode-languageserver';
+import { TextDocument, SymbolKind } from 'vscode-languageserver';
 import { DockerSymbols } from '../src/dockerSymbols';
 
 let uri = "uri://host/Dockerfile.sample";
@@ -15,10 +12,6 @@ let symbolsProvider = new DockerSymbols();
 
 function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
-}
-
-function createRange(startLine, startCharacter, endLine, endCharacter): Range {
-	return Range.create(Position.create(startLine, startCharacter), Position.create(endLine, endCharacter));
 }
 
 describe("Dockerfile document symbols", function () {

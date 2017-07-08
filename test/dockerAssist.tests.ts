@@ -2,12 +2,10 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
 import {
-	TextDocument, Position, Range,
-	CompletionItem, CompletionItemKind, InsertTextFormat
+	TextDocument, CompletionItem, CompletionItemKind, InsertTextFormat
 } from 'vscode-languageserver';
 import { KEYWORDS } from '../src/docker';
 import { DockerAssist } from '../src/dockerAssist';
@@ -25,7 +23,7 @@ function compute(content: string, offset: number, snippetSupport?: boolean): Com
 	return assist.computeProposals(document, document.positionAt(offset));
 }
 
-function assertOnlyFROM(proposals, line, number, prefixLength) {
+function assertOnlyFROM(proposals: CompletionItem[], line: number, number: number, prefixLength: number) {
 	assert.equal(proposals.length, 1);
 	assertFROM(proposals[0], line, number, prefixLength);
 }
@@ -425,7 +423,7 @@ function assertProposals(proposals: CompletionItem[], offset: number, prefix: nu
 	}
 }
 
-function assertONBUILDProposals(proposals, offset, prefix, prefixLength) {
+function assertONBUILDProposals(proposals: CompletionItem[], offset: number, prefix: number, prefixLength: number) {
 	// +1 for two ARG proposals
 	// +1 for two HEALTHCHECK proposals
 	// -3 for ONBUILD, FROM, MAINTAINER
@@ -433,7 +431,7 @@ function assertONBUILDProposals(proposals, offset, prefix, prefixLength) {
 	assertProposals(proposals, offset, prefix, prefixLength);
 }
 
-function assertAllProposals(proposals, offset, prefix, prefixLength, snippetSupport?: boolean) {
+function assertAllProposals(proposals: CompletionItem[], offset: number, prefix: number, prefixLength: number, snippetSupport?: boolean) {
 	if (snippetSupport === undefined) {
 		snippetSupport = true;
 	}
@@ -601,7 +599,7 @@ describe('Docker Content Assist Tests', function() {
 			assert.equal(proposals.length, 0);
 		});
 
-		function testEscape(header, instruction, escapeChar) {
+		function testEscape(header: string, instruction: string, escapeChar: string) {
 			var content = header + "FROM node\n" + instruction + escapeChar + "\n";
 			var proposals = compute(content, content.length);
 			assert.equal(proposals.length, 0);

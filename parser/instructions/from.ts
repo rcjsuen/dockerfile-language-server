@@ -11,7 +11,7 @@ export class From extends Instruction {
 		super(document, range, escapeChar, instruction, instructionRange);
 	}
 
-	public getBuildStage(): string {
+	public getBuildStage(): string | null {
 		let range = this.getBuildStageRange();
 		if (range === null) {
 			return null;
@@ -19,7 +19,7 @@ export class From extends Instruction {
 		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
 	}
 
-	public getBuildStageRange(): Range {
+	public getBuildStageRange(): Range | null {
 		let args = this.getArguments();
 		if (args.length === 3 && args[1].getValue().toUpperCase() === "AS") {
 			return args[2].getRange();

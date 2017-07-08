@@ -11,15 +11,15 @@ export class Copy extends Instruction {
 		super(document, range, escapeChar, instruction, instructionRange);
 	}
 
-	public getFromValue(): string {
+	public getFromValue(): string | null {
 		let range = this.getFromValueRange();
 		if (range === null) {
-			return undefined;
+			return null;
 		}
 		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
 	}
 
-	public getFromValueRange(): Range {
+	public getFromValueRange(): Range | null {
 		let range = this.getFromRange();
 		if (range === null) {
 			return null;
@@ -27,7 +27,7 @@ export class Copy extends Instruction {
 		return Range.create(Position.create(range.start.line, range.start.character + 7), range.end);
 	}
 
-	private getFromRange(): Range {
+	private getFromRange(): Range | null {
 		let args = this.getArguments();
 		if (args.length >= 1 && args[0].getValue().toLowerCase().indexOf("--from=") === 0) {
 			return args[0].getRange();

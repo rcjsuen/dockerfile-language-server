@@ -5,16 +5,13 @@
 'use strict';
 
 import {
-	TextDocument, TextDocumentPositionParams, SymbolInformation, SymbolKind, Range
+	TextDocument, SymbolInformation, SymbolKind, Range
 } from 'vscode-languageserver';
-import { Util, DIRECTIVE_ESCAPE } from './docker';
 import { DockerfileParser } from '../parser/dockerfileParser';
 
 export class DockerSymbols {
 
-	private escapeChar: string;
-
-	private createSymbolInformation(document: TextDocument, name: string, textDocumentURI: string, range: Range, kind: SymbolKind) {
+	private createSymbolInformation(name: string, textDocumentURI: string, range: Range, kind: SymbolKind) {
 		return {
 			name: name,
 			location: {
@@ -26,16 +23,15 @@ export class DockerSymbols {
 	}
 
 	public parseSymbolInformation(document: TextDocument, textDocumentURI: string): SymbolInformation[] {
-		let buffer = document.getText();
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let directive = dockerfile.getDirective();
 		let symbols: SymbolInformation[] = [];
 		if (directive !== null) {
-			symbols.push(this.createSymbolInformation(document, directive.getName(), textDocumentURI, directive.getNameRange(), SymbolKind.Property));
+			symbols.push(this.createSymbolInformation(directive.getName(), textDocumentURI, directive.getNameRange(), SymbolKind.Property));
 		}
 		for (let instruction of dockerfile.getInstructions()) {
-			symbols.push(this.createSymbolInformation(document, instruction.getInstruction(), textDocumentURI, instruction.getInstructionRange(), SymbolKind.Function));
+			symbols.push(this.createSymbolInformation(instruction.getInstruction(), textDocumentURI, instruction.getInstructionRange(), SymbolKind.Function));
 		}
 		return symbols;
 	}

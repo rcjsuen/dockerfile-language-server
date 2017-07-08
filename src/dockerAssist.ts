@@ -125,7 +125,6 @@ export class DockerAssist {
 		if (lineEnd === -1) {
 			lineEnd = buffer.length;
 		}
-		let line = buffer.substring(lineStart, lineEnd);
 
 		if (previousWord !== "" && previousWord !== "ONBUILD") {
 			// only suggest proposals if at the front or after an ONBUILD
@@ -271,6 +270,7 @@ export class DockerAssist {
 			case "USER":
 				return this.createUSER(prefix, offset, keyword);
 		}
+		throw new Error("Unknown keyword found: " + keyword);
 	}
 
 	createADD(prefix: string, offset: number, markdown: string): CompletionItem {

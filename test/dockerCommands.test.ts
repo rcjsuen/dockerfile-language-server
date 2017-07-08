@@ -2,13 +2,10 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
 import {
-	TextEdit, TextDocument, Position, Range,
-	Command, ExecuteCommandParams,
-	Diagnostic, DiagnosticSeverity
+	TextDocument, Position, Range, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
 import { ValidationCode } from '../src/dockerValidator';
 import { DockerCommands, CommandIds } from '../src/dockerCommands';
@@ -79,7 +76,6 @@ describe("Dockerfile code actions", function () {
 
 describe("Dockerfile execute commands", function () {
 	it("unknown command", function () {
-		let command = Command.create("title", "unknown");
 		let document = createDocument("FROM node");
 		let edit = dockerCommands.createWorkspaceEdit(document, { command: "unknown", arguments: [] });
 		assert.equal(edit, null);
@@ -87,7 +83,6 @@ describe("Dockerfile execute commands", function () {
 
 	function directiveTo(commandId: string, suggestion: string) {
 		let range = Range.create(Position.create(0, 8), Position.create(0, 9));
-		let command = Command.create("", commandId, uri, range);
 		let document = createDocument("#escape=a");
 		let edit = dockerCommands.createWorkspaceEdit(document, {
 			command: commandId,
@@ -110,7 +105,6 @@ describe("Dockerfile execute commands", function () {
 
 	it("extra argument", function () {
 		let range = Range.create(Position.create(0, 10), Position.create(0, 14));
-		let command = Command.create("", CommandIds.EXTRA_ARGUMENT, uri, range);
 		let document = createDocument("FROM node node");
 		let edit = dockerCommands.createWorkspaceEdit(document, {
 			command: CommandIds.EXTRA_ARGUMENT,
@@ -125,7 +119,6 @@ describe("Dockerfile execute commands", function () {
 
 	it("convert to uppercase", function () {
 		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
-		let command = Command.create("", CommandIds.UPPERCASE, uri, range);
 		let document = createDocument("from node");
 		let edit = dockerCommands.createWorkspaceEdit(document, {
 			command: CommandIds.UPPERCASE,

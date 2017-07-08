@@ -6,15 +6,14 @@
 
 import {
 	createConnection, IConnection, InitializeResult, ClientCapabilities,
-	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Range, Hover,
-	CompletionItem, CompletionItemKind, InsertTextFormat,
-	CodeActionParams, Command, ExecuteCommandParams, 
-	DocumentSymbolParams, SymbolInformation, Diagnostic,
+	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
+	CompletionItem, CodeActionParams, Command, ExecuteCommandParams, 
+	DocumentSymbolParams, SymbolInformation,
 	DocumentFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams
 } from 'vscode-languageserver';
-import { Validator, ValidationCode } from './dockerValidator';
+import { Validator } from './dockerValidator';
 import { DockerAssist } from './dockerAssist';
 import { CommandIds, DockerCommands } from './dockerCommands';
 import { DockerHover } from './dockerHover';

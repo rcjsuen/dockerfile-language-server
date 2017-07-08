@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as assert from "assert";
 
-import { TextDocument, Position, Range, TextEdit } from 'vscode-languageserver';
+import { TextDocument, Position, TextEdit } from 'vscode-languageserver';
 import { DockerRename } from '../src/dockerRename';
 
 let renameSupport = new DockerRename();

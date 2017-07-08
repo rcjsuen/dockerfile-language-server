@@ -5,8 +5,7 @@
 'use strict';
 
 import {
-	TextDocument, Command, Diagnostic,
-	Hover, TextDocumentPositionParams, Range,
+	TextDocument, Command, Diagnostic, Range,
 	ExecuteCommandParams, WorkspaceEdit, TextEdit
 } from 'vscode-languageserver';
 import { ValidationCode } from './dockerValidator';
@@ -69,7 +68,7 @@ export class DockerCommands {
 		return [];
 	}
 
-	public createWorkspaceEdit(document: TextDocument, params: ExecuteCommandParams): WorkspaceEdit {
+	public createWorkspaceEdit(document: TextDocument, params: ExecuteCommandParams): WorkspaceEdit | null {
 		let uri: string = params.arguments[0];
 		let range: Range = params.arguments[1];
 		switch (params.command) {

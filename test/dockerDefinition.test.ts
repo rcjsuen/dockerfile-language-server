@@ -2,12 +2,9 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
-import {
-	TextEdit, TextDocument, Position, Range, Location
-} from 'vscode-languageserver';
+import { TextDocument, Position, Location } from 'vscode-languageserver';
 import { DockerDefinition } from '../src/dockerDefinition';
 
 let provider = new DockerDefinition();

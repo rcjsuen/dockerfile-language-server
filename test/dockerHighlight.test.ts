@@ -2,12 +2,10 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
 import {
-	TextEdit, TextDocument, Position, Range,
-	DocumentHighlight, DocumentHighlightKind
+	TextDocument, Position, DocumentHighlight, DocumentHighlightKind
 } from 'vscode-languageserver';
 import { DockerHighlight } from '../src/dockerHighlight';
 

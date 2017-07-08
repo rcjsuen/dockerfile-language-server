@@ -2,18 +2,14 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
-import {
-	TextDocument, Position, Range, Diagnostic, DiagnosticSeverity
-} from 'vscode-languageserver';
-import { Validator, ValidationCode, ValidationSeverity, ValidatorSettingsDefaults } from '../src/dockerValidator';
+import { TextDocument, Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
+import { Validator, ValidationCode, ValidationSeverity } from '../src/dockerValidator';
 import { ValidatorSettings } from '../src/dockerValidatorSettings';
 import { KEYWORDS } from '../src/docker';
 
 let source = "dockerfile-lsp";
-let uri = "uri://host/Dockerfile.sample";
 
 function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
@@ -211,7 +207,7 @@ function testValidArgument(instruction: string, argument: string) {
 	}
 }
 
-function testEscape(instruction, argumentFront, argumentBack) {
+function testEscape(instruction: string, argumentFront: string, argumentBack: string) {
 	var argument = argumentFront + argumentBack;
 	let diagnostics = validate("FROM node\n" + instruction + " \\\n" + argument);
 	assert.equal(diagnostics.length, 0);
@@ -434,14 +430,14 @@ describe("Docker Validator Tests", function() {
 		});
 
 		describe("missing argument", function() {
-			function testMissingArgument(instruction, prefix, middle, suffix) {
+			function testMissingArgument(instruction: string, prefix: string, middle: string, suffix: string) {
 				var length = instruction.length;
 				let diagnostics = validate("FROM node\n" + instruction + prefix + middle + suffix);
 				assert.equal(diagnostics.length, 1);
 				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
 			}
 
-			function testMissingArgumentLoop(instruction) {
+			function testMissingArgumentLoop(instruction: string) {
 				let newlines = [ "", "\r", "\n", "\r\n", "\\\r", "\\\n", "\\\r\n" ];
 				for (let newline of newlines) {
 					testMissingArgument(instruction, "", newline, "");

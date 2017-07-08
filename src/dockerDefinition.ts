@@ -5,19 +5,13 @@
 'use strict';
 
 import { TextDocument, Position, Location } from 'vscode-languageserver';
-import { Copy } from '../parser/instructions/copy';
-import { From } from '../parser/instructions/from';
 import { DockerfileParser } from '../parser/dockerfileParser';
 
 export class DockerDefinition {
 
-	public computeDefinition(document: TextDocument, position: Position): Location {
+	public computeDefinition(document: TextDocument, position: Position): Location | null {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
-		let froms: From[] = [];
-		let copies: Copy[] = [];
-		let stage = undefined;
-		let highlights = [];
 		for (let instruction of dockerfile.getFROMs()) {
 			let range = instruction.getBuildStageRange();
 			if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {

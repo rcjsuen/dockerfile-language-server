@@ -5,19 +5,12 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import {
-	createConnection, IConnection,
-	TextDocuments, TextDocument, Diagnostic,
-	InitializeResult, TextDocumentPositionParams, TextDocumentSyncKind,
-	CompletionItem, CompletionItemKind, InsertTextFormat, Hover,
-	CodeActionParams, Command,
-	ClientCapabilities
-} from 'vscode-languageserver';
+import { TextDocumentSyncKind } from 'vscode-languageserver';
 
 // fork the server and connect to it using Node IPC
 let lspProcess = child_process.fork("out/src/server.js", [ "--node-ipc" ]);
 
-function send(id: number, method: string, params: object) {
+function send(id: number, method: string, params: any) {
 	let message = {
 		jsonrpc: "2.0",
 		id: id,

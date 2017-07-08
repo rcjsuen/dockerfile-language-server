@@ -2,7 +2,6 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as child_process from "child_process";
 import * as assert from "assert";
 
 import { TextDocument, Hover, Position } from 'vscode-languageserver';
@@ -16,7 +15,7 @@ function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
 }
 
-function onHover(document: TextDocument, line: number, character: number): Hover {
+function onHover(document: TextDocument, line: number, character: number): Hover | null {
 	let textDocumentPosition = {
 		textDocument: {
 			uri: document.uri

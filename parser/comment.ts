@@ -29,7 +29,7 @@ export class Comment extends Line {
 	 * excluding any leading and trailing whitespace as well as the #
 	 * symbol.
 	 */
-	public getContentRange(): Range {
+	public getContentRange(): Range | null {
 		let range = this.getRange();
 		let raw = this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
 		let start = -1;

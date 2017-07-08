@@ -7,7 +7,6 @@
 import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
-import { Util } from '../src/docker';
 import { DockerfileParser } from '../parser/dockerfileParser';
 
 export class DockerFormatter {
@@ -56,13 +55,11 @@ export class DockerFormatter {
 
 	public formatRange(document: TextDocument, range: Range, options?: FormattingOptions): TextEdit[] {
 		let indentation = this.getIndentation(options);
-		let edits = [];
 		let buffer = document.getText();
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let escapeChar = dockerfile.getEscapeCharacter();
 		let indent = false;
-		let comment = false;
 		let parseStart = 0;
 		if (range.start.line !== 0) {
 			// walk back to see if an indentation is needed for the first line of the selected blocks

@@ -14,7 +14,7 @@ import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
 import { Onbuild } from './instructions/onbuild';
 import { Dockerfile } from './dockerfile';
-import { Util, DIRECTIVE_ESCAPE } from '../src/docker';
+import { DIRECTIVE_ESCAPE } from '../src/docker';
 
 export class DockerfileParser {
 
@@ -34,8 +34,7 @@ export class DockerfileParser {
 		return new Instruction(document, lineRange, this.escapeChar, instruction, instructionRange);
 	}
 
-	private getDirectiveSymbol(document: TextDocument, buffer: string, textDocumentURI: string): Line {
-		let line = null;
+	private getDirectiveSymbol(document: TextDocument, buffer: string): Line | null {
 		// reset the escape directive in between runs
 		this.escapeChar = '';
 		directiveCheck: for (let i = 0; i < buffer.length; i++) {
@@ -100,7 +99,6 @@ export class DockerfileParser {
 									return new Comment(document, lineRange);
 								}
 
-								let value = null;
 								if (valueStart === -1) {
 									// no non-whitespace characters found, highlight all the characters then
 									valueStart = j + 1;
@@ -131,7 +129,7 @@ export class DockerfileParser {
 	public parse(document: TextDocument): Dockerfile {
 		let buffer = document.getText();
 		let dockerfile = new Dockerfile();
-		let line: any = this.getDirectiveSymbol(document, buffer, document.uri);
+		let line: any = this.getDirectiveSymbol(document, buffer);
 		let offset = 0;
 		this.escapeChar = '\\';
 		if (line instanceof Directive) {
