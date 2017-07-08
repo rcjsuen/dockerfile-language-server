@@ -52,6 +52,17 @@ function assertNoSourceImage(diagnostic: Diagnostic, startLine: number, startCha
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertInvalidAs(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.INVALID_AS);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidAs());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInvalidPort(diagnostic: Diagnostic, port: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_PORT);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -867,6 +878,12 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("FROM node as setup");
 				assert.equal(diagnostics.length, 0);
+			});
+
+			it("invalid as", function() {
+				let diagnostics = validate("FROM node A$ setup");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidAs(diagnostics[0], 0, 10, 0, 12);
 			});
 		});
 

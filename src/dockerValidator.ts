@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import {
-	TextDocument, Diagnostic, DiagnosticSeverity
+	TextDocument, Position, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
 import { Dockerfile } from '../parser/dockerfile';
 import { Instruction } from '../parser/instruction';
@@ -18,6 +18,7 @@ export enum ValidationCode {
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
+	INVALID_AS,
 	INVALID_PORT,
 	INVALID_SIGNAL,
 	UNKNOWN_DIRECTIVE,
@@ -62,12 +63,12 @@ export class Validator {
 		if (directiveName !== DIRECTIVE_ESCAPE) {
 			// Dockerfiles currently only support the 'escape' directive
 			let range = directive.getNameRange();
-			problems.push(this.createUnknownDirective(document.offsetAt(range.start), document.offsetAt(range.end), directiveName));
+			problems.push(Validator.createUnknownDirective(range.start, range.end, directiveName));
 		} else {
 			// if the directive's value is invalid or isn't the empty string, flag it
 			if (value !== '\\' && value !== '`' && value !== "") {
 				let range = directive.getValueRange();
-				problems.push(this.createInvalidEscapeDirective(document.offsetAt(range.start), document.offsetAt(range.end), value));
+				problems.push(Validator.createInvalidEscapeDirective(range.start, range.end, value));
 			}
 		}
 
@@ -88,30 +89,32 @@ export class Validator {
 	 *                         and its value is -1, any number of
 	 *                         arguments greater than zero is valid
 	 * @param validate the function to use to validate an argument
-	 * @param createDiagnostic the function to use to create a
-	 *                         diagnostic if an argument is invalid
+	 * @param createIncompleteDiagnostic the function to use to create a diagnostic
+	 *                                   if the number of arguments is incorrect
 	 */
 	private checkArguments(document: TextDocument, instruction: Instruction, problems: Diagnostic[], expectedArgCount: number[],
-			validate: Function, createInvalidDiagnostic?: Function, createIncompleteDiagnostic?: Function): void {
+			validate: Function, createIncompleteDiagnostic?: Function): void {
 		let args = instruction.getArguments();
 		if (args.length === 0) {
 			// all instructions are expected to have at least one argument
 			let range = instruction.getInstructionRange();
-			problems.push(this.createMissingArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+			problems.push(Validator.createMissingArgument(range.start, range.end));
 		} else if (expectedArgCount[0] === -1) {
 			for (let i = 0; i < args.length; i++) {
-				if (!validate(i, args[i].getValue())) {
+				let createInvalidDiagnostic = validate(i, args[i].getValue());
+				if (createInvalidDiagnostic) {
 					let range = args[i].getRange();
-					problems.push(createInvalidDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), args[i].getValue()));
+					problems.push(createInvalidDiagnostic(range.start, range.end, args[i].getValue()));
 				}
 			}
 		} else {
 			for (let i = 0; i < expectedArgCount.length; i++) {
 				if (expectedArgCount[i] === args.length) {
 					for (let j = 0; j < args.length; j++) {
-						if (!validate(j, args[j].getValue())) {
+						let createInvalidDiagnostic = validate(j, args[j].getValue());
+						if (createInvalidDiagnostic) {
 							let range = args[j].getRange();
-							problems.push(createInvalidDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end), args[i].getValue()));
+							problems.push(createInvalidDiagnostic(range.start, range.end, args[i].getValue()));
 						}
 					}
 					return;
@@ -126,9 +129,9 @@ export class Validator {
 			if (extra) {
 				let range = args[args.length - 1].getRange();
 				if (createIncompleteDiagnostic) {
-					problems.push(createIncompleteDiagnostic(document.offsetAt(range.start), document.offsetAt(range.end)));
+					problems.push(createIncompleteDiagnostic(range.start, range.end));
 				} else {
-					problems.push(this.createExtraArgument(document.offsetAt(range.start), document.offsetAt(range.end)));
+					problems.push(Validator.createExtraArgument(range.start, range.end));
 				}
 			}
 		}
@@ -147,26 +150,26 @@ export class Validator {
 		let instructions = dockerfile.getInstructions();
 		if (instructions.length === 0) {
 			// no instructions in this file
-			problems.push(this.createNoSourceImage(0, 0));
+			problems.push(Validator.createNoSourceImage(document.positionAt(0), document.positionAt(0)));
 		} else if (instructions.length !== 0 && instructions[0].getKeyword() !== "FROM") {
 			// first instruction is not a FROM
 			let range = instructions[0].getInstructionRange();
-			problems.push(this.createNoSourceImage(document.offsetAt(range.start), document.offsetAt(range.end)));
+			problems.push(Validator.createNoSourceImage(range.start, range.end));
 		}
 		for (let instruction of dockerfile.getInstructions()) {
 			let keyword = instruction.getKeyword();
 			if (keywords.indexOf(keyword) === -1) {
 				let range = instruction.getInstructionRange();
 				// invalid instruction found
-				problems.push(this.createUnknownInstruction(document.offsetAt(range.start), document.offsetAt(range.end), keyword));
+				problems.push(Validator.createUnknownInstruction(range.start, range.end, keyword));
 			} else if (keyword !== instruction.getInstruction()) {
 				let range = instruction.getInstructionRange();
 				// warn about uppercase convention if the keyword doesn't match the actual instruction
-				problems.push(this.createUppercaseInstruction(document.offsetAt(range.start), document.offsetAt(range.end)));
+				problems.push(Validator.createUppercaseInstruction(range.start, range.end));
 			} else {
 				if (keyword === "MAINTAINER") {
 					let range = instruction.getInstructionRange();
-					let diagnostic = this.createMaintainerDeprecated(document.offsetAt(range.start), document.offsetAt(range.end));
+					let diagnostic = this.createMaintainerDeprecated(range.start, range.end);
 					if (diagnostic) {
 						problems.push(diagnostic);
 					}
@@ -176,45 +179,45 @@ export class Validator {
 					case "WORKDIR":
 					case "USER":
 						this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
-							return true;
+							return null;
 						});
 						break;
 					case "FROM":
 						this.checkArguments(document, instruction, problems, [ 1, 3 ], function(index, argument) {
 							if (index === 1) {
-								return argument.toUpperCase() === "AS";
+								return argument.toUpperCase() === "AS" ? null : Validator.createInvalidAs;
 							}
-							return true;
-						}, null, this.createRequiresOneOrThreeArguments.bind(this));
+							return null;
+						}, Validator.createRequiresOneOrThreeArguments);
 						break;
 					case "STOPSIGNAL":
 						this.checkArguments(document, instruction, problems, [ 1 ], function(index, argument) {
 							if (argument.indexOf("SIG") === 0) {
-								return true;
+								return null;
 							}
 							
 							for (var i = 0; i < argument.length; i++) {
 								if ('0' > argument.charAt(i) || '9' < argument.charAt(i)) {
-									return false;
+									return Validator.createInvalidStopSignal;
 								}
 							}
-							return true;
-						}, this.createInvalidStopSignal.bind(this));
+							return null;
+						});
 						break;
 					case "EXPOSE":
 						this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
 							for (var i = 0; i < argument.length; i++) {
 								if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
-									return false;
+									return Validator.createInvalidPort;
 								}
 							}
 
-							return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-';
-						}, this.createInvalidPort.bind(this));
+							return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-' ? null : Validator.createInvalidPort;
+						});
 						break;
 					default:
 						this.checkArguments(document, instruction, problems, [ -1 ], function(index, argument) {
-							return true;
+							return null;
 						});
 						break;
 				}
@@ -230,8 +233,9 @@ export class Validator {
 
 		"noSourceImage": "No source image provided with `FROM`",
 
-		"instructionRequiresOneOrThreeArguments": "${0} requires either one or three arguments",
+		"fromRequiresOneOrThreeArguments": "FROM requires either one or three arguments",
 
+		"invalidAs": "Second argument should be AS",
 		"invalidPort": "Invalid containerPort: ${0}",
 		"invalidStopSignal": "Invalid signal: ${0}",
 
@@ -259,6 +263,10 @@ export class Validator {
 		return Validator.dockerProblems["noSourceImage"];
 	}
 
+	public static getDiagnosticMessage_InvalidAs() {
+		return Validator.dockerProblems["invalidAs"];
+	}
+
 	public static getDiagnosticMessage_InvalidPort(port: string) {
 		return Validator.formatMessage(Validator.dockerProblems["invalidPort"], port);
 	}
@@ -276,7 +284,7 @@ export class Validator {
 	}
 
 	public static getDiagnosticMessage_InstructionRequiresOneOrThreeArguments() {
-		return Validator.dockerProblems["instructionRequiresOneOrThreeArguments"];
+		return Validator.dockerProblems["fromRequiresOneOrThreeArguments"];
 	}
 
 	public static getDiagnosticMessage_InstructionUnknown(instruction: string) {
@@ -291,51 +299,55 @@ export class Validator {
 		return Validator.dockerProblems["deprecatedMaintainer"];
 	}
 
-	createUnknownDirective(start: number, end: number, directive: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive), ValidationCode.UNKNOWN_DIRECTIVE);
+	static createUnknownDirective(start: Position, end: Position, directive: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive), ValidationCode.UNKNOWN_DIRECTIVE);
 	}
 
-	createInvalidEscapeDirective(start: number, end: number, value: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
+	static createInvalidEscapeDirective(start: Position, end: Position, value: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	}
 
-	createInvalidPort(start: number, end: number, port: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_PORT);
+	static createInvalidAs(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidAs(), ValidationCode.INVALID_AS);
 	}
 
-	createInvalidStopSignal(start: number, end: number, signal: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InvalidSignal(signal), ValidationCode.INVALID_SIGNAL);
+	static createInvalidPort(start: Position, end: Position, port: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_PORT);
 	}
 
-	createMissingArgument(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionMissingArgument(), ValidationCode.ARGUMENT_MISSING);
+	static createInvalidStopSignal(start: Position, end: Position, signal: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidSignal(signal), ValidationCode.INVALID_SIGNAL);
 	}
 
-	createExtraArgument(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.ARGUMENT_EXTRA);
+	static createMissingArgument(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionMissingArgument(), ValidationCode.ARGUMENT_MISSING);
 	}
 
-	public createRequiresOneOrThreeArguments(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionRequiresOneOrThreeArguments(), ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE);
+	static createExtraArgument(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.ARGUMENT_EXTRA);
 	}
 
-	createNoSourceImage(start: number, end: number): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_NoSourceImage(), ValidationCode.NO_SOURCE_IMAGE);
+	static createRequiresOneOrThreeArguments(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionRequiresOneOrThreeArguments(), ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE);
 	}
 
-	createUnknownInstruction(start: number, end: number, instruction: string): Diagnostic {
-		return this.createError(start, end, Validator.getDiagnosticMessage_InstructionUnknown(instruction), ValidationCode.UNKNOWN_INSTRUCTION);
+	static createNoSourceImage(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_NoSourceImage(), ValidationCode.NO_SOURCE_IMAGE);
 	}
 
-	createError(start: number, end: number, description: string, code?: ValidationCode): Diagnostic {
-		return this.createDiagnostic(DiagnosticSeverity.Error, start, end, description, code);
+	static createUnknownInstruction(start: Position, end: Position, instruction: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionUnknown(instruction), ValidationCode.UNKNOWN_INSTRUCTION);
 	}
 
-	createUppercaseInstruction(start: number, end: number): Diagnostic {
-		return this.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
+	static createError(start: Position, end: Position, description: string, code?: ValidationCode): Diagnostic {
+		return Validator.createDiagnostic(DiagnosticSeverity.Error, start, end, description, code);
 	}
 
-	createMaintainerDeprecated(start: number, end: number): Diagnostic {
+	static createUppercaseInstruction(start: Position, end: Position): Diagnostic {
+		return Validator.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
+	}
+
+	createMaintainerDeprecated(start: Position, end: Position): Diagnostic {
 		let severity = null;
 		if (this.settings.deprecatedMaintainer === ValidationSeverity.ERROR) {
 			severity = DiagnosticSeverity.Error;
@@ -344,20 +356,20 @@ export class Validator {
 		}
 
 		if (severity) {
-			return this.createDiagnostic(severity, start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer(), ValidationCode.DEPRECATED_MAINTAINER);
+			return Validator.createDiagnostic(severity, start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer(), ValidationCode.DEPRECATED_MAINTAINER);
 		}
 		return null;
 	}
 
-	createWarning(start: number, end: number, description: string, code?: ValidationCode): Diagnostic {
-		return this.createDiagnostic(DiagnosticSeverity.Warning, start, end, description, code);
+	static createWarning(start: Position, end: Position, description: string, code?: ValidationCode): Diagnostic {
+		return Validator.createDiagnostic(DiagnosticSeverity.Warning, start, end, description, code);
 	}
 
-	createDiagnostic(severity: DiagnosticSeverity, start: number, end: number, description: string, code?: ValidationCode): Diagnostic {
+	static createDiagnostic(severity: DiagnosticSeverity, start: Position, end: Position, description: string, code?: ValidationCode): Diagnostic {
 		return {
 			range: {
-				start: this.document.positionAt(start),
-				end: this.document.positionAt(end)
+				start: start,
+				end: end
 			},
 			message: description,
 			severity: severity,
