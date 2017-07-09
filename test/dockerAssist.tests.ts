@@ -628,6 +628,26 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(proposals.length, 0);
 			}
 
+			content = header + "FROM node\n" + instruction + " " + escapeChar + " \n";
+			proposals = compute(content, content.length);
+			if (instruction === "ONBUILD") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertONBUILDProposals(proposals, lastLine, 0, 0);
+			} else {
+				assert.equal(proposals.length, 0);
+			}
+
+			content = header + "FROM node\n" + instruction + " " + escapeChar + " \r\n";
+			proposals = compute(content, content.length);
+			if (instruction === "ONBUILD") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertONBUILDProposals(proposals, lastLine, 0, 0);
+			} else {
+				assert.equal(proposals.length, 0);
+			}
+
 			content = header + "FROM node\n" + instruction + escapeChar + "\n ";
 			proposals = compute(content, content.length);
 			if (instruction === "ONBUILD") {

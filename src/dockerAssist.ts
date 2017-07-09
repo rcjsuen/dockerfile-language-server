@@ -75,37 +75,34 @@ export class DockerAssist {
 
 		var previousWord = "";
 		var whitespace = false;
-		var lineStart = 0;
+		var newline = false;
 		lineCheck: for (let i = offset - 1; i >= 0; i--) {
 			let char = buffer.charAt(i);
 			switch (char) {
 				case '\n':
-					if (buffer.charAt(i - 1) === escapeCharacter) {
-						i--;
-						continue;
-					} else if (buffer.charAt(i - 1) === '\r' && buffer.charAt(i - 2) === escapeCharacter) {
-						i = i - 2;
-						continue;
+					newline = true;
+					if (buffer.charAt(i - 1) === '\r') {
+						i = i - 1;
 					}
-
-					if (previousWord !== "" && previousWord !== "ONBUILD") {
-						// keyword content assist only allowed after an ONBUILD
-						return [];
-					}
-					lineStart = i + 1;
-					break lineCheck;
+					break;
 				case ' ':
 				case '\t':
-					if (whitespace) {
-						if (previousWord !== "" && previousWord !== "ONBUILD") {
-							// keyword content assist only allowed after an ONBUILD
-							return [];
-						}
+					if (whitespace && !newline && previousWord !== "" && previousWord !== "ONBUILD") {
+						break lineCheck;
 					} else {
 						whitespace = true;
 					}
 					break;
 				default:
+					if (newline) {
+						if (char === escapeCharacter) {
+							// encountered a newline, it was escaped, keep processing
+							newline = false;
+							continue;
+						}
+						break lineCheck;
+					}
+					// whitespace encountered, start processing this as the previous word
 					if (whitespace) {
 						previousWord = char.toUpperCase() + previousWord;
 					}
