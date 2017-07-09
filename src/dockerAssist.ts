@@ -110,19 +110,6 @@ export class DockerAssist {
 			}
 		}
 
-		let lineEnd = -1;
-		for (let i = offset; i < buffer.length; i++) {
-			let char = buffer.charAt(i);
-			if (char === '\r' || char === '\n') {
-				lineEnd = i;
-				break;
-			}
-		}
-
-		if (lineEnd === -1) {
-			lineEnd = buffer.length;
-		}
-
 		if (previousWord !== "" && previousWord !== "ONBUILD") {
 			// only suggest proposals if at the front or after an ONBUILD
 			return [];
