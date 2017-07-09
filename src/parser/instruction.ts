@@ -57,7 +57,35 @@ export class Instruction extends Line {
 					found = -1;
 				}
 			} else if (char === this.escapeChar) {
-				if (fullArgs.charAt(i + 1) === '\r') {
+				let next = fullArgs.charAt(i + 1);
+				if (next === ' ' || next === '\t') {
+					whitespaceCheck: for (let j = i + 2; j < fullArgs.length; j++) {
+						let newlineCheck = fullArgs.charAt(j);
+						switch (newlineCheck) {
+							case ' ':
+							case '\t':
+								continue;
+							case '\r':
+								escapeMarker = i;
+								if (fullArgs.charAt(j + 1) === '\n') {
+									i = j + 1;
+								} else {
+									i = j;
+								}
+								break;
+							case '\n':
+								escapeMarker = i;
+								i = j;
+								break whitespaceCheck;
+							default:
+								escapedArg = escapedArg + newlineCheck;
+								if (found === -1) {
+									found = i;
+								}
+								break whitespaceCheck;
+						}
+					}
+				} else if (fullArgs.charAt(i + 1) === '\r') {
 					escapeMarker = i;
 					if (fullArgs.charAt(i + 2) === '\n') {
 						i++;

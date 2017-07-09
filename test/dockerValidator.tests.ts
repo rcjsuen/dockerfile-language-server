@@ -218,6 +218,15 @@ function testEscape(instruction: string, argumentFront: string, argumentBack: st
 	diagnostics = validate("FROM node\n" + instruction + "\\\n " + argument);
 	assert.equal(diagnostics.length, 0);
 
+	diagnostics = validate("FROM node\n" + instruction + " \\ \n" + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + "\\ \n " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\ \n " + argument);
+	assert.equal(diagnostics.length, 0);
+
 	diagnostics = validate("FROM node\n" + instruction + " \\\r\n" + argument);
 	assert.equal(diagnostics.length, 0);
 
@@ -225,6 +234,15 @@ function testEscape(instruction: string, argumentFront: string, argumentBack: st
 	assert.equal(diagnostics.length, 0);
 
 	diagnostics = validate("FROM node\n" + instruction + " \\\r\n " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\ \r\n" + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + "\\ \r\n " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\ \r\n " + argument);
 	assert.equal(diagnostics.length, 0);
 
 	diagnostics = validate("FROM node\n" + instruction + " " + argument + "\\\n");
@@ -901,6 +919,9 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 0);
 
 				diagnostics = validate("FROM node as setup");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node AS \\ \n setup");
 				assert.equal(diagnostics.length, 0);
 			});
 

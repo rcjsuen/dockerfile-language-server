@@ -191,6 +191,25 @@ export class DockerfileParser {
 								} else if (char === '\n') {
 									instructionEnd = j;
 									j++;
+								} else if (char === ' ' || char === '\t') {
+									escapeCheck: for (let k = j + 2; k < buffer.length; k++) {
+										switch (buffer.charAt(k)) {
+											case ' ':
+											case '\t':
+												break;
+											case '\r':
+												if (buffer.charAt(k + 1) === '\n') {
+													j = k + 1;
+													break escapeCheck;
+												}
+											case '\n':
+												j = k;
+												break escapeCheck;
+											default:
+												j = k;
+												break escapeCheck;
+										}
+									}
 								} else {
 									instruction = instruction + this.escapeChar;
 								}
@@ -211,13 +230,33 @@ export class DockerfileParser {
 											dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, instructionRange));
 											continue lineCheck;
 										case this.escapeChar:
-											if (buffer.charAt(k + 1) === '\n') {
+											let next = buffer.charAt(k + 1);
+											if (next === '\n') {
 												k++;
-											} else if (buffer.charAt(k + 1) === '\r') {
+											} else if (next === '\r') {
 												if (buffer.charAt(k + 2) === '\n') {
 													k = k + 2;
 												} else {
 													k++;
+												}
+											} else if (next === ' ' || next === '\t') {
+												escapeCheck: for (let l = k + 2; l < buffer.length; l++) {
+													switch (buffer.charAt(l)) {
+														case ' ':
+														case '\t':
+															break;
+														case '\r':
+															if (buffer.charAt(l + 1) === '\n') {
+																k = l + 1;
+																break escapeCheck;
+															}
+														case '\n':
+															k = l;
+															break escapeCheck;
+														default:
+															k = l;
+															break escapeCheck;
+													}
 												}
 											}
 											continue;
