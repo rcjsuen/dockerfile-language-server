@@ -15,11 +15,13 @@ export class CommandIds {
 	static readonly EXTRA_ARGUMENT = "docker.command.removeExtraArgument";
 	static readonly DIRECTIVE_TO_BACKTICK = "docker.command.directiveToBacktick";
 	static readonly DIRECTIVE_TO_BACKSLASH = "docker.command.directiveToBackslash";
+	static readonly CONVERT_TO_AS = "docker.command.convertToAS";
 }
 
 export class DockerCommands {
 
 	public analyzeDiagnostics(diagnostics: Diagnostic[], textDocumentURI: string, range: Range): Command[] {
+		let args = [ textDocumentURI, range ];
 		for (let i = 0; i < diagnostics.length; i++) {
 			switch (diagnostics[i].code) {
 				case ValidationCode.LOWERCASE:
@@ -27,10 +29,7 @@ export class DockerCommands {
 						{
 							title: "Convert instruction to uppercase",
 							command: CommandIds.UPPERCASE,
-							arguments: [
-								textDocumentURI,
-								range
-							]
+							arguments: args
 						}
 					];
 				case ValidationCode.ARGUMENT_EXTRA:
@@ -38,10 +37,7 @@ export class DockerCommands {
 						{
 							title: "Remove extra argument",
 							command: CommandIds.EXTRA_ARGUMENT,
-							arguments: [
-								textDocumentURI,
-								range
-							]
+							arguments: args
 						}
 					];
 				case ValidationCode.INVALID_ESCAPE_DIRECTIVE:
@@ -49,18 +45,20 @@ export class DockerCommands {
 						{
 							title: "Convert to backslash",
 							command: CommandIds.DIRECTIVE_TO_BACKSLASH,
-							arguments: [
-								textDocumentURI,
-								range
-							]
+							arguments: args
 						},
 						{
 							title: "Convert to backtick",
 							command: CommandIds.DIRECTIVE_TO_BACKTICK,
-							arguments: [
-								textDocumentURI,
-								range
-							]
+							arguments: args
+						}
+					];
+				case ValidationCode.INVALID_AS:
+					return [
+						{
+							title: "Convert to AS",
+							command: CommandIds.CONVERT_TO_AS,
+							arguments: args
 						}
 					];
 			}
@@ -114,6 +112,17 @@ export class DockerCommands {
 						]:
 						[
 							TextEdit.replace(range, '`')
+						]
+					}
+				};
+			case CommandIds.CONVERT_TO_AS:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, "AS")
 						]
 					}
 				};

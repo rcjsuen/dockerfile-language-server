@@ -29,6 +29,10 @@ function createLowercase(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.LOWERCASE);
 }
 
+function createAS(): Diagnostic {
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.INVALID_AS);
+}
+
 describe("Dockerfile code actions", function () {
 	it("no diagnostics", function () {
 		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
@@ -71,6 +75,16 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[0].arguments.length, 2);
 		assert.equal(commands[0].arguments[0], uri);
 		assert.equal(commands[0].arguments[1], range);
+	});
+
+	it("convert to AS", function () {
+		let diagnostic = createAS();
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri, diagnostic.range);
+		assert.equal(commands.length, 1);
+		assert.equal(commands[0].command, CommandIds.CONVERT_TO_AS);
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assert.equal(commands[0].arguments[1], diagnostic.range);
 	});
 });
 
@@ -128,6 +142,20 @@ describe("Dockerfile execute commands", function () {
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
 		assert.equal(edits[0].newText, "FROM");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("convert to AS", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let document = createDocument("FROM node as setup");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.CONVERT_TO_AS,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "AS");
 		assert.equal(edits[0].range, range);
 	});
 });

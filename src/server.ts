@@ -61,7 +61,8 @@ connection.onInitialize((params): InitializeResult => {
 					CommandIds.UPPERCASE,
 					CommandIds.EXTRA_ARGUMENT,
 					CommandIds.DIRECTIVE_TO_BACKSLASH,
-					CommandIds.DIRECTIVE_TO_BACKTICK
+					CommandIds.DIRECTIVE_TO_BACKTICK,
+					CommandIds.CONVERT_TO_AS
 				]
 			},
 			documentFormattingProvider: true,
