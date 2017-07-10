@@ -13,6 +13,9 @@ import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
 import { Onbuild } from './instructions/onbuild';
+import { StopSignal } from './instructions/stopSignal';
+import { Workdir } from './instructions/workdir';
+import { User } from './instructions/user';
 import { Dockerfile } from './dockerfile';
 import { DIRECTIVE_ESCAPE } from '../docker';
 
@@ -30,6 +33,12 @@ export class DockerfileParser {
 				return new From(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "ONBUILD":
 				return new Onbuild(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "STOPSIGNAL":
+				return new StopSignal(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "WORKDIR":
+				return new Workdir(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "USER":
+				return new User(document, lineRange, this.escapeChar, instruction, instructionRange);
 		}
 		return new Instruction(document, lineRange, this.escapeChar, instruction, instructionRange);
 	}

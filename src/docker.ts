@@ -4,6 +4,8 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import { Range, Position } from 'vscode-languageserver';
+
 export const KEYWORDS = [
 	"ADD",
 	"ARG",
@@ -34,5 +36,19 @@ export class Util {
 
 	public static isNewline(char: string): boolean {
 		return char === '\r' || char === '\n';
+	}
+
+	/**
+	 * Determines if the given position is contained within the given range.
+	 * 
+	 * @param position the position to check
+	 * @param range the range to see if the position is inside of
+	 */
+	public static isInsideRange(position: Position, range: Range): boolean {
+		return range != null &&
+				range.start.line <= position.line &&
+				position.line <= range.end.line &&
+				range.start.character <= position.character &&
+				position.character <= range.end.character;
 	}
 }

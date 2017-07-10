@@ -265,6 +265,46 @@ describe("Dockerfile hover", function() {
 				let hover = onHover(document, 0, 5);
 				assert.equal(hover, null);
 			});
+
+			it("referenced variable ${var}", function() {
+				let document = createDocument("ARG var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+				let hover = onHover(document, 1, 13);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 2, 7);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 3, 11);
+				assert.equal(hover.contents, "value");
+			});
+
+			it("referenced variable ${var} no value", function() {
+				let document = createDocument("ARG var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+				let hover = onHover(document, 1, 13);
+				assert.equal(hover, null);
+				hover = onHover(document, 2, 7);
+				assert.equal(hover, null);
+				hover = onHover(document, 3, 11);
+				assert.equal(hover, null);
+			});
+
+			it("referenced variable $var", function() {
+				let document = createDocument("ARG var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+				let hover = onHover(document, 1, 13);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 2, 7);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 3, 11);
+				assert.equal(hover.contents, "value");
+			});
+
+			it("referenced variable $var no value", function() {
+				let document = createDocument("ARG var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+				let hover = onHover(document, 1, 13);
+				assert.equal(hover, null);
+				hover = onHover(document, 2, 7);
+				assert.equal(hover, null);
+				hover = onHover(document, 3, 11);
+				assert.equal(hover, null);
+			});
 		});
 	});
 

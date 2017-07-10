@@ -2,10 +2,11 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { TextDocument, Range } from 'vscode-languageserver';
+import { TextDocument, Range, Position } from 'vscode-languageserver';
 import { Util } from '../docker';
 import { Line } from './line';
 import { Argument } from './argument';
+import { Variable } from './variable';
 
 export class Instruction extends Line {
 
@@ -121,5 +122,29 @@ export class Instruction extends Line {
 		}
 
 		return args;
+	}
+
+	public getVariables(): Variable[] {
+		let variables = [];
+		let args = this.getArguments();
+		for (let arg of args) {
+			let value = arg.getValue();
+			let range = arg.getRange();
+			let matches = value.match(/\$([a-zA-Z_]+)/);
+			if (matches && matches.length > 0) {
+				let offset = this.document.offsetAt(range.start) + value.indexOf(matches[0]);
+				variables.push(new Variable(matches[1],
+					Range.create(this.document.positionAt(offset + 1), this.document.positionAt(offset + matches[0].length)),
+					Range.create(this.document.positionAt(offset), this.document.positionAt(offset + matches[0].length))));
+			}
+			matches = value.match(/\${([a-zA-Z_]+)}/);
+			if (matches && matches.length > 0) {
+				let offset = this.document.offsetAt(range.start) + value.indexOf(matches[0]);
+				variables.push(new Variable(matches[1],
+					Range.create(this.document.positionAt(offset + 2), this.document.positionAt(offset + matches[0].length - 1)),
+					Range.create(this.document.positionAt(offset), this.document.positionAt(offset + matches[0].length))));
+			}
+		}
+		return variables;
 	}
 }

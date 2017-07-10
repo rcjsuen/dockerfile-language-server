@@ -10,6 +10,9 @@ import { Instruction } from './instruction';
 import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
 import { From } from './instructions/from';
+import { StopSignal } from './instructions/stopSignal';
+import { Workdir } from './instructions/workdir';
+import { User } from './instructions/user';
 import { DIRECTIVE_ESCAPE } from '../docker';
 
 export class Dockerfile {
@@ -41,6 +44,16 @@ export class Dockerfile {
 	}
 
 	public getInstructions(): Instruction[] {
+		return this.instructions;
+	}
+
+	public getVariableInstructions(): Instruction[] {
+		let instructions = [];
+		for (let instruction of this.instructions) {
+			if (instruction instanceof StopSignal || instruction instanceof Workdir ||instruction instanceof User) {
+				instructions.push(instruction);
+			}
+		}
 		return this.instructions;
 	}
 

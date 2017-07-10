@@ -12,6 +12,10 @@ export class Arg extends Instruction {
 		super(document, range, escapeChar, instruction, instructionRange);
 	}
 
+	public getName(): string | null {
+		return this.getRangeContent(this.getNameRange());
+	}
+
 	public getNameRange(): Range | null{
 		let args = this.getArguments();
 		if (args.length != 1) {
