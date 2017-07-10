@@ -554,6 +554,10 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node\nRUNCMD docker\\\n");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
+
+				diagnostics = validate("FROM node\nR\\UN docker\n");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "R\\UN", 1, 0, 1, 4);
 			});
 
 			it("escape", function () {
@@ -570,6 +574,26 @@ describe("Docker Validator Tests", function() {
 				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
 
 				diagnostics = validate("FROM node\nSTOPSIGNAL\\\r\n9 ");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\ \n9");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\ \t\n9");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\  \n9");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\ \r\n9");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
+
+				diagnostics = validate("FROM node\nSTOPSIGNAL\\ \r9");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
 
