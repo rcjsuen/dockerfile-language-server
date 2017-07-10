@@ -36,7 +36,15 @@ export class DockerDefinition {
 		let variable = null;
 		let variables = {};
 		for (let arg of dockerfile.getARGs()) {
-			variables[arg.getName()] = arg;
+			let range = arg.getNameRange();
+			// might be an ARG with no arguments
+			if (range) {
+				// is the caret inside the definition itself
+				if (Util.isInsideRange(position, range)) {
+					return arg;
+				}
+				variables[arg.getName()] = arg;
+			}
 		}
 		for (let instruction of dockerfile.getVariableInstructions()) {
 			for (let variable of instruction.getVariables()) {

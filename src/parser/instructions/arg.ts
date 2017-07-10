@@ -26,7 +26,8 @@ export class Arg extends Instruction {
 		if (index !== -1) {
 			return Range.create(args[0].getRange().start, this.document.positionAt(this.document.offsetAt(args[0].getRange().start) + index));
 		}
-		return null;
+		// no '=' found, just defined the ARG's name
+		return args[0].getRange();
 	}
 
 	public getValue(): string | null {

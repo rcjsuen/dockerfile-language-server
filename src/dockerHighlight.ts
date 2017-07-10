@@ -9,6 +9,7 @@ import {
 } from 'vscode-languageserver';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { DockerDefinition } from './dockerDefinition';
+import { Util } from './docker';
 
 export class DockerHighlight {
 
@@ -18,25 +19,59 @@ export class DockerHighlight {
 		let provider = new DockerDefinition();
 		let location = provider.computeDefinition(document, position);
 		let highlights = [];
-		let stage = undefined;
 		if (location === null) {
 			for (let instruction of dockerfile.getCOPYs()) {
 				let range = instruction.getFromValueRange();
 				if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
-					stage = instruction.getFromValue();
-					break;
+					let stage = instruction.getFromValue();
+
+					for (let instruction of dockerfile.getCOPYs()) {
+						let source = instruction.getFromValue();
+						if (source === stage) {
+							highlights.push(DocumentHighlight.create(instruction.getFromValueRange(), DocumentHighlightKind.Read));
+						}
+					}
+					return highlights;
+				}
+			}
+
+			for (let instruction of dockerfile.getVariableInstructions()) {
+				for (let variable of instruction.getVariables()) {
+					if (Util.isInsideRange(position, variable.getRange())) {
+						let name = variable.getName();
+						
+						for (let instruction of dockerfile.getVariableInstructions()) {
+							for (let variable of instruction.getVariables()) {
+								if (variable.getName() === name) {
+									highlights.push(DocumentHighlight.create(variable.getRange(), DocumentHighlightKind.Read));
+								}
+							}
+						}
+						return highlights;
+					}
 				}
 			}
 		} else {
 			highlights.push(DocumentHighlight.create(location.range, DocumentHighlightKind.Write));
-			stage = document.getText().substring(document.offsetAt(location.range.start), document.offsetAt(location.range.end));
-		}
+			let definition = document.getText().substring(document.offsetAt(location.range.start), document.offsetAt(location.range.end));
+			for (let from of dockerfile.getFROMs()) {
+				let range = from.getBuildStageRange();
+				if (range && range.start.line === location.range.start.line) {
+					for (let instruction of dockerfile.getCOPYs()) {
+						let source = instruction.getFromValue();
+						if (source === definition) {
+							highlights.push(DocumentHighlight.create(instruction.getFromValueRange(), DocumentHighlightKind.Read));
+						}
+					}
+					return highlights;
+				}
+			}
 
-		if (stage !== undefined) {
-			for (let instruction of dockerfile.getCOPYs()) {
-				let source = instruction.getFromValue();
-				if (source === stage) {
-					highlights.push(DocumentHighlight.create(instruction.getFromValueRange(), DocumentHighlightKind.Read));
+			for (let instruction of dockerfile.getVariableInstructions()) {
+				for (let variable of instruction.getVariables()) {
+					if (variable.getName() === definition) {
+						highlights.push(DocumentHighlight.create(variable.getRange(), DocumentHighlightKind.Read));
+					}
 				}
 			}
 		}
