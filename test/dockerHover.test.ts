@@ -194,6 +194,78 @@ describe("Dockerfile hover", function() {
 			hover = onHover(document, 0, 3);
 			assert.equal(hover, null);
 		});
+
+		describe("ARG", function() {
+			it("variable name", function() {
+				let document = createDocument("ARG z=y");
+				let hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG e='f g=h'");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "f g=h");
+
+				document = createDocument("ARG x=\"v v=w\"");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "v v=w");
+			});
+
+			it("variable value", function() {
+				let document = createDocument("ARG z=y");
+				let hover = onHover(document, 0, 6);
+				assert.equal(hover, null);
+			});
+
+			it("no variable value", function() {
+				let document = createDocument("ARG z");
+				let hover = onHover(document, 0, 5);
+				assert.equal(hover, null);
+			});
+
+			it("escaped", function() {
+				let document = createDocument("ARG \\ \t\nz=y");
+				let hover = onHover(document, 1, 0);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG \\ \t\rz=y");
+				hover = onHover(document, 1, 0);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG \\ \t\r\nz=y");
+				hover = onHover(document, 1, 0);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG z=y \\ \t\n \t");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG z=y \\ \t\r \t");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG z=y \\ \t\r\n \t");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG z=\\\ny");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG z=\\\n'y'");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "y");
+
+				document = createDocument("ARG z=\\\n\"y\"");
+				hover = onHover(document, 0, 5);
+				assert.equal(hover.contents, "y");
+			});
+
+			it("no variable", function() {
+				let document = createDocument("ARG    ");
+				let hover = onHover(document, 0, 5);
+				assert.equal(hover, null);
+			});
+		});
 	});
 
 	describe("keyword nesting", function() {

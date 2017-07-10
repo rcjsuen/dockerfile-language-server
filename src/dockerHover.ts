@@ -5,9 +5,10 @@
 'use strict';
 
 import {
-	TextDocument, TextDocumentPositionParams, Hover
+	TextDocument, TextDocumentPositionParams, Hover, Range, Position
 } from 'vscode-languageserver';
 import { DockerfileParser } from './parser/dockerfileParser';
+import { Arg } from './parser/instructions/arg';
 import { Onbuild } from './parser/instructions/onbuild';
 import { DIRECTIVE_ESCAPE } from './docker';
 import { MarkdownDocumentation } from './dockerMarkdown';
@@ -20,6 +21,20 @@ export class DockerHover {
 		this.markdown = markdown;
 	}
 
+	/**
+	 * Determines if the given position is contained within the given range.
+	 * 
+	 * @param position the position to check
+	 * @param range the range to see if the position is inside of
+	 */
+	private isInsideRange(position: Position, range: Range): boolean {
+		return range != null &&
+				range.start.line <= position.line &&
+				position.line <= range.end.line &&
+				range.start.character <= position.character &&
+				position.character <= range.end.character;
+	}
+
 	onHover(document: TextDocument, textDocumentPosition: TextDocumentPositionParams): Hover | null {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
@@ -27,28 +42,32 @@ export class DockerHover {
 
 		if (textDocumentPosition.position.line === 0 && directive !== null && directive.getDirective() === DIRECTIVE_ESCAPE) {
 			let range = directive.getNameRange();
-			if (range.start.character <= textDocumentPosition.position.character && textDocumentPosition.position.character <= range.end.character) {
+			if (this.isInsideRange(textDocumentPosition.position, range)) {
 				return this.markdown.getMarkdown(DIRECTIVE_ESCAPE);
 			}
 		}
 
 		for (let instruction of dockerfile.getInstructions()) {
 			let instructionRange = instruction.getInstructionRange();
-			if (instructionRange.start.line <= textDocumentPosition.position.line &&
-					textDocumentPosition.position.line <= instructionRange.end.line &&
-					instructionRange.start.character <= textDocumentPosition.position.character &&
-					textDocumentPosition.position.character <= instructionRange.end.character) {
+			if (this.isInsideRange(textDocumentPosition.position, instructionRange)) {
 				return this.markdown.getMarkdown(instruction.getKeyword());
 			}
 
 			if (instruction instanceof Onbuild) {
+				// hovering over a trigger instruction of an ONBUILD
 				let range = instruction.getTriggerRange();
-				if (range != null &&
-						range.start.line <= textDocumentPosition.position.line &&
-						textDocumentPosition.position.line <= range.end.line &&
-						range.start.character <= textDocumentPosition.position.character &&
-						textDocumentPosition.position.character <= range.end.character) {
+				if (this.isInsideRange(textDocumentPosition.position, range)) {
 					return this.markdown.getMarkdown(instruction.getTrigger());
+				}
+			}
+
+			if (instruction instanceof Arg) {
+				// hovering over an argument defined by ARG
+				let range = instruction.getNameRange();
+				if (this.isInsideRange(textDocumentPosition.position, range)) {
+					return {
+						contents: instruction.getValue()
+					};
 				}
 			}
 		}

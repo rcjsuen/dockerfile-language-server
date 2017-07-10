@@ -22,6 +22,13 @@ export class Instruction extends Line {
 		this.instructionRange = instructionRange;
 	}
 
+	protected getRangeContent(range: Range) {
+		if (range === null) {
+			return null;
+		}
+		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
+	}
+
 	public getInstructionRange(): Range {
 		return this.instructionRange;
 	}
