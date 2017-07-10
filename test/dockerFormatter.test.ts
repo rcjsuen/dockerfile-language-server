@@ -281,6 +281,26 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.start.character, 0);
 				assert.equal(edits[0].range.end.line, 2);
 				assert.equal(edits[0].range.end.character, 0);
+
+				document = createDocument("FROM node\rEXPOSE 8080\\\r8081");
+				range = Range.create(Position.create(2, 1), Position.create(2, 2));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 2);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 2);
+				assert.equal(edits[0].range.end.character, 0);
+
+				document = createDocument("FROM node\r\nEXPOSE 8080\\\r\n8081");
+				range = Range.create(Position.create(2, 1), Position.create(2, 2));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 2);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 2);
+				assert.equal(edits[0].range.end.character, 0);
 			});
 
 			/**
@@ -311,7 +331,7 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.end.line, 2);
 				assert.equal(edits[0].range.end.character, 1);
 
-				document = createDocument("FROM node\rEXPOSE 8080\\\r8081");
+				document = createDocument("FROM node\rEXPOSE 8080\\\r 8081");
 				range = Range.create(Position.create(2, 1), Position.create(2, 2));
 				edits = formatRange(document, range);
 				assert.equal(edits.length, 1);
@@ -319,9 +339,9 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.start.line, 2);
 				assert.equal(edits[0].range.start.character, 0);
 				assert.equal(edits[0].range.end.line, 2);
-				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[0].range.end.character, 1);
 
-				document = createDocument("FROM node\r\nEXPOSE 8080\\\r\n8081");
+				document = createDocument("FROM node\r\nEXPOSE 8080\\\r\n 8081");
 				range = Range.create(Position.create(2, 1), Position.create(2, 2));
 				edits = formatRange(document, range);
 				assert.equal(edits.length, 1);
@@ -329,7 +349,7 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.start.line, 2);
 				assert.equal(edits[0].range.start.character, 0);
 				assert.equal(edits[0].range.end.line, 2);
-				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[0].range.end.character, 1);
 			});
 
 			it("no indentation", function() {
