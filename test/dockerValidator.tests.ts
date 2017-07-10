@@ -227,6 +227,24 @@ function testEscape(instruction: string, argumentFront: string, argumentBack: st
 	diagnostics = validate("FROM node\n" + instruction + " \\ \n " + argument);
 	assert.equal(diagnostics.length, 0);
 
+	diagnostics = validate("FROM node\n" + instruction + " \\  \n " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\\t\n " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\\t\t\n " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\  \r " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\\t\r " + argument);
+	assert.equal(diagnostics.length, 0);
+
+	diagnostics = validate("FROM node\n" + instruction + " \\\t\t\r " + argument);
+	assert.equal(diagnostics.length, 0);
+
 	diagnostics = validate("FROM node\n" + instruction + " \\\r\n" + argument);
 	assert.equal(diagnostics.length, 0);
 

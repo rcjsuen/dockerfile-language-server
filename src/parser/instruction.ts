@@ -72,7 +72,7 @@ export class Instruction extends Line {
 								} else {
 									i = j;
 								}
-								break;
+								break whitespaceCheck;
 							case '\n':
 								escapeMarker = i;
 								i = j;
