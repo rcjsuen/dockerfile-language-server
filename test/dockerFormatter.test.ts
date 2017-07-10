@@ -192,6 +192,43 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.end.line, 1);
 				assert.equal(edits[0].range.end.character, 2);
 			});
+
+			it("whitespace before escape", function() {
+				let document = createDocument("EXPOSE 8081\\ \n8082");
+				let edits = formatDocument(document);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+
+				document = createDocument("EXPOSE 8081\\ \r8082");
+				edits = formatDocument(document);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+
+				document = createDocument("EXPOSE 8081\\ \r\n8082");
+				edits = formatDocument(document);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+			});
+		});
+
+		describe("false escape", function() {
+			it("EXPOSE", function() {
+				let document = createDocument("EXPOSE 80\\81");
+				let edits = formatDocument(document);
+				assert.equal(edits.length, 0);
+			});
 		});
 	});
 
@@ -383,6 +420,38 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.end.line, 1);
 				assert.equal(edits[0].range.end.character, 1);
 			});
+
+			it("whitespace before escape", function() {
+				let document = createDocument("EXPOSE 8081\\ \n8082");
+				let range = Range.create(Position.create(1, 3), Position.create(1, 4));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+
+				document = createDocument("EXPOSE 8081\\ \r8082");
+				range = Range.create(Position.create(1, 3), Position.create(1, 4));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+
+				document = createDocument("EXPOSE 8081\\ \r\n8082");
+				range = Range.create(Position.create(1, 3), Position.create(1, 4));
+				edits = formatRange(document, range);
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+			});
 		});
 
 		describe("multi line selection", function() {
@@ -527,6 +596,32 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[2].range.start.character, 0);
 				assert.equal(edits[2].range.end.line, 4);
 				assert.equal(edits[2].range.end.character, 0);
+			});
+
+			/**
+			 * EXPOSE 8080 \
+			 * [8081 \
+			 * 8082]
+			 * ------------
+			 * EXPOSE 8080 \
+			 * \t8081 \
+			 * \t8082
+			 */
+			it("whitespace before escape", function() {
+				let document = createDocument("EXPOSE 8080 \\\n8081 \\\n8082");
+				let range = Range.create(Position.create(1, 0), Position.create(2, 4));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 2);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[1].newText, "\t");
+				assert.equal(edits[1].range.start.line, 2);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 2);
+				assert.equal(edits[1].range.end.character, 0);
 			});
 
 			it("full file", function() {

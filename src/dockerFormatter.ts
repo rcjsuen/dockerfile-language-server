@@ -66,17 +66,43 @@ export class DockerFormatter {
 			for (let i = document.offsetAt(range.start); i >= 0; i--) {
 				let char = buffer.charAt(i);
 				if (char === '\r') {
-					if (buffer.charAt(i - 1) === escapeChar) {
-						indent = true;
-					}
 					parseStart = i + 1;
+					escapeCheck: for (let j = i - 1; j >= 0; j--) {
+						switch (buffer.charAt(j)) {
+							case escapeChar:
+								indent = true;
+								break escapeCheck;
+							case ' ':
+							case '\t':
+								continue;
+							default:
+								break escapeCheck;
+						}
+					}
 					break;
 				} else if (char === '\n') {
-					char = buffer.charAt(i - 1);
-					if (char === escapeChar || (char === '\r' && buffer.charAt(i - 2) === escapeChar)) {
-						indent = true;
-					}
 					parseStart = i + 1;
+					if (buffer.charAt(i - 1) === '\r') {
+						i--;
+					}
+
+					escapeCheck: for (let j = i - 1; j >= 0; j--) {
+						switch (buffer.charAt(j)) {
+							case escapeChar:
+								indent = true;
+								break escapeCheck;
+							case ' ':
+							case '\t':
+								continue;
+							default:
+								break escapeCheck;
+						}
+					}
+
+					// char = buffer.charAt(i - 1);
+					// if (char === escapeChar || (char === '\r' && buffer.charAt(i - 2) === escapeChar)) {
+					// 	indent = true;
+					// }
 					break;
 				}
 			}
@@ -178,17 +204,37 @@ export class DockerFormatter {
 					for (let j = i + 1; j < buffer.length; j++) {
 						switch (buffer.charAt(j)) {
 							case escapeChar:
-								// only try to escape if we're in a comment
-								if (!comment && (buffer.charAt(j + 1) === '\r' || buffer.charAt(j + 1) === '\n')) {
-									indent = true;
-									if (buffer.charAt(j + 2) === '\n') {
-										lineStart = j + 3;
-									} else {
-										lineStart = j + 2;
+								// only try to escape if we're not in a comment
+								if (!comment) {
+									// see if we're actually escaping a newline or not
+									for (let k = j + 1; j < buffer.length; k++) {
+										escapeCheck: switch (buffer.charAt(k)) {
+											case ' ':
+											case '\t':
+												// whitespace can come after the escape character
+												continue;
+											case '\r':
+												if (buffer.charAt(k + 1) === '\n') {
+													lineStart = k + 2;
+												} else {
+													lineStart = k + 1;
+												}
+												i = lineStart - 1;
+												indent = true;
+												comment = false;
+												continue lineCheck;
+											case '\n':
+												lineStart = k + 1;
+												i = k;
+												indent = true;
+												comment = false;
+												continue lineCheck;
+											default:
+												// encountered non-whitespace, ignore this escape character
+												j = k;
+												break escapeCheck;
+										}
 									}
-									i = lineStart - 1;
-									comment = false;
-									continue lineCheck;
 								}
 								break;
 							case '\r':
