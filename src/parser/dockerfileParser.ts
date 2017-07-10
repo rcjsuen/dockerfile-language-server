@@ -183,13 +183,11 @@ export class DockerfileParser {
 							case this.escapeChar:
 								char = buffer.charAt(j + 1);
 								if (char === '\r') {
-									instructionEnd = j;
 									if (buffer.charAt(j + 2) === '\n') {
 										j++;
 									}
 									j++;
 								} else if (char === '\n') {
-									instructionEnd = j;
 									j++;
 								} else if (char === ' ' || char === '\t') {
 									escapeCheck: for (let k = j + 2; k < buffer.length; k++) {

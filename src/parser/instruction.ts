@@ -37,7 +37,7 @@ export class Instruction extends Line {
 	public getArguments(): Argument[] {
 		let args = [];
 		let range = this.getInstructionRange();
-		let extra = this.instruction.length;
+		let extra = this.document.offsetAt(range.end) - this.document.offsetAt(range.start);
 		let content = this.getTextContent();
 		let fullArgs = content.substring(extra);
 		let offset = this.document.offsetAt(range.start) + extra;

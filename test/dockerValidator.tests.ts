@@ -555,6 +555,93 @@ describe("Docker Validator Tests", function() {
 			});
 		});
 
+		describe("escaped instruction", function() {
+			function testEscapedInstruction(instructionPrefix: string, middle: string, instructionSuffix: string, args: string) {
+				let diagnostics = validate("FROM node\n" + instructionPrefix + middle + instructionSuffix + " " + args);
+				if (diagnostics.length !== 0) console.log(diagnostics[0]);
+				assert.equal(diagnostics.length, 0);
+			}
+
+			function testEscapedInstructionLoop(instruction: string, args: string) {
+				let newlines = [ "\\\n", "\\\r", "\\\r\n", "\\ \n", "\\ \r", "\\ \r\n", "\\\t\n", "\\\t\r", "\\\t\r\n" ];
+				for (let newline of newlines) {
+					testEscapedInstruction(instruction.substring(0, 1), newline, instruction.substring(1), args);
+				}
+			}
+
+			it("ADD", function() {
+				testEscapedInstructionLoop("ADD", "source dest");
+			});
+
+			it("ARG", function() {
+				testEscapedInstructionLoop("ARG", "name");
+			});
+
+			it("CMD", function() {
+				testEscapedInstructionLoop("CMD", "[ \"/bin/ls\" ]");
+			});
+
+			it("COPY", function() {
+				testEscapedInstructionLoop("COPY", "source dest");
+			});
+
+			it("ENTRYPOINT", function() {
+				testEscapedInstructionLoop("ENTRYPOINT", "[ \"/usr/bin/sh\" ]");
+			});
+
+			it("ENV", function() {
+				testEscapedInstructionLoop("ENV", "key=value");
+			});
+
+			it("EXPOSE", function() {
+				testEscapedInstructionLoop("EXPOSE", "8080");
+			});
+
+			it("FROM", function() {
+				testEscapedInstructionLoop("FROM", "node");
+			});
+
+			it("HEALTHCHECK", function() {
+				testEscapedInstructionLoop("HEALTHCHECK", "NONE");
+			});
+
+			it("LABEL", function() {
+				testEscapedInstructionLoop("LABEL", "key=value");
+			});
+
+			it("MAINTAINER", function() {
+				testEscapedInstructionLoop("MAINTAINER", "authorName");
+			});
+
+			it("ONBUILD", function() {
+				testEscapedInstructionLoop("ONBUILD", "HEALTHCHECK NONE");
+			});
+
+			it("RUN", function() {
+				testEscapedInstructionLoop("RUN", "apt-get update");
+			});
+
+			it("SHELL", function() {
+				testEscapedInstructionLoop("SHELL", "[ \"powershell\" ]");
+			});
+
+			it("STOPSIGNAL", function() {
+				testEscapedInstructionLoop("STOPSIGNAL", "9");
+			});
+
+			it("USER", function() {
+				testEscapedInstructionLoop("USER", "daemon");
+			});
+
+			it("VOLUME", function() {
+				testEscapedInstructionLoop("VOLUME", "[ \"/data\" ]");
+			});
+
+			it("WORKDIR", function() {
+				testEscapedInstructionLoop("WORKDIR", "/path");
+			});
+		});
+
 		describe("unknown", function () {
 			it("simple", function () {
 				let diagnostics = validate("FROM node\nRUNCMD docker");
