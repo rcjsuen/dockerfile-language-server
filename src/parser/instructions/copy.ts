@@ -12,11 +12,7 @@ export class Copy extends Instruction {
 	}
 
 	public getFromValue(): string | null {
-		let range = this.getFromValueRange();
-		if (range === null) {
-			return null;
-		}
-		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
+		return this.getRangeContent(this.getFromValueRange());
 	}
 
 	public getFromValueRange(): Range | null {

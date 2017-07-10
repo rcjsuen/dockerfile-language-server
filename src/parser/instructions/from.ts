@@ -12,11 +12,7 @@ export class From extends Instruction {
 	}
 
 	public getBuildStage(): string | null {
-		let range = this.getBuildStageRange();
-		if (range === null) {
-			return null;
-		}
-		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
+		return this.getRangeContent(this.getBuildStageRange());
 	}
 
 	public getBuildStageRange(): Range | null {

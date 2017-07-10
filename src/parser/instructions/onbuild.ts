@@ -12,11 +12,7 @@ export class Onbuild extends Instruction {
 	}
 
 	public getTrigger(): string | null {
-		let range = this.getTriggerRange();
-		if (range === null) {
-			return null;
-		}
-		return this.document.getText().substring(this.document.offsetAt(range.start), this.document.offsetAt(range.end));
+		return this.getRangeContent(this.getTriggerRange());
 	}
 
 	public getTriggerRange(): Range | null {
