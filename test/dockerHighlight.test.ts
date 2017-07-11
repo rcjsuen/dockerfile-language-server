@@ -30,11 +30,11 @@ function assertHighlight(highlight: DocumentHighlight, kind: DocumentHighlightKi
 function assertHighlightRanges(actual: DocumentHighlight[], expected: DocumentHighlight[]) {
 	assert.equal(actual.length, expected.length);
 	for (let i = 0; i < actual.length; i++) {
-		assertHighlight2(actual[i], expected[i]);
+		assertHighlightRange(actual[i], expected[i]);
 	}
 }
 
-function assertHighlight2(actual: DocumentHighlight, expected: DocumentHighlight) {
+function assertHighlightRange(actual: DocumentHighlight, expected: DocumentHighlight) {
 	assert.equal(actual.kind, expected.kind);
 	assert.equal(actual.range.start.line, expected.range.start.line);
 	assert.equal(actual.range.start.character, expected.range.start.character);
@@ -139,6 +139,10 @@ describe("Dockerfile Document Highlight tests", function() {
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assertHighlightRanges(ranges, expected);
+
+			document = createDocument("ARG var=value\nSTOPSIGNAL ${var}\nUSER ${var2}\nWORKDIR ${var2}");
+			ranges = computeHighlightRanges(document, 1, 13);
+			assertHighlightRanges(ranges, [ arg, stopsignal ]);
 		});
 
 		it("referenced variable ${var} no value", function() {
@@ -266,6 +270,11 @@ describe("Dockerfile Document Highlight tests", function() {
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assertHighlightRanges(ranges, expected);
+
+			stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 12), Position.create(1, 16)), DocumentHighlightKind.Read);
+			document = createDocument("FROM busybox\nSTOPSIGNAL $var2\nUSER $var\nWORKDIR $var");
+			ranges = computeHighlightRanges(document, 1, 13);
+			assertHighlightRanges(ranges, [ stopsignal ]);
 		});
 	});
 });
