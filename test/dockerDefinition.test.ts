@@ -109,16 +109,18 @@ describe("Dockerfile Document Highlight tests", function() {
 			});
 
 			it("no value", function() {
+				let document = createDocument("ARG var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+				let location = computeDefinition(document, Position.create(1, 13));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(2, 7));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(3, 11));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+			});
+
+			it("no definition", function() {
 				let document = createDocument("ARG\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 				let location = computeDefinition(document, Position.create(1, 13));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(2, 7));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(3, 11));
-				assert.equal(location, null);
-
-				document = createDocument("ARG var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
-				location = computeDefinition(document, Position.create(1, 13));
 				assert.equal(location, null);
 				location = computeDefinition(document, Position.create(2, 7));
 				assert.equal(location, null);
@@ -147,16 +149,18 @@ describe("Dockerfile Document Highlight tests", function() {
 			});
 
 			it("no value", function() {
+				let document = createDocument("ARG var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+				let location = computeDefinition(document, Position.create(1, 13));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(2, 7));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(3, 11));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+			});
+
+			it("no definition", function() {
 				let document = createDocument("ARG\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 				let location = computeDefinition(document, Position.create(1, 13));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(2, 7));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(3, 11));
-				assert.equal(location, null);
-
-				document = createDocument("ARG var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
-				location = computeDefinition(document, Position.create(1, 13));
 				assert.equal(location, null);
 				location = computeDefinition(document, Position.create(2, 7));
 				assert.equal(location, null);
