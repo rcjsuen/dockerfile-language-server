@@ -173,8 +173,9 @@ connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingPar
 });
 
 connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {
-	let document = TextDocument.create(didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.version, didOpenTextDocumentParams.textDocument.text);
+	let document = TextDocument.create(didOpenTextDocumentParams.textDocument.uri, didOpenTextDocumentParams.textDocument.languageId, didOpenTextDocumentParams.textDocument.version, didOpenTextDocumentParams.textDocument.text);
 	documents[didOpenTextDocumentParams.textDocument.uri] = document;
+	validateTextDocument(document);
 });
 
 connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
