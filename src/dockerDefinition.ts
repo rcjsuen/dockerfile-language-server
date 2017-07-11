@@ -48,7 +48,7 @@ export class DockerDefinition {
 		}
 		for (let instruction of dockerfile.getVariableInstructions()) {
 			for (let variable of instruction.getVariables()) {
-				if (Util.isInsideRange(position, variable.getRange())) {
+				if (Util.isInsideRange(position, variable.getNameRange())) {
 					if (variables[variable.getName()]) {
 						return variables[variable.getName()];
 					}

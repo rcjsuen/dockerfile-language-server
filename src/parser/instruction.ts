@@ -152,9 +152,8 @@ export class Instruction extends Line {
 							if (arg.charAt(j) === '}') {
 								variables.push(new Variable(
 									arg.substring(i + 2, j),
-									Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + j)),
-									Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + j + 1))
-								));
+									Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + j)))
+								);
 								i = j;
 								continue variableLoop;
 							}
@@ -166,17 +165,15 @@ export class Instruction extends Line {
 							if (arg.charAt(j) === '$') {
 								variables.push(new Variable(
 									arg.substring(i + 1, j),
-									Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)),
-									Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + j))
-								));
+									Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)))
+								);
 								i = j - 1;
 								continue variableLoop;
 							}
 						}
 						variables.push(new Variable(
 							arg.substring(i + 1, arg.length),
-							Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + arg.length)),
-							Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + arg.length))
+							Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + arg.length))
 						));
 					}
 					break variableLoop;

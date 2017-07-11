@@ -111,30 +111,30 @@ describe("Dockerfile Document Highlight tests", function() {
 			let ranges = computeHighlightRanges(document, 0, 5);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 1, 13);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 2, 7);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 		});
 
 		it("referenced variable ${var} no value", function() {
@@ -142,30 +142,30 @@ describe("Dockerfile Document Highlight tests", function() {
 			let ranges = computeHighlightRanges(document, 0, 5);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 1, 13);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 2, 7);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
 		});
 
 		it("referenced variable $var", function() {
@@ -173,30 +173,30 @@ describe("Dockerfile Document Highlight tests", function() {
 			let ranges = computeHighlightRanges(document, 0, 5);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 1, 13);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 2, 7);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 		});
 
 		it("referenced variable $var no value", function() {
@@ -204,30 +204,30 @@ describe("Dockerfile Document Highlight tests", function() {
 			let ranges = computeHighlightRanges(document, 0, 5);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 1, 13);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 2, 7);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assert.equal(ranges.length, 4);
 			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
 		});
 	});
 
@@ -236,42 +236,42 @@ describe("Dockerfile Document Highlight tests", function() {
 			let document = createDocument("FROM busybox\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 			let ranges = computeHighlightRanges(document, 1, 13);
 			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 2, 7);
 			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 10, 3, 13);
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 11, 1, 17);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 5, 2, 11);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 8, 3, 14);
+			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 13, 1, 16);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 7, 2, 10);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 10, 3, 13);
 		});
 
 		it("referenced variable $var no value", function() {
 			let document = createDocument("FROM busybox\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 			let ranges = computeHighlightRanges(document, 1, 13);
 			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 2, 7);
 			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 9, 3, 12);
 
 			ranges = computeHighlightRanges(document, 3, 11);
 			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 11, 1, 15);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 5, 2, 9);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 8, 3, 12);
+			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 12, 1, 15);
+			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 6, 2, 9);
+			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 9, 3, 12);
 		});
 	});
 });

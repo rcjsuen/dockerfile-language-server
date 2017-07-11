@@ -8,12 +8,10 @@ export class Variable {
 
 	private readonly name: string;
 	private readonly nameRange: Range;
-	private readonly range: Range;
 
-	constructor(name: string, nameRange: Range, range: Range) {
+	constructor(name: string, nameRange: Range) {
 		this.name = name;
 		this.nameRange = nameRange;
-		this.range = range;
 	}
 
 	public getName(): string {
@@ -22,9 +20,5 @@ export class Variable {
 
 	public getNameRange(): Range {
 		return this.nameRange;
-	}
-
-	public getRange(): Range {
-		return this.range;
 	}
 }
