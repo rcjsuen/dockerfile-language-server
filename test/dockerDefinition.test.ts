@@ -25,7 +25,7 @@ function assertLocation(location: Location, uri: string, startLine: number, star
 	assert.equal(location.range.end.character, endCharacter);
 }
 
-describe("Dockerfile Document Highlight tests", function() {
+describe("Dockerfile Document Definition tests", function() {
 	describe("FROM", function() {
 		describe("AS name", function() {
 			it("no COPY", function() {
