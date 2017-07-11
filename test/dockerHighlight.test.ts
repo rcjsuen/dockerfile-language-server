@@ -5,7 +5,7 @@
 import * as assert from "assert";
 
 import {
-	TextDocument, Position, DocumentHighlight, DocumentHighlightKind
+	TextDocument, Range, Position, DocumentHighlight, DocumentHighlightKind
 } from 'vscode-languageserver';
 import { DockerHighlight } from '../src/dockerHighlight';
 
@@ -25,6 +25,21 @@ function assertHighlight(highlight: DocumentHighlight, kind: DocumentHighlightKi
 	assert.equal(highlight.range.start.character, startCharacter);
 	assert.equal(highlight.range.end.line, endLine);
 	assert.equal(highlight.range.end.character, endCharacter);
+}
+
+function assertHighlightRanges(actual: DocumentHighlight[], expected: DocumentHighlight[]) {
+	assert.equal(actual.length, expected.length);
+	for (let i = 0; i < actual.length; i++) {
+		assertHighlight2(actual[i], expected[i]);
+	}
+}
+
+function assertHighlight2(actual: DocumentHighlight, expected: DocumentHighlight) {
+	assert.equal(actual.kind, expected.kind);
+	assert.equal(actual.range.start.line, expected.range.start.line);
+	assert.equal(actual.range.start.character, expected.range.start.character);
+	assert.equal(actual.range.end.line, expected.range.end.line);
+	assert.equal(actual.range.end.character, expected.range.end.character);
 }
 
 describe("Dockerfile Document Highlight tests", function() {
@@ -107,171 +122,150 @@ describe("Dockerfile Document Highlight tests", function() {
 
 	describe("ARG", function() {
 		it("referenced variable ${var}", function() {
+			let arg = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 13), Position.create(1, 16)), DocumentHighlightKind.Read);
+			let user = DocumentHighlight.create(Range.create(Position.create(2, 7), Position.create(2, 10)), DocumentHighlightKind.Read);
+			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
+			let expected = [ arg, stopsignal, user, workdir ];
 			let document = createDocument("ARG var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 			let ranges = computeHighlightRanges(document, 0, 5);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 1, 13);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 2, 7);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 3, 11);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 		});
 
 		it("referenced variable ${var} no value", function() {
+			let arg = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 13), Position.create(1, 16)), DocumentHighlightKind.Read);
+			let user = DocumentHighlight.create(Range.create(Position.create(2, 7), Position.create(2, 10)), DocumentHighlightKind.Read);
+			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
+			let expected = [ arg, stopsignal, user, workdir ];
 			let document = createDocument("ARG var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 			let ranges = computeHighlightRanges(document, 0, 5);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 1, 13);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 2, 7);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 3, 11);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
+		});
+
+		it("referenced variable ${var:modifier}", function() {
+			let arg = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 13), Position.create(1, 16)), DocumentHighlightKind.Read);
+			let user = DocumentHighlight.create(Range.create(Position.create(2, 7), Position.create(2, 10)), DocumentHighlightKind.Read);
+			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
+			let expected = [ arg, stopsignal, user, workdir ];
+			let document = createDocument("ARG var=value\nSTOPSIGNAL ${var:+var}\nUSER ${var:+var}\nWORKDIR ${var:+var}");
+			let ranges = computeHighlightRanges(document, 0, 5);
+			assertHighlightRanges(ranges, expected);
+
+			ranges = computeHighlightRanges(document, 1, 13);
+			assertHighlightRanges(ranges, expected);
+
+			ranges = computeHighlightRanges(document, 2, 7);
+			assertHighlightRanges(ranges, expected);
+
+			ranges = computeHighlightRanges(document, 3, 11);
+			assertHighlightRanges(ranges, expected);
+			
+			document = createDocument("ARG var=value\nSTOPSIGNAL ${var:-var}\nUSER ${var:-var}\nWORKDIR ${var:-var}");
+			ranges = computeHighlightRanges(document, 0, 5);
+			assertHighlightRanges(ranges, expected);
+
+			ranges = computeHighlightRanges(document, 1, 13);
+			assertHighlightRanges(ranges, expected);
+
+			ranges = computeHighlightRanges(document, 2, 7);
+			assertHighlightRanges(ranges, expected);
+
+			ranges = computeHighlightRanges(document, 3, 11);
+			assertHighlightRanges(ranges, expected);
 		});
 
 		it("referenced variable $var", function() {
+			let arg = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 12), Position.create(1, 15)), DocumentHighlightKind.Read);
+			let user = DocumentHighlight.create(Range.create(Position.create(2, 6), Position.create(2, 9)), DocumentHighlightKind.Read);
+			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 9), Position.create(3, 12)), DocumentHighlightKind.Read);
+			let expected = [ arg, stopsignal, user, workdir ];
 			let document = createDocument("ARG var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 			let ranges = computeHighlightRanges(document, 0, 5);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 1, 13);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 2, 7);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 3, 11);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 		});
 
 		it("referenced variable $var no value", function() {
+			let arg = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 12), Position.create(1, 15)), DocumentHighlightKind.Read);
+			let user = DocumentHighlight.create(Range.create(Position.create(2, 6), Position.create(2, 9)), DocumentHighlightKind.Read);
+			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 9), Position.create(3, 12)), DocumentHighlightKind.Read);
+			let expected = [ arg, stopsignal, user, workdir ];
 			let document = createDocument("ARG var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 			let ranges = computeHighlightRanges(document, 0, 5);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 1, 13);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 2, 7);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 3, 11);
-			assert.equal(ranges.length, 4);
-			assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 4, 0, 7);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[3], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 		});
 	});
 
 	describe("non-existent variable", function() {
 		it("${var}", function() {
+			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 13), Position.create(1, 16)), DocumentHighlightKind.Read);
+			let user = DocumentHighlight.create(Range.create(Position.create(2, 7), Position.create(2, 10)), DocumentHighlightKind.Read);
+			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
+			let expected = [ stopsignal, user, workdir ];
 			let document = createDocument("FROM busybox\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 			let ranges = computeHighlightRanges(document, 1, 13);
-			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 2, 7);
-			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 3, 11);
-			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 13, 1, 16);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 7, 2, 10);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 10, 3, 13);
+			assertHighlightRanges(ranges, expected);
 		});
 
 		it("referenced variable $var no value", function() {
+			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 12), Position.create(1, 15)), DocumentHighlightKind.Read);
+			let user = DocumentHighlight.create(Range.create(Position.create(2, 6), Position.create(2, 9)), DocumentHighlightKind.Read);
+			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 9), Position.create(3, 12)), DocumentHighlightKind.Read);
+			let expected = [ stopsignal, user, workdir ];
 			let document = createDocument("FROM busybox\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 			let ranges = computeHighlightRanges(document, 1, 13);
-			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 2, 7);
-			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 
 			ranges = computeHighlightRanges(document, 3, 11);
-			assert.equal(ranges.length, 3);
-			assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 12, 1, 15);
-			assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 6, 2, 9);
-			assertHighlight(ranges[2], DocumentHighlightKind.Read, 3, 9, 3, 12);
+			assertHighlightRanges(ranges, expected);
 		});
 	});
 });

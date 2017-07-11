@@ -150,9 +150,16 @@ export class Instruction extends Line {
 					if (arg.charAt(i + 1) === '{') {
 						for (let j = i + 2; j < arg.length; j++) {
 							if (arg.charAt(j) === '}') {
+								let name = arg.substring(i + 2, j);
+								let end = name.indexOf(':');
+								if (end === -1) {
+									end = j;
+								} else {
+									name = name.substring(0, end);
+									end = i + 2 + end;
+								}
 								variables.push(new Variable(
-									arg.substring(i + 2, j),
-									Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + j)))
+									name, Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + end)))
 								);
 								i = j;
 								continue variableLoop;
