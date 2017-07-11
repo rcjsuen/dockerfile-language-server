@@ -139,10 +139,13 @@ export class Instruction extends Line {
 			}
 			matches = value.match(/\${([a-zA-Z_]+)}/);
 			if (matches && matches.length > 0) {
-				let offset = this.document.offsetAt(range.start) + value.indexOf(matches[0]);
-				variables.push(new Variable(matches[1],
-					Range.create(this.document.positionAt(offset + 2), this.document.positionAt(offset + matches[0].length - 1)),
-					Range.create(this.document.positionAt(offset), this.document.positionAt(offset + matches[0].length))));
+				let escaped = this.escapeChar + matches[0];
+				if (value.indexOf(escaped) === -1) {
+					let offset = this.document.offsetAt(range.start) + value.indexOf(matches[0]);
+					variables.push(new Variable(matches[1],
+						Range.create(this.document.positionAt(offset + 2), this.document.positionAt(offset + matches[0].length - 1)),
+						Range.create(this.document.positionAt(offset), this.document.positionAt(offset + matches[0].length))));
+				}
 			}
 		}
 		return variables;
