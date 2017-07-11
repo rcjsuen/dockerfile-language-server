@@ -128,24 +128,58 @@ export class Instruction extends Line {
 		let variables = [];
 		let args = this.getArguments();
 		for (let arg of args) {
-			let value = arg.getValue();
-			let range = arg.getRange();
-			let matches = value.match(/\$([a-zA-Z_]+)/);
-			if (matches && matches.length > 0) {
-				let offset = this.document.offsetAt(range.start) + value.indexOf(matches[0]);
-				variables.push(new Variable(matches[1],
-					Range.create(this.document.positionAt(offset + 1), this.document.positionAt(offset + matches[0].length)),
-					Range.create(this.document.positionAt(offset), this.document.positionAt(offset + matches[0].length))));
+			let parsedVariables = this.parseVariables(this.document.offsetAt(arg.getRange().start), arg.getValue());
+			for (let parsedVariable of parsedVariables) {
+				variables.push(parsedVariable);
 			}
-			matches = value.match(/\${([a-zA-Z_]+)}/);
-			if (matches && matches.length > 0) {
-				let escaped = this.escapeChar + matches[0];
-				if (value.indexOf(escaped) === -1) {
-					let offset = this.document.offsetAt(range.start) + value.indexOf(matches[0]);
-					variables.push(new Variable(matches[1],
-						Range.create(this.document.positionAt(offset + 2), this.document.positionAt(offset + matches[0].length - 1)),
-						Range.create(this.document.positionAt(offset), this.document.positionAt(offset + matches[0].length))));
-				}
+		}
+		return variables;
+	}
+
+	private parseVariables(offset: number, arg: string): Variable[] {
+		let variables = [];
+		variableLoop: for (let i = 0; i < arg.length; i++) {
+			switch (arg.charAt(i)) {
+				case this.escapeChar:
+					if (arg.charAt(i + 1) === '$') {
+						i++;
+					}
+					break;
+				case '$':
+					let start = i;
+					if (arg.charAt(i + 1) === '{') {
+						for (let j = i + 2; j < arg.length; j++) {
+							if (arg.charAt(j) === '}') {
+								variables.push(new Variable(
+									arg.substring(i + 2, j),
+									Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + j)),
+									Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + j + 1))
+								));
+								i = j;
+								continue variableLoop;
+							}
+						}
+						// no } found, not a valid variable, stop processing
+						break variableLoop;
+					} else {
+						for (let j = i + 1; j < arg.length; j++) {
+							if (arg.charAt(j) === '$') {
+								variables.push(new Variable(
+									arg.substring(i + 1, j),
+									Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)),
+									Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + j))
+								));
+								i = j - 1;
+								continue variableLoop;
+							}
+						}
+						variables.push(new Variable(
+							arg.substring(i + 1, arg.length),
+							Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + arg.length)),
+							Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + arg.length))
+						));
+					}
+					break variableLoop;
 			}
 		}
 		return variables;

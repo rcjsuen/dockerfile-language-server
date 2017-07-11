@@ -274,6 +274,20 @@ describe("Dockerfile hover", function() {
 				assert.equal(hover.contents, "value");
 				hover = onHover(document, 3, 11);
 				assert.equal(hover.contents, "value");
+
+				document = createDocument("ARG var=value\nARG var2=value2\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}");
+				hover = onHover(document, 2, 13);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 2, 20);
+				assert.equal(hover.contents, "value2");
+				hover = onHover(document, 3, 7);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 3, 14);
+				assert.equal(hover.contents, "value2");
+				hover = onHover(document, 4, 11);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 4, 18);
+				assert.equal(hover.contents, "value2");
 			});
 
 			it("referenced variable ${var} no value", function() {
@@ -281,6 +295,16 @@ describe("Dockerfile hover", function() {
 				let hover = onHover(document, 1, 13);
 				assert.equal(hover, null);
 				hover = onHover(document, 2, 7);
+				assert.equal(hover, null);
+				hover = onHover(document, 3, 11);
+				assert.equal(hover, null);
+			});
+
+			it("referenced variable ${var", function() {
+				let document = createDocument("ARG var=value\nSTOPSIGNAL ${var\nUSER ${var\nWORKDIR ${var");
+				let hover = onHover(document, 1, 14);
+				assert.equal(hover, null);
+				hover = onHover(document, 2, 8);
 				assert.equal(hover, null);
 				hover = onHover(document, 3, 11);
 				assert.equal(hover, null);
@@ -294,6 +318,20 @@ describe("Dockerfile hover", function() {
 				assert.equal(hover.contents, "value");
 				hover = onHover(document, 3, 11);
 				assert.equal(hover.contents, "value");
+
+				document = createDocument("ARG var=value\nARG var2=value2\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2");
+				hover = onHover(document, 2, 13);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 2, 17);
+				assert.equal(hover.contents, "value2");
+				hover = onHover(document, 3, 7);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 3, 12);
+				assert.equal(hover.contents, "value2");
+				hover = onHover(document, 4, 11);
+				assert.equal(hover.contents, "value");
+				hover = onHover(document, 4, 15);
+				assert.equal(hover.contents, "value2");
 			});
 
 			it("referenced variable $var no value", function() {
