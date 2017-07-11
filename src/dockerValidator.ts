@@ -182,7 +182,7 @@ export class Validator {
 						break;
 					case "STOPSIGNAL":
 						this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
-							if (argument.indexOf("SIG") === 0) {
+							if (argument.indexOf("SIG") === 0 || argument.indexOf('$') != -1) {
 								return null;
 							}
 							

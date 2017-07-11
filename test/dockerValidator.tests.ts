@@ -1118,6 +1118,18 @@ describe("Docker Validator Tests", function() {
 		it("ok", function() {
 			testValidArgument("STOPSIGNAL", "9");
 			testValidArgument("STOPSIGNAL", "SIGKILL");
+
+			let diagnostics = validate("FROM busybox\nARG x\nSTOPSIGNAL $x");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nARG x\nSTOPSIGNAL ${x}");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nARG x\nSTOPSIGNAL s$x");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nARG x\nSTOPSIGNAL s${x}");
+			assert.equal(diagnostics.length, 0);
 		});
 
 		it("escape", function() {
