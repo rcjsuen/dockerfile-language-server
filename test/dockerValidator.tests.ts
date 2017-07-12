@@ -114,6 +114,17 @@ function assertInstructionMissingArgument(diagnostic: Diagnostic, startLine: num
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertInstructionRequiresOneArgument(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_ONE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_ARGRequiresOneArgument());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInstructionRequiresOneOrThreeArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -866,6 +877,54 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 1);
 				assertDirectiveEscapeInvalid(diagnostics[0], "ab", 0, 9, 0, 11);
 			});
+		});
+	});
+
+	describe("ARG", function() {
+		it("ok", function() {
+			testValidArgument("ARG", "a=b");
+			testValidArgument("ARG", "a=\"a b\"");
+			testValidArgument("ARG", "a='a b'");
+		});
+
+		it("escape", function() {
+			testValidArgument("ARG", "a=a\\ x");
+			testValidArgument("ARG", "a=\"a\\ x\"");
+			testValidArgument("ARG", "a='a\\ x'");
+			testValidArgument("ARG", "a=a\\\nx");
+			testValidArgument("ARG", "a=a\\ \nx");
+			testValidArgument("ARG", "a=a\\\rx");
+			testValidArgument("ARG", "a=a\\ \rx");
+			testValidArgument("ARG", "a=a\\\r\nx");
+			testValidArgument("ARG", "a=a\\ \r\nx");
+			testValidArgument("ARG", "a=\"a \\\nx\"");
+			testValidArgument("ARG", "a=\"a \\\rx\"");
+			testValidArgument("ARG", "a=\"a \\\r\nx\"");
+			testValidArgument("ARG", "a=\'a \\\nx'");
+			testValidArgument("ARG", "a=\'a \\\rx'");
+			testValidArgument("ARG", "a=\'a \\\r\nx'");
+		});
+
+		it("invalid", function() {
+			let diagnostics = validate("FROM busybox\nARG a=a b");
+			assert.equal(diagnostics.length, 1);
+			assertInstructionRequiresOneArgument(diagnostics[0], 1, 8, 1, 9);
+
+			diagnostics = validate("FROM busybox\nARG a=a\\  b");
+			assert.equal(diagnostics.length, 1);
+			assertInstructionRequiresOneArgument(diagnostics[0], 1, 10, 1, 11);
+
+			diagnostics = validate("FROM busybox\nARG a=a\\\n b");
+			assert.equal(diagnostics.length, 1);
+			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
+
+			diagnostics = validate("FROM busybox\nARG a=a\\\r b");
+			assert.equal(diagnostics.length, 1);
+			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
+
+			diagnostics = validate("FROM busybox\nARG a=a\\\r\n b");
+			assert.equal(diagnostics.length, 1);
+			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
 		});
 	});
 

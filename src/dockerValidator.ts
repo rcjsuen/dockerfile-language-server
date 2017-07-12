@@ -15,6 +15,7 @@ export enum ValidationCode {
 	LOWERCASE,
 	ARGUMENT_MISSING,
 	ARGUMENT_EXTRA,
+	ARGUMENT_REQUIRES_ONE,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
@@ -172,6 +173,14 @@ export class Validator {
 							return null;
 						});
 						break;
+					case "ARG":
+						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
+							if (index > 0) {
+								return  Validator.createARGRequiresOneArgument;
+							}
+							return null;
+						}, Validator.createARGRequiresOneArgument);
+						break;
 					case "FROM":
 						this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string) {
 							if (index === 1) {
@@ -231,6 +240,7 @@ export class Validator {
 
 		"instructionExtraArgument": "Instruction has an extra argument",
 		"instructionMissingArgument": "Instruction has no arguments",
+		"instructionRequiresOneArgument": "${0} requires exactly one argument",
 		"instructionUnknown": "Unknown instruction: ${0}",
 		"instructionCasing": "Instructions should be written in uppercase letters",
 
@@ -271,6 +281,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_InstructionMissingArgument() {
 		return Validator.dockerProblems["instructionMissingArgument"];
+	}
+
+	public static getDiagnosticMessage_ARGRequiresOneArgument() {
+		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresOneArgument"], "ARG");
 	}
 
 	public static getDiagnosticMessage_InstructionRequiresOneOrThreeArguments() {
@@ -315,6 +329,10 @@ export class Validator {
 
 	static createExtraArgument(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.ARGUMENT_EXTRA);
+	}
+
+	static createARGRequiresOneArgument(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_ARGRequiresOneArgument(), ValidationCode.ARGUMENT_REQUIRES_ONE);
 	}
 
 	static createRequiresOneOrThreeArguments(start: Position, end: Position): Diagnostic {
