@@ -889,6 +889,9 @@ describe("Docker Validator Tests", function() {
 
 		it("escape", function() {
 			testValidArgument("ARG", "a=a\\ x");
+			testValidArgument("ARG", "a=a\\");
+			testValidArgument("ARG", "a=a\\b");
+			testValidArgument("ARG", "a=a\\\\b");
 			testValidArgument("ARG", "a=\"a\\ x\"");
 			testValidArgument("ARG", "a='a\\ x'");
 			testValidArgument("ARG", "a=a\\\nx");
@@ -914,6 +917,10 @@ describe("Docker Validator Tests", function() {
 			assert.equal(diagnostics.length, 1);
 			assertInstructionRequiresOneArgument(diagnostics[0], 1, 10, 1, 11);
 
+			diagnostics = validate("FROM busybox\nARG a=a\\\\ b");
+			assert.equal(diagnostics.length, 1);
+			assertInstructionRequiresOneArgument(diagnostics[0], 1, 10, 1, 11);
+
 			diagnostics = validate("FROM busybox\nARG a=a\\\n b");
 			assert.equal(diagnostics.length, 1);
 			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
@@ -925,6 +932,10 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM busybox\nARG a=a\\\r\n b");
 			assert.equal(diagnostics.length, 1);
 			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
+
+			diagnostics = validate("FROM busybox\nARG a=a\\ \\b \\c");
+			assert.equal(diagnostics.length, 1);
+			assertInstructionRequiresOneArgument(diagnostics[0], 1, 12, 1, 14);
 		});
 	});
 

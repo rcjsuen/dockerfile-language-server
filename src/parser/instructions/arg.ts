@@ -5,6 +5,7 @@
 import { TextDocument, Range } from 'vscode-languageserver';
 import { Instruction } from '../instruction';
 import { Argument } from '../argument';
+import { Util } from '../../docker';
 
 export class Arg extends Instruction {
 
@@ -144,44 +145,62 @@ export class Arg extends Instruction {
 			let char = content.charAt(i);
 			switch (char) {
 				case this.escapeChar:
-					let mark = -1;
-					let escaped = false;
-					for (let j = i + 1; j < content.length; j++) {
-						switch (content.charAt(j)) {
-							case '\r':
-							case '\n':
-								if (mark === -1) {
-									// whitespace only, safe to skip
-									i = j;
-								} else {
-									// not an actual escape, create an argument
-									args.push(new Argument(content.substring(argStart, i),
-										Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + i + 1))
-									));
-									// then go back and process the other argument
-									i = mark - 1;
-								}
+					if (i + 1 === content.length) {
+						break argumentLoop;
+					}
+
+					switch (content.charAt(i + 1)) {
+						case ' ':
+						case '\t':
+							if (!Util.isWhitespace(content.charAt(i + 2))) {
+								// space was escaped, continue as normal
+								i = i + 2;
 								continue argumentLoop;
-							case ' ':
-							case '\t':
-								escaped = j === i + 1;
-								// ignore
-								break;
-							default:
-								if (mark === -1 && !escaped) {
-									mark = j;
+							}
+							// whitespace encountered, need to figure out if it extends to EOL
+							for (let j = i + 2; j < content.length; j++) {
+								switch (content.charAt(j)) {
+									case '\r':
+									case '\n':
+										// whitespace only, safe to skip
+										i = j;
+										continue argumentLoop;
+									case ' ':
+									case '\t':
+										// ignore whitespace
+										break;
+									default:
+										// whitespace doesn't extend to EOL, create an argument
+										args.push(new Argument(content.substring(argStart, i),
+											Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + i + 1))
+										));
+										// loop and process the encountered non-whitespace character
+										i = j - 1;
+										argStart = j;
+										continue argumentLoop;
 								}
-								break;
-						}
+							}
+							// went to EOF without encountering EOL
+							args.push(new Argument(content.substring(argStart, i),
+								Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + i))
+							));
+							argStart = content.length;
+							break argumentLoop;
+						case '\r':
+							if (content.charAt(i + 2) === '\n') {
+								i++;
+							}
+						case '\n':
+							// immediately followed by a newline, skip the newline
+						case this.escapeChar:
+							// double escape found, skip it and move on
+							i = i + 1;
+							continue argumentLoop;
+						default:
+							// non-whitespace encountered, skip the escape and process the
+							// character normally
+							continue argumentLoop;
 					}
-					if (mark !== -1) {
-						// not an actual escape, create an argument
-						args.push(new Argument(content.substring(argStart, i),
-							Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + i))
-						));
-					}
-					argStart = mark;
-					break argumentLoop;
 				case '\'':
 				case '"':
 					for (let j = i + 1; j < content.length; j++) {
