@@ -26,6 +26,7 @@ function validate(content: string, settings?: ValidatorSettings) {
 }
 
 function assertDiagnostics(diagnostics: Diagnostic[], codes: ValidationCode[], functions: Function[], args: any[][]) {
+	assert.equal(diagnostics.length, codes.length);
 	diagnosticCheck: for (let diagnostic of diagnostics) {
 		for (let i = 0; i < codes.length; i++) {
 			if (diagnostic.code === codes[i]) {
@@ -34,6 +35,7 @@ function assertDiagnostics(diagnostics: Diagnostic[], codes: ValidationCode[], f
 				continue diagnosticCheck;
 			}
 		}
+		throw new Error("Diagnostic with code " + diagnostic.code + " not expected");
 	}
 }
 
@@ -1144,6 +1146,12 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node test");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionRequiresOneOrThreeArguments(diagnostics[0], 0, 10, 0, 14);
+
+				diagnostics = validate("from node test");
+				assertDiagnostics(diagnostics,
+					[ ValidationCode.LOWERCASE, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE ],
+					[ assertInstructionCasing, assertInstructionRequiresOneOrThreeArguments ],
+					[ [ 0, 0, 0, 4 ], [ 0, 10, 0, 14 ] ]);
 			});
 
 			it("four", function() {

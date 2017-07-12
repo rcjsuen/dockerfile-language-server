@@ -153,11 +153,13 @@ export class Validator {
 				let range = instruction.getInstructionRange();
 				// invalid instruction found
 				problems.push(Validator.createUnknownInstruction(range.start, range.end, keyword));
-			} else if (keyword !== instruction.getInstruction()) {
-				let range = instruction.getInstructionRange();
-				// warn about uppercase convention if the keyword doesn't match the actual instruction
-				problems.push(Validator.createUppercaseInstruction(range.start, range.end));
-			} else {
+			} else  {
+				if (keyword !== instruction.getInstruction()) {
+					let range = instruction.getInstructionRange();
+					// warn about uppercase convention if the keyword doesn't match the actual instruction
+					problems.push(Validator.createUppercaseInstruction(range.start, range.end));
+				}
+
 				if (keyword === "MAINTAINER") {
 					let range = instruction.getInstructionRange();
 					let diagnostic = this.createMaintainerDeprecated(range.start, range.end);
