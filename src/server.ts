@@ -11,7 +11,7 @@ import {
 	DocumentSymbolParams, SymbolInformation,
 	DocumentFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
-	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams
+	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent
 } from 'vscode-languageserver';
 import { Validator } from './dockerValidator';
 import { DockerAssist } from './dockerAssist';
@@ -178,23 +178,59 @@ connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocument
 	validateTextDocument(document);
 });
 
+function getLaterChange(changes: TextDocumentContentChangeEvent[], i: number, j: number): number {
+	if (changes[i].range.start.line === changes[j].range.start.line) {
+		return changes[i].range.start.character < changes[j].range.start.character ? j : i;
+	} else if (changes[i].range.start.line < changes[j].range.start.line) {
+		return j;
+	}
+	return i;
+}
+
+function sortChanges(changes: TextDocumentContentChangeEvent[]): TextDocumentContentChangeEvent[] {
+	let sorted = [];
+	let length = changes.length;
+	for (let i = 0; i < length; i++) {
+		let candidate = 0;
+		for (let j = 1; j < changes.length; j++) {
+			candidate = getLaterChange(changes, candidate, j);
+		}
+		sorted.push(changes[candidate]);
+		changes.splice(candidate, 1);
+	}
+	return sorted;
+}
+
+function handleChanges(document: TextDocument, content: string, changes: TextDocumentContentChangeEvent[]) {
+	if (changes.length === 1 && !changes[0].range) {
+		// not an incremental change
+		return changes[0].text;
+	} else if (changes.length !== 0) {
+		changes = sortChanges(changes);
+		for (let i = 0; i < changes.length; i++) {
+			let offset = document.offsetAt(changes[i].range.start);
+			let end = null;
+			if (changes[i].range.end) {
+				end = document.offsetAt(changes[i].range.end);
+			} else {
+				end = offset + changes[i].rangeLength;
+			}
+			content = content.substring(0, offset) + changes[i].text + content.substring(end);
+		}
+	}
+	return content;
+}
+
 connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
 	let document: TextDocument = documents[didChangeTextDocumentParams.textDocument.uri];
 	let buffer = document.getText();
 	let changes = didChangeTextDocumentParams.contentChanges;
-	for (let i = changes.length - 1; i >= 0; i--) {
-		let offset = document.offsetAt(changes[i].range.start);
-		let end = null;
-		if (changes[i].range.end) {
-			end = document.offsetAt(changes[i].range.end);
-		} else {
-			end = offset + changes[i].rangeLength;
-		}
-		buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
+	let changed = handleChanges(document, buffer, changes)
+	if (changed !== buffer) {
+		document = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, changed);
+		documents[didChangeTextDocumentParams.textDocument.uri] = document;
+		validateTextDocument(document);
 	}
-	document = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
-	documents[didChangeTextDocumentParams.textDocument.uri] = document;
-	validateTextDocument(document);
 });
 
 connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
