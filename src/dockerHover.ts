@@ -60,7 +60,7 @@ export class DockerHover {
 		}
 
 		let arg = DockerDefinition.computeVariableDefinition(dockerfile, textDocumentPosition.position);
-		if (arg && arg.getValue()) {
+		if (arg && arg.getValue() !== null) {
 			return { contents: arg.getValue() };
 		}
 

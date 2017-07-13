@@ -31,6 +31,16 @@ export class Arg extends Instruction {
 		return args[0].getRange();
 	}
 
+	/**
+	 * Returns the actual value of this ARG instruction's declared
+	 * variable. The value will have its escape characters removed if
+	 * applicable.
+	 * 
+	 * @return the value that this ARG instruction's declared
+	 *         variable will resolve to, may be null if no value is
+	 *         defined, may be the empty string if the value only
+	 *         consists of whitespace
+	 */
 	public getValue(): string | null {
 		let value = this.getRangeContent(this.getValueRange());
 		if (value === null) {
@@ -118,15 +128,17 @@ export class Arg extends Instruction {
 		}
 		let arg = args[0].getValue();
 		let index = arg.indexOf('=');
-		if (index !== -1) {
-			let startIndex = this.findLeadingNonWhitespace(arg.substring(index + 1));
-			let endIndex = this.findTrailingNonWhitespace(arg);
-			return Range.create(
-				this.document.positionAt(this.document.offsetAt(args[0].getRange().start) + index + startIndex + 1),
-				this.document.positionAt(this.document.offsetAt(args[0].getRange().start) + endIndex + 1)
-			);
+		if (index === -1) {
+			// no value declared if no '=' found
+			return null;
 		}
-		return null;
+
+		// trim the leading whitespace of the variable's value
+		let startIndex = index < arg.length - 1 ? this.findLeadingNonWhitespace(arg.substring(index + 1)) : 0;
+		return Range.create(
+			this.document.positionAt(this.document.offsetAt(args[0].getRange().start) + index + startIndex + 1),
+			this.document.positionAt(this.document.offsetAt(args[0].getRange().end))
+		);
 	}
 
 	private findLeadingNonWhitespace(content: string): number {
@@ -158,6 +170,7 @@ export class Arg extends Instruction {
 					return i;
 			}
 		}
+		// only possible if the content is the empty string
 		return -1;
 	}
 
