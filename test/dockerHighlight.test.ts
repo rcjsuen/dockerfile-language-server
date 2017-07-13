@@ -65,6 +65,19 @@ describe("Dockerfile Document Highlight tests", function() {
 				assert.equal(ranges.length, 2);
 				assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 13, 0, 22);
 				assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 12, 2, 21);
+				
+				document = createDocument("FROM node AS bootstrap\nFROM node AS bootstrap2\nCOPY --from=bootstrap2 /git/bin/app .");
+				// cursor in the FROM
+				ranges = computeHighlightRanges(document, 1, 17);
+				assert.equal(ranges.length, 2);
+				assertHighlight(ranges[0], DocumentHighlightKind.Write, 1, 13, 1, 23);
+				assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 12, 2, 22);
+
+				// cursor in the COPY
+				ranges = computeHighlightRanges(document, 2, 16);
+				assert.equal(ranges.length, 2);
+				assertHighlight(ranges[0], DocumentHighlightKind.Write, 1, 13, 1, 23);
+				assertHighlight(ranges[1], DocumentHighlightKind.Read, 2, 12, 2, 22);
 			});
 
 			it("COPY incomplete", function() {
@@ -83,16 +96,16 @@ describe("Dockerfile Document Highlight tests", function() {
 			});
 
 			it("source mismatch", function() {
-				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=bootstrap2 /git/bin/app .");
+				let document = createDocument("FROM node AS bootstrap\nFROM node\nCOPY --from=other\nCOPY --from=bootstrap2 /git/bin/app .");
 				// cursor in the FROM
 				let ranges = computeHighlightRanges(document, 0, 17);
 				assert.equal(ranges.length, 1);
 				assertHighlight(ranges[0], DocumentHighlightKind.Write, 0, 13, 0, 22);
 
 				// cursor in the COPY
-				ranges = computeHighlightRanges(document, 2, 16);
+				ranges = computeHighlightRanges(document, 3, 16);
 				assert.equal(ranges.length, 1);
-				assertHighlight(ranges[0], DocumentHighlightKind.Read, 2, 12, 2, 22);
+				assertHighlight(ranges[0], DocumentHighlightKind.Read, 3, 12, 3, 22);
 			});
 		});
 
