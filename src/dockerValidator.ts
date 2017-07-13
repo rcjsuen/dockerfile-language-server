@@ -111,18 +111,11 @@ export class Validator {
 				}
 			}
 
-			let extra = false;
-			for (let i = 0; i < expectedArgCount.length; i++) {
-				extra = expectedArgCount[i] < args.length || extra;
-			}
-
-			if (extra) {
-				let range = args[args.length - 1].getRange();
-				if (createIncompleteDiagnostic) {
-					problems.push(createIncompleteDiagnostic(range.start, range.end));
-				} else {
-					problems.push(Validator.createExtraArgument(range.start, range.end));
-				}
+			let range = args[args.length - 1].getRange();
+			if (createIncompleteDiagnostic) {
+				problems.push(createIncompleteDiagnostic(range.start, range.end));
+			} else {
+				problems.push(Validator.createExtraArgument(range.start, range.end));
 			}
 		}
 	}
