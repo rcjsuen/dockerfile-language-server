@@ -161,7 +161,19 @@ export class Arg extends Instruction {
 		return -1;
 	}
 
+	/**
+	 * Goes from the back of the string and returns the first
+	 * non-whitespace character that is found. If an escape character
+	 * is found with newline characters, the escape character will
+	 * not be considered a non-whitespace character and its index in
+	 * the string will not be returned.
+	 * 
+	 * @param content the string to search through
+	 * @return the index in the string for the first non-whitespace
+	 *         character when searching from the end of the string
+	 */
 	private findTrailingNonWhitespace(content: string): number {
+		// loop back to find the first non-whitespace character
 		for (let i = content.length - 1; i >= 0; i--) {
 			switch (content.charAt(i)) {
 				case ' ':
@@ -187,7 +199,7 @@ export class Arg extends Instruction {
 					return i;
 			}
 		}
-		return content.length;
+		throw new Error("Could not find ending non-whitespace character:" + content);
 	}
 
 	public getArguments(): Argument[] {
