@@ -52,8 +52,9 @@ export class Arg extends Instruction {
 				}
 				char = value.charAt(i + 1);
 				if (char === this.escapeChar) {
-					// double escape, append them both
-					escapedValue = escapedValue + this.escapeChar + this.escapeChar;
+					// double escape, append one and move on
+					escapedValue = escapedValue + this.escapeChar;
+					i++;
 				} else if (char === '\r') {
 					if (value.charAt(i + 2) === '\n') {
 						i++;

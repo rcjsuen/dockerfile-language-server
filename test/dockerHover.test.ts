@@ -282,7 +282,7 @@ describe("Dockerfile hover", function() {
 				assert.equal(hover.contents, "b");
 
 				hover = onHoverString("ARG a=\\\\b", 0, 5);
-				assert.equal(hover.contents, "\\\\b");
+				assert.equal(hover.contents, "\\b");
 			});
 
 			it("no variable", function() {
