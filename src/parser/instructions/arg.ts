@@ -37,10 +37,12 @@ export class Arg extends Instruction {
 			return null;
 		}
 
+		let literal = false;
 		let first = value.charAt(0);
 		let last = value.charAt(value.length - 1);
 		if ((first === '"' && last === '"') || (first === '\'' && last === '\'')) {
-			return value.substring(1, value.length - 1);
+			literal = true;
+			value = value.substring(1, value.length - 1);
 		}
 
 		let escapedValue = "";
@@ -50,8 +52,19 @@ export class Arg extends Instruction {
 				if (i + 1 === value.length) {
 					break;
 				}
+
 				char = value.charAt(i + 1);
-				if (char === this.escapeChar) {
+				if (literal) {
+					if (char === '\n') {
+						i++;
+					} else {
+						if (char === this.escapeChar) {
+							i++;
+						}	
+						escapedValue = escapedValue + this.escapeChar;
+					}
+					continue parseValue;
+				} else if (char === this.escapeChar) {
 					// double escape, append one and move on
 					escapedValue = escapedValue + this.escapeChar;
 					i++;
