@@ -21,7 +21,6 @@ export class CommandIds {
 export class DockerCommands {
 
 	public analyzeDiagnostics(diagnostics: Diagnostic[], textDocumentURI: string, range: Range): Command[] {
-		let args = [ textDocumentURI, range ];
 		for (let i = 0; i < diagnostics.length; i++) {
 			switch (diagnostics[i].code) {
 				case ValidationCode.LOWERCASE:
@@ -29,7 +28,7 @@ export class DockerCommands {
 						{
 							title: "Convert instruction to uppercase",
 							command: CommandIds.UPPERCASE,
-							arguments: args
+							arguments: [ textDocumentURI, diagnostics[i].range ]
 						}
 					];
 				case ValidationCode.ARGUMENT_EXTRA:
@@ -37,7 +36,7 @@ export class DockerCommands {
 						{
 							title: "Remove extra argument",
 							command: CommandIds.EXTRA_ARGUMENT,
-							arguments: args
+							arguments: [ textDocumentURI, diagnostics[i].range ]
 						}
 					];
 				case ValidationCode.INVALID_ESCAPE_DIRECTIVE:
@@ -45,12 +44,12 @@ export class DockerCommands {
 						{
 							title: "Convert to backslash",
 							command: CommandIds.DIRECTIVE_TO_BACKSLASH,
-							arguments: args
+							arguments: [ textDocumentURI, diagnostics[i].range ]
 						},
 						{
 							title: "Convert to backtick",
 							command: CommandIds.DIRECTIVE_TO_BACKTICK,
-							arguments: args
+							arguments: [ textDocumentURI, diagnostics[i].range ]
 						}
 					];
 				case ValidationCode.INVALID_AS:
@@ -58,7 +57,7 @@ export class DockerCommands {
 						{
 							title: "Convert to AS",
 							command: CommandIds.CONVERT_TO_AS,
-							arguments: args
+							arguments: [ textDocumentURI, diagnostics[i].range ]
 						}
 					];
 			}

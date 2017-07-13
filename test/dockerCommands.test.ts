@@ -33,6 +33,13 @@ function createAS(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.INVALID_AS);
 }
 
+function assertRange(actual: Range, expected: Range) {
+	assert.equal(actual.start.line, expected.start.line);
+	assert.equal(actual.start.character, expected.start.character);
+	assert.equal(actual.end.line, expected.end.line);
+	assert.equal(actual.end.character, expected.start.character);
+}
+
 describe("Dockerfile code actions", function () {
 	it("no diagnostics", function () {
 		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
@@ -48,7 +55,7 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[0].command, CommandIds.EXTRA_ARGUMENT);
 		assert.equal(commands[0].arguments.length, 2);
 		assert.equal(commands[0].arguments[0], uri);
-		assert.equal(commands[0].arguments[1], range);
+		assertRange(commands[0].arguments[1], diagnostic.range);
 	});
 
 	it("invalid escape directive", function () {
@@ -59,11 +66,11 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[0].command, CommandIds.DIRECTIVE_TO_BACKSLASH);
 		assert.equal(commands[0].arguments.length, 2);
 		assert.equal(commands[0].arguments[0], uri);
-		assert.equal(commands[0].arguments[1], range);
+		assertRange(commands[0].arguments[1], diagnostic.range);
 		assert.equal(commands[1].command, CommandIds.DIRECTIVE_TO_BACKTICK);
 		assert.equal(commands[1].arguments.length, 2);
 		assert.equal(commands[1].arguments[0], uri);
-		assert.equal(commands[1].arguments[1], range);
+		assertRange(commands[1].arguments[1], diagnostic.range);
 	});
 
 	it("convert to uppercase", function () {
@@ -74,7 +81,7 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[0].command, CommandIds.UPPERCASE);
 		assert.equal(commands[0].arguments.length, 2);
 		assert.equal(commands[0].arguments[0], uri);
-		assert.equal(commands[0].arguments[1], range);
+		assertRange(commands[0].arguments[1], diagnostic.range);
 	});
 
 	it("convert to AS", function () {
@@ -84,7 +91,7 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[0].command, CommandIds.CONVERT_TO_AS);
 		assert.equal(commands[0].arguments.length, 2);
 		assert.equal(commands[0].arguments[0], uri);
-		assert.equal(commands[0].arguments[1], diagnostic.range);
+		assertRange(commands[0].arguments[1], diagnostic.range);
 	});
 });
 
