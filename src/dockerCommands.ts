@@ -21,48 +21,45 @@ export class CommandIds {
 export class DockerCommands {
 
 	public analyzeDiagnostics(diagnostics: Diagnostic[], textDocumentURI: string, range: Range): Command[] {
+		let commands = [];
 		for (let i = 0; i < diagnostics.length; i++) {
 			switch (diagnostics[i].code) {
 				case ValidationCode.LOWERCASE:
-					return [
-						{
-							title: "Convert instruction to uppercase",
-							command: CommandIds.UPPERCASE,
-							arguments: [ textDocumentURI, diagnostics[i].range ]
-						}
-					];
+					commands.push({
+						title: "Convert instruction to uppercase",
+						command: CommandIds.UPPERCASE,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
 				case ValidationCode.ARGUMENT_EXTRA:
-					return [
-						{
-							title: "Remove extra argument",
-							command: CommandIds.EXTRA_ARGUMENT,
-							arguments: [ textDocumentURI, diagnostics[i].range ]
-						}
-					];
+					commands.push({
+						title: "Remove extra argument",
+						command: CommandIds.EXTRA_ARGUMENT,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
 				case ValidationCode.INVALID_ESCAPE_DIRECTIVE:
-					return [
-						{
-							title: "Convert to backslash",
-							command: CommandIds.DIRECTIVE_TO_BACKSLASH,
-							arguments: [ textDocumentURI, diagnostics[i].range ]
-						},
-						{
-							title: "Convert to backtick",
-							command: CommandIds.DIRECTIVE_TO_BACKTICK,
-							arguments: [ textDocumentURI, diagnostics[i].range ]
-						}
-					];
+					commands.push({
+						title: "Convert to backslash",
+						command: CommandIds.DIRECTIVE_TO_BACKSLASH,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					commands.push({
+						title: "Convert to backtick",
+						command: CommandIds.DIRECTIVE_TO_BACKTICK,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
 				case ValidationCode.INVALID_AS:
-					return [
-						{
-							title: "Convert to AS",
-							command: CommandIds.CONVERT_TO_AS,
-							arguments: [ textDocumentURI, diagnostics[i].range ]
-						}
-					];
+					commands.push({
+						title: "Convert to AS",
+						command: CommandIds.CONVERT_TO_AS,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
 			}
 		}
-		return [];
+		return commands;
 	}
 
 	public createWorkspaceEdit(document: TextDocument, params: ExecuteCommandParams): WorkspaceEdit | null {

@@ -93,6 +93,25 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[0].arguments[0], uri);
 		assertRange(commands[0].arguments[1], diagnostic.range);
 	});
+
+	it("multiple diagnostics", function() {
+		let escape = createInvalidEscapeDirective();
+		let lowercase = createLowercase();
+		let commands = dockerCommands.analyzeDiagnostics([ escape, lowercase ], uri, Range.create(Position.create(0, 0), Position.create(0, 4)));
+		assert.equal(commands.length, 3);
+		assert.equal(commands[0].command, CommandIds.DIRECTIVE_TO_BACKSLASH);
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], escape.range);
+		assert.equal(commands[1].command, CommandIds.DIRECTIVE_TO_BACKTICK);
+		assert.equal(commands[1].arguments.length, 2);
+		assert.equal(commands[1].arguments[0], uri);
+		assertRange(commands[1].arguments[1], escape.range);
+		assert.equal(commands[2].command, CommandIds.UPPERCASE);
+		assert.equal(commands[2].arguments.length, 2);
+		assert.equal(commands[2].arguments[0], uri);
+		assertRange(commands[2].arguments[1], lowercase.range);
+	});
 });
 
 describe("Dockerfile execute commands", function () {
