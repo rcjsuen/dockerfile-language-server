@@ -292,6 +292,9 @@ describe("Dockerfile hover", function() {
 
 				hover = onHoverString("ARG a=\\\\b", 0, 5);
 				assert.equal(hover.contents, "\\b");
+
+				hover = onHoverString("ARG a=\\\\\\\\\\b", 0, 5);
+				assert.equal(hover.contents, "\\\\b");
 			});
 
 			it("escape in literals", function() {
@@ -318,6 +321,15 @@ describe("Dockerfile hover", function() {
 
 				hover = onHoverString("ARG a=\"a \\\nx\"", 0, 5);
 				assert.equal(hover.contents, "a x");
+
+				hover = onHoverString("ARG a=\"\\\\\\\\x\"", 0, 5);
+				assert.equal(hover.contents, "\\\\x");
+
+				hover = onHoverString("ARG a=\"\\\\\\\\\\x\"", 0, 5);
+				assert.equal(hover.contents, "\\\\\\x");
+
+				hover = onHoverString("ARG a=\"\\\\\\\\\\\\x\"", 0, 5);
+				assert.equal(hover.contents, "\\\\\\x");
 
 				hover = onHoverString("ARG a='a \\\nx'", 0, 5);
 				assert.equal(hover.contents, "a x");
