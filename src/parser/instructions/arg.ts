@@ -42,7 +42,18 @@ export class Arg extends Instruction {
 		if ((first === '"' && last === '"') || (first === '\'' && last === '\'')) {
 			return value.substring(1, value.length - 1);
 		}
-		return value;
+
+		let escapedValue = "";
+		for (let i = 0; i < value.length; i++) {
+			let char = value.charAt(i);
+			if (char === this.escapeChar && i + 1 === value.length) {
+				break;
+			} else {
+				escapedValue = escapedValue + char;
+			}
+		}
+		
+		return escapedValue;
 	}
 
 	private getValueRange(): Range | null {
@@ -64,13 +75,13 @@ export class Arg extends Instruction {
 	}
 
 	private findLeadingNonWhitespace(content: string): number {
-		for (let i = 0; i < content.length; i++) {
+		whitespaceCheck: for (let i = 0; i < content.length; i++) {
 			switch (content.charAt(i)) {
 				case ' ':
 				case '\t':
 					continue;
 				case this.escapeChar:
-					escapeCheck: for (let j = i + 1; j < content.length; j++) {
+					for (let j = i + 1; j < content.length; j++) {
 						switch (content.charAt(j)) {
 							case ' ':
 							case '\t':
@@ -78,16 +89,16 @@ export class Arg extends Instruction {
 							case '\r':
 								if (content.charAt(j + 1) === '\n') {
 									i = j + 1;
-									break escapeCheck;
+									continue whitespaceCheck;
 								}
 							case '\n':
 								i = j;
-								break escapeCheck;
+								continue whitespaceCheck;
 							default:
 								return i;
 						}
 					}
-					break;
+					return i;
 				default:
 					return i;
 			}

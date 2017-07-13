@@ -25,6 +25,10 @@ function onHover(document: TextDocument, line: number, character: number): Hover
 	return hoverProvider.onHover(document, textDocumentPosition);
 }
 
+function onHoverString(content: string, line: number, character: number): Hover | null {
+	return onHover(createDocument(content), line, character);
+}
+
 describe("Dockerfile hover", function() {
 	describe("whitespace", function() {
 		it("empty file", function() {
@@ -258,6 +262,9 @@ describe("Dockerfile hover", function() {
 				document = createDocument("ARG z=\\\n\"y\"");
 				hover = onHover(document, 0, 5);
 				assert.equal(hover.contents, "y");
+
+				hover = onHoverString("ARG a=\\", 0, 5);
+				assert.equal(hover.contents, "");
 			});
 
 			it("no variable", function() {

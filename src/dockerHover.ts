@@ -51,7 +51,7 @@ export class DockerHover {
 			if (instruction instanceof Arg) {
 				// hovering over an argument defined by ARG
 				let range = instruction.getNameRange();
-				if (Util.isInsideRange(textDocumentPosition.position, range) && instruction.getValue()) {
+				if (Util.isInsideRange(textDocumentPosition.position, range) && instruction.getValue() !== null) {
 					return {
 						contents: instruction.getValue()
 					};
