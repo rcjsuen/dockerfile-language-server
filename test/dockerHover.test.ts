@@ -278,6 +278,15 @@ describe("Dockerfile hover", function() {
 				hover = onHoverString("ARG a=a\\\r\nx", 0, 5);
 				assert.equal(hover.contents, "ax");
 
+				hover = onHoverString("ARG a=a\\  \nx", 0, 5);
+				assert.equal(hover.contents, "ax");
+
+				hover = onHoverString("ARG a=a\\ \t \rx", 0, 5);
+				assert.equal(hover.contents, "ax");
+
+				hover = onHoverString("ARG a=a\\  \t\t\r\nx", 0, 5);
+				assert.equal(hover.contents, "ax");
+
 				hover = onHoverString("ARG a=\\b", 0, 5);
 				assert.equal(hover.contents, "b");
 
