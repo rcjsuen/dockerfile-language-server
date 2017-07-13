@@ -46,8 +46,22 @@ export class Arg extends Instruction {
 		let escapedValue = "";
 		for (let i = 0; i < value.length; i++) {
 			let char = value.charAt(i);
-			if (char === this.escapeChar && i + 1 === value.length) {
-				break;
+			if (char === this.escapeChar) {
+				if (i + 1 === value.length) {
+					break;
+				}
+				char = value.charAt(i + 1);
+				if (char === this.escapeChar) {
+					// double escape, append them both
+					escapedValue = escapedValue + this.escapeChar + this.escapeChar;
+				} else if (char === '\r') {
+					if (value.charAt(i + 2) === '\n') {
+						i++;
+					}
+					i++;
+				} else if (char === '\n') {
+					i++;
+				}
 			} else {
 				escapedValue = escapedValue + char;
 			}
