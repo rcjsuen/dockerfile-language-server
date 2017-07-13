@@ -9,7 +9,7 @@ import {
 	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams, 
 	DocumentSymbolParams, SymbolInformation,
-	DocumentFormattingParams, DocumentHighlight,
+	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent
 } from 'vscode-languageserver';
@@ -66,6 +66,7 @@ connection.onInitialize((params): InitializeResult => {
 				]
 			},
 			documentFormattingProvider: true,
+			documentRangeFormattingProvider: true,
 			hoverProvider: true,
 			documentSymbolProvider: true,
 			documentHighlightProvider: true,
@@ -168,6 +169,14 @@ connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingPar
 	let document = documents[documentFormattingParams.textDocument.uri];
 	if (document) {
 		return formatterProvider.formatDocument(document, documentFormattingParams.options);
+	}
+	return [];
+});
+
+connection.onDocumentRangeFormatting((rangeFormattingParams: DocumentRangeFormattingParams): TextEdit[] => {
+	let document = documents[rangeFormattingParams.textDocument.uri];
+	if (document) {
+		return formatterProvider.formatRange(document, rangeFormattingParams.range, rangeFormattingParams.options);
 	}
 	return [];
 });
