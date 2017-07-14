@@ -1191,6 +1191,64 @@ describe("Docker Validator Tests", function() {
 			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Error, 1, 0, 1, 10);
 		});
 	});
+	
+	describe("RUN", function() {
+		it("empty newline escape", function() {
+			let diagnostics = validate("FROM busybox\nRUN ls && \\\n\nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\rRUN ls && \\\r\rls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n\r\nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n");
+			assert.equal(diagnostics.length, 0);
+		});
+
+		it("whitespace newline escape", function() {
+			let diagnostics = validate("FROM busybox\nRUN ls && \\\n \t \nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\rRUN ls && \\\r \t \rls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n \t \r\nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n \t ");
+			assert.equal(diagnostics.length, 0);
+		});
+
+		it("comment escape", function() {
+			let diagnostics = validate("FROM busybox\nRUN ls && \\\n# comment\nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\rRUN ls && \\\r# comment\rls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n# comment\r\nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n# comment");
+			assert.equal(diagnostics.length, 0);
+		});
+
+		it("whitespace comment escape", function() {
+			let diagnostics = validate("FROM busybox\nRUN ls && \\\n \t# comment\nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\rRUN ls && \\\r \t# comment\rls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n \t# comment\r\nls");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n \t# comment");
+			assert.equal(diagnostics.length, 0);
+		});
+	});
 
 	describe("STOPSIGNAL", function() {
 		it("ok", function() {

@@ -227,10 +227,14 @@ export class DockerfileParser {
 									instructionEnd = j;
 								}
 
+								let escaped = false;
 								for (let k = j + 1; k < buffer.length; k++) {
 									switch (buffer.charAt(k)) {
 										case '\r':
 										case '\n':
+											if (escaped) {
+												continue;
+											}
 											i = k;
 											lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(k));
 											instructionRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
@@ -239,8 +243,10 @@ export class DockerfileParser {
 										case this.escapeChar:
 											let next = buffer.charAt(k + 1);
 											if (next === '\n') {
+												escaped = true;
 												k++;
 											} else if (next === '\r') {
+												escaped = true;
 												if (buffer.charAt(k + 2) === '\n') {
 													k = k + 2;
 												} else {
@@ -253,11 +259,13 @@ export class DockerfileParser {
 														case '\t':
 															break;
 														case '\r':
+															escaped = true;
 															if (buffer.charAt(l + 1) === '\n') {
 																k = l + 1;
 																break escapeCheck;
 															}
 														case '\n':
+															escaped = true;
 															k = l;
 															break escapeCheck;
 														default:
@@ -267,6 +275,30 @@ export class DockerfileParser {
 												}
 											}
 											continue;
+										case '#':
+											if (escaped) {
+												escapeCheck: for (let l = k + 1; l < buffer.length; l++) {
+													switch (buffer.charAt(l)) {
+														case '\r':
+															if (buffer.charAt(l + 1) === '\n') {
+																k = l + 1;
+																break escapeCheck;
+															}
+														case '\n':
+															k = l;
+															break escapeCheck;
+													}
+												}
+											}
+											break;
+										case ' ':
+										case '\t':
+											break;
+										default:
+											if (escaped) {
+												escaped = false;
+											}
+											break;
 									}
 								}
 								// reached EOF
