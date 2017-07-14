@@ -22,7 +22,6 @@ export enum ValidationCode {
 	INVALID_AS,
 	INVALID_PORT,
 	INVALID_SIGNAL,
-	UNKNOWN_DIRECTIVE,
 	UNKNOWN_INSTRUCTION,
 	DEPRECATED_MAINTAINER
 }
@@ -58,11 +57,7 @@ export class Validator {
 
 		let directiveName = directive.getDirective();
 		let value = directive.getValue();
-		if (directiveName !== DIRECTIVE_ESCAPE) {
-			// Dockerfiles currently only support the 'escape' directive
-			let range = directive.getNameRange();
-			problems.push(Validator.createUnknownDirective(range.start, range.end, directiveName));
-		} else  if (value !== '\\' && value !== '`' && value !== "") {
+		if (directiveName === DIRECTIVE_ESCAPE && value !== '\\' && value !== '`' && value !== "") {
 			// if the directive's value is invalid or isn't the empty string, flag it
 			let range = directive.getValueRange();
 			problems.push(Validator.createInvalidEscapeDirective(range.start, range.end, value));
@@ -222,7 +217,6 @@ export class Validator {
 	}
 
 	private static dockerProblems = {
-		"directiveUnknown": "Unknown directive: ${0}",
 		"directiveEscapeInvalid": "invalid ESCAPE '${0}'. Must be ` or \\",
 
 		"noSourceImage": "No source image provided with `FROM`",
@@ -244,10 +238,6 @@ export class Validator {
 	
 	private static formatMessage(text: string, variable: string): string {
 		return text.replace("${0}", variable);
-	}
-
-	public static getDiagnosticMessage_DirectiveUnknown(directive: string) {
-		return Validator.formatMessage(Validator.dockerProblems["directiveUnknown"], directive);
 	}
 
 	public static getDiagnosticMessage_DirectiveEscapeInvalid(value: string) {
@@ -296,10 +286,6 @@ export class Validator {
 
 	public static getDiagnosticMessage_DeprecatedMaintainer() {
 		return Validator.dockerProblems["deprecatedMaintainer"];
-	}
-
-	static createUnknownDirective(start: Position, end: Position, directive: string): Diagnostic {
-		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveUnknown(directive), ValidationCode.UNKNOWN_DIRECTIVE);
 	}
 
 	static createInvalidEscapeDirective(start: Position, end: Position, value: string): Diagnostic {

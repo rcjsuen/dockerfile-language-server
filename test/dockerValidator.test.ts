@@ -149,17 +149,6 @@ function assertInstructionUnknown(diagnostic: Diagnostic, instruction: string, s
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
-function assertDirectiveUnknown(diagnostic: Diagnostic, directive: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_DIRECTIVE);
-	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
-	assert.equal(diagnostic.source, source);
-	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_DirectiveUnknown(directive));
-	assert.equal(diagnostic.range.start.line, startLine);
-	assert.equal(diagnostic.range.start.character, startCharacter);
-	assert.equal(diagnostic.range.end.line, endLine);
-	assert.equal(diagnostic.range.end.character, endCharacter);
-}
-
 function assertDirectiveEscapeInvalid(diagnostic: Diagnostic, value: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -793,23 +782,18 @@ describe("Docker Validator Tests", function() {
 		describe("unknown directive", function() {
 			it("simple", function() {
 				let diagnostics = validate("# key=value\nFROM node");
-				assert.equal(diagnostics.length, 1);
-				assertDirectiveUnknown(diagnostics[0], "key", 0, 2, 0, 5);
+				assert.equal(diagnostics.length, 0);
 			});
 
 			it("simple EOF", function() {
 				let diagnostics = validate("# key=value");
-				assert.equal(diagnostics.length, 2);
-				assertDiagnostics(diagnostics,
-					[ ValidationCode.UNKNOWN_DIRECTIVE, ValidationCode.NO_SOURCE_IMAGE ],
-					[ assertDirectiveUnknown, assertNoSourceImage ],
-					[ [ "key", 0, 2, 0, 5 ], [ 0, 0, 0, 0 ] ]);
+				assert.equal(diagnostics.length, 1);
+				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 			});
 
 			it("whitespace", function() {
 				let diagnostics = validate("# key = value\nFROM node");
-				assert.equal(diagnostics.length, 1);
-				assertDirectiveUnknown(diagnostics[0], "key", 0, 2, 0, 5);
+				assert.equal(diagnostics.length, 0);
 			});
 
 			it("ignored after one comment", function() {
