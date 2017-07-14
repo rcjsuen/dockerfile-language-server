@@ -814,8 +814,35 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("FROM node\n# key=value");
 				assert.equal(diagnostics.length, 0);
 			});
+		});
 
-			it("whitespace directive", function() {
+		describe("escape validation", function() {
+			it("backtick", function() {
+				let diagnostics = validate("# escape=`\nFROM node");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("whitespace around the value", function() {
+				let diagnostics = validate("# escape =  `  \nFROM node");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("casing ignored", function() {
+				let diagnostics = validate("# EsCaPe=`\nFROM node");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("invalid escape directive", function() {
+				let diagnostics = validate("# escape=ab\nFROM node");
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveEscapeInvalid(diagnostics[0], "ab", 0, 9, 0, 11);
+
+				diagnostics = validate("# escape=ab\r\nFROM node");
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveEscapeInvalid(diagnostics[0], "ab", 0, 9, 0, 11);
+			});
+
+			it("value set to whitespace", function() {
 				let diagnostics = validate("#escape= \nFROM node");
 				assert.equal(diagnostics.length, 1);
 				assertDirectiveEscapeInvalid(diagnostics[0], " ", 0, 8, 0, 9);
@@ -835,33 +862,6 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("#escape=\n");
 				assert.equal(diagnostics.length, 1);
 				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
-			});
-		});
-
-		describe("escape validation", function() {
-			it("backtick", function() {
-				let diagnostics = validate("# escape=`\nFROM node");
-				assert.equal(diagnostics.length, 0);
-			});
-
-			it("whitespace", function() {
-				let diagnostics = validate("# escape =  `  \nFROM node");
-				assert.equal(diagnostics.length, 0);
-			});
-
-			it("casing ignored", function() {
-				let diagnostics = validate("# EsCaPe=`\nFROM node");
-				assert.equal(diagnostics.length, 0);
-			});
-
-			it("invalid escape directive", function() {
-				let diagnostics = validate("# escape=ab\nFROM node");
-				assert.equal(diagnostics.length, 1);
-				assertDirectiveEscapeInvalid(diagnostics[0], "ab", 0, 9, 0, 11);
-
-				diagnostics = validate("# escape=ab\r\nFROM node");
-				assert.equal(diagnostics.length, 1);
-				assertDirectiveEscapeInvalid(diagnostics[0], "ab", 0, 9, 0, 11);
 			});
 		});
 	});
