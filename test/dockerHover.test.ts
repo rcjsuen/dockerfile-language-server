@@ -482,7 +482,7 @@ describe("Dockerfile hover", function() {
 			});
 
 			it("referenced variable \\$var", function() {
-				let document = createDocument("ARG var\nSTOPSIGNAL \\$var\nUSER \\$var\nWORKDIR \\$var");
+				let document = createDocument("ARG var=value\nSTOPSIGNAL \\$var\nUSER \\$var\nWORKDIR \\$var");
 				let hover = onHover(document, 1, 14);
 				assert.equal(hover, null);
 				hover = onHover(document, 2, 9);
