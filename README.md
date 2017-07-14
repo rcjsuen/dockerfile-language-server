@@ -33,6 +33,27 @@ TypeScript files transpiled on-the-fly as they are modified.
 Once the code has finished compiling, you can connect a language server
 client to the server via Node IPC, stdio, or sockets.
 
+### Settings
+
+Clients may send a `workspace/didChangeConfiguration` notification to
+notify the server of settings changes.
+
+The settings object that will be included with the notification must conform
+to the following specification.
+
+```TypeScript
+interface Settings {
+  docker: {
+    languageserver: {
+      diagnostics?: {
+        // string values must be equal to "ignore", "warning", or "error"
+        deprecatedMaintainer?: string
+      }
+    }
+  }
+}
+```
+
 ### Node IPC
 
 With the `child_process` API, you can `fork()` a new Node.js process

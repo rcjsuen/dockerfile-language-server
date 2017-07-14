@@ -13,7 +13,8 @@ import {
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent
 } from 'vscode-languageserver';
-import { Validator } from './dockerValidator';
+import { Validator, ValidationSeverity } from './dockerValidator';
+import { ValidatorSettings } from './dockerValidatorSettings';
 import { DockerAssist } from './dockerAssist';
 import { CommandIds, DockerCommands } from './dockerCommands';
 import { DockerHover } from './dockerHover';
@@ -33,6 +34,8 @@ let symbolsProvider = new DockerSymbols();
 let formatterProvider = new DockerFormatter();
 let definitionProvider = new DockerDefinition();
 let documentationResolver = new PlainTextDocumentation();
+
+let validatorSettings = null;
 
 let connection: IConnection = createConnection();
 
@@ -77,10 +80,45 @@ connection.onInitialize((params): InitializeResult => {
 });
 
 function validateTextDocument(textDocument: TextDocument): void {
-	var validator = new Validator();
+	var validator = new Validator(validatorSettings);
 	let diagnostics = validator.validate(KEYWORDS, textDocument);
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
+
+interface Settings {
+	docker: {
+		languageserver: {
+			diagnostics?: {
+				deprecatedMaintainer?: string
+			}
+		}
+	}
+}
+
+function getSeverity(severity: string): ValidationSeverity {
+	switch (severity) {
+		case "ignore":
+			return ValidationSeverity.IGNORE;
+		case "warning":
+			return ValidationSeverity.WARNING;
+		case "error":
+			return ValidationSeverity.ERROR;
+	}
+	return null;
+}
+
+connection.onDidChangeConfiguration((change) => {
+	let settings = <Settings>change.settings;
+	let maintainer = ValidationSeverity.WARNING;
+	if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
+		maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
+	}
+	validatorSettings = { deprecatedMaintainer: maintainer };
+	// validate all the documents again
+	Object.keys(documents).forEach((key) => {
+		validateTextDocument(documents[key]);
+	});
+});
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
 	let document = documents[textDocumentPosition.textDocument.uri];
