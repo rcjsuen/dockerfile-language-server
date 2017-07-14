@@ -98,11 +98,6 @@ export class DockerFormatter {
 								break escapeCheck;
 						}
 					}
-
-					// char = buffer.charAt(i - 1);
-					// if (char === escapeChar || (char === '\r' && buffer.charAt(i - 2) === escapeChar)) {
-					// 	indent = true;
-					// }
 					break;
 				}
 			}
