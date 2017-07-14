@@ -331,29 +331,19 @@ export class Validator {
 	}
 
 	createUppercaseInstruction(start: Position, end: Position): Diagnostic {
-		let severity: any = null;
 		if (this.settings.instructionCasing === ValidationSeverity.ERROR) {
-			severity = DiagnosticSeverity.Error;
+			return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
 		} else if (this.settings.instructionCasing === ValidationSeverity.WARNING) {
-			severity = DiagnosticSeverity.Warning;
-		}
-
-		if (severity) {
-			return Validator.createDiagnostic(severity, start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
+			return Validator.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
 		}
 		return null;
 	}
 
 	createMaintainerDeprecated(start: Position, end: Position): Diagnostic | null {
-		let severity: any = null;
 		if (this.settings.deprecatedMaintainer === ValidationSeverity.ERROR) {
-			severity = DiagnosticSeverity.Error;
+			return Validator.createError(start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer(), ValidationCode.DEPRECATED_MAINTAINER);
 		} else if (this.settings.deprecatedMaintainer === ValidationSeverity.WARNING) {
-			severity = DiagnosticSeverity.Warning;
-		}
-
-		if (severity) {
-			return Validator.createDiagnostic(severity, start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer(), ValidationCode.DEPRECATED_MAINTAINER);
+			return Validator.createWarning(start, end, Validator.getDiagnosticMessage_DeprecatedMaintainer(), ValidationCode.DEPRECATED_MAINTAINER);
 		}
 		return null;
 	}
