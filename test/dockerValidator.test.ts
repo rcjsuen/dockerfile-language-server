@@ -944,6 +944,7 @@ describe("Docker Validator Tests", function() {
 	describe("EXPOSE", function() {
 		it("ok", function() {
 			testValidArgument("EXPOSE", "8080");
+			testValidArgument("EXPOSE", "80\\80");
 			testValidArgument("EXPOSE", "7000-8000");
 		});
 
@@ -1096,7 +1097,7 @@ describe("Docker Validator Tests", function() {
 
 			diagnostics = validate("FROM node\nEXPOSE \\a");
 			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "\\a", 1, 7, 1, 9);
+			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 9);
 		});
 	});
 

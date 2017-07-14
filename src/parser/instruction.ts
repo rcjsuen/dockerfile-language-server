@@ -93,20 +93,27 @@ export class Instruction extends Line {
 								break whitespaceCheck;
 						}
 					}
-				} else if (fullArgs.charAt(i + 1) === '\r') {
+				} else if (next === '\r') {
 					escapeMarker = i;
 					if (fullArgs.charAt(i + 2) === '\n') {
 						i++;
 					}
 					i++;
-				} else if (fullArgs.charAt(i + 1) === '\n') {
+				} else if (next === '\n') {
 					escapeMarker = i;
 					i++;
-				} else {
-					escapedArg = escapedArg + char;
+				} else if (next === '$') {
+					escapedArg = escapedArg + char + next;
 					if (found === -1) {
 						found = i;
 					}
+					i++;
+				} else {
+					escapedArg = escapedArg + next;
+					if (found === -1) {
+						found = i;
+					}
+					i++;
 				}
 			} else {
 				escapeMarker = -1;
