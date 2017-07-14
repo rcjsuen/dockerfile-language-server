@@ -157,12 +157,6 @@ export class Validator {
 				}
 
 				switch (keyword) {
-					case "WORKDIR":
-					case "USER":
-						this.checkArguments(instruction, problems, [ 1 ], function() {
-							return null;
-						});
-						break;
 					case "ARG":
 						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
 							if (index > 0) {

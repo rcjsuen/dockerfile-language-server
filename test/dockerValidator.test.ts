@@ -457,14 +457,6 @@ describe("Docker Validator Tests", function() {
 			it("STOPSIGNAL", function() {
 				testExtraArgument("STOPSIGNAL SIGTERM", assertInstructionExtraArgument);
 			});
-
-			it("USER", function() {
-				testExtraArgument("USER daemon", assertInstructionExtraArgument);
-			});
-
-			it("WORKDIR", function() {
-				testExtraArgument("WORKDIR /path/docker", assertInstructionExtraArgument);
-			});
 		});
 
 		describe("missing argument", function() {
