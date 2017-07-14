@@ -47,16 +47,6 @@ export class Dockerfile {
 		return this.instructions;
 	}
 
-	public getVariableInstructions(): Instruction[] {
-		let instructions = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof StopSignal || instruction instanceof Workdir ||instruction instanceof User) {
-				instructions.push(instruction);
-			}
-		}
-		return this.instructions;
-	}
-
 	/**
 	 * Gets all the ARG instructions that are defined in this Dockerfile.
 	 */

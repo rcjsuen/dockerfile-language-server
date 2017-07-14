@@ -35,12 +35,12 @@ export class DockerHighlight {
 				}
 			}
 
-			for (let instruction of dockerfile.getVariableInstructions()) {
+			for (let instruction of dockerfile.getInstructions()) {
 				for (let variable of instruction.getVariables()) {
 					if (Util.isInsideRange(position, variable.getNameRange())) {
 						let name = variable.getName();
 						
-						for (let instruction of dockerfile.getVariableInstructions()) {
+						for (let instruction of dockerfile.getInstructions()) {
 							for (let variable of instruction.getVariables()) {
 								if (variable.getName() === name) {
 									highlights.push(DocumentHighlight.create(variable.getNameRange(), DocumentHighlightKind.Read));
@@ -67,7 +67,7 @@ export class DockerHighlight {
 				}
 			}
 
-			for (let instruction of dockerfile.getVariableInstructions()) {
+			for (let instruction of dockerfile.getInstructions()) {
 				for (let variable of instruction.getVariables()) {
 					if (variable.getName() === definition) {
 						highlights.push(DocumentHighlight.create(variable.getNameRange(), DocumentHighlightKind.Read));
