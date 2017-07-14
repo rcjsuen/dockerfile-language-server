@@ -18,7 +18,8 @@ function createDocument(content: string): any {
 function validate(content: string, settings?: ValidatorSettings) {
 	if (!settings) {
 		settings = {
-			deprecatedMaintainer: ValidationSeverity.IGNORE
+			deprecatedMaintainer: ValidationSeverity.IGNORE,
+			instructionCasing: ValidationSeverity.WARNING
 		};
 	}
 	let validator = new Validator(settings);
@@ -83,9 +84,9 @@ function assertInvalidStopSignal(diagnostic: Diagnostic, signal: string, startLi
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
-function assertInstructionCasing(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+function assertInstructionCasing(diagnostic: Diagnostic, severity: DiagnosticSeverity, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.LOWERCASE);
-	assert.equal(diagnostic.severity, DiagnosticSeverity.Warning);
+	assert.equal(diagnostic.severity, severity);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InstructionCasing());
 	assert.equal(diagnostic.range.start.line, startLine);
@@ -331,11 +332,11 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("FROM node\n" + mixed.toLowerCase() + " " + argument);
 				assert.equal(diagnostics.length, 1);
-				assertInstructionCasing(diagnostics[0], 1, 0, 1, length);
+				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, length);
 
 				diagnostics = validate("FROM node\n" + mixed + " " + argument);
 				assert.equal(diagnostics.length, 1);
-				assertInstructionCasing(diagnostics[0], 1, 0, 1, length);
+				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, length);
 
 				diagnostics = validate("FROM node\n#" + mixed.toLowerCase() + " " + argument);
 				assert.equal(diagnostics.length, 0);
@@ -411,6 +412,30 @@ describe("Docker Validator Tests", function() {
 
 			it("WORKDIR", function() {
 				testCasingStyle("workDIR", "/path");
+			});
+
+			it("default", function() {
+				let validator = new Validator();
+				let diagnostics = validator.validate(KEYWORDS, createDocument("from busybox"));
+				assert.equal(diagnostics.length, 1);
+				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 0, 0, 4);
+			});
+
+			it("ignore", function() {
+				let diagnostics = validate("fROm busybox", { instructionCasing: ValidationSeverity.IGNORE });
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("warning", function() {
+				let diagnostics = validate("fROm busybox", { instructionCasing: ValidationSeverity.WARNING });
+				assert.equal(diagnostics.length, 1);
+				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 0, 0, 4);
+			});
+
+			it("error", function() {
+				let diagnostics = validate("fROm busybox", { instructionCasing: ValidationSeverity.ERROR });
+				assert.equal(diagnostics.length, 1);
+				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Error, 0, 0, 0, 4);
 			});
 		});
 
@@ -1128,7 +1153,7 @@ describe("Docker Validator Tests", function() {
 				assertDiagnostics(diagnostics,
 					[ ValidationCode.LOWERCASE, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE ],
 					[ assertInstructionCasing, assertInstructionRequiresOneOrThreeArguments ],
-					[ [ 0, 0, 0, 4 ], [ 0, 10, 0, 14 ] ]);
+					[ [ DiagnosticSeverity.Warning, 0, 0, 0, 4 ], [ 0, 10, 0, 14 ] ]);
 			});
 
 			it("four", function() {

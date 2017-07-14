@@ -33,7 +33,8 @@ export enum ValidationSeverity {
 }
 
 export const ValidatorSettingsDefaults: ValidatorSettings = {
-	deprecatedMaintainer: ValidationSeverity.WARNING
+	deprecatedMaintainer: ValidationSeverity.WARNING,
+	instructionCasing: ValidationSeverity.WARNING
 }
 
 export class Validator {
@@ -145,7 +146,10 @@ export class Validator {
 				if (keyword !== instruction.getInstruction()) {
 					let range = instruction.getInstructionRange();
 					// warn about uppercase convention if the keyword doesn't match the actual instruction
-					problems.push(Validator.createUppercaseInstruction(range.start, range.end));
+					let diagnostic = this.createUppercaseInstruction(range.start, range.end);
+					if (diagnostic) {
+						problems.push(diagnostic);
+					}
 				}
 
 				if (keyword === "MAINTAINER") {
@@ -326,8 +330,18 @@ export class Validator {
 		return Validator.createDiagnostic(DiagnosticSeverity.Error, start, end, description, code);
 	}
 
-	static createUppercaseInstruction(start: Position, end: Position): Diagnostic {
-		return Validator.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
+	createUppercaseInstruction(start: Position, end: Position): Diagnostic {
+		let severity: any = null;
+		if (this.settings.instructionCasing === ValidationSeverity.ERROR) {
+			severity = DiagnosticSeverity.Error;
+		} else if (this.settings.instructionCasing === ValidationSeverity.WARNING) {
+			severity = DiagnosticSeverity.Warning;
+		}
+
+		if (severity) {
+			return Validator.createDiagnostic(severity, start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
+		}
+		return null;
 	}
 
 	createMaintainerDeprecated(start: Position, end: Position): Diagnostic | null {

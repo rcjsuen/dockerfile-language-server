@@ -89,7 +89,8 @@ interface Settings {
 	docker: {
 		languageserver: {
 			diagnostics?: {
-				deprecatedMaintainer?: string
+				deprecatedMaintainer?: string,
+				instructionCasing?: string
 			}
 		}
 	}

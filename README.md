@@ -47,7 +47,8 @@ interface Settings {
     languageserver: {
       diagnostics?: {
         // string values must be equal to "ignore", "warning", or "error"
-        deprecatedMaintainer?: string
+        deprecatedMaintainer?: string,
+        instructionCasing?: string
       }
     }
   }
