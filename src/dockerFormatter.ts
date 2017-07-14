@@ -62,42 +62,13 @@ export class DockerFormatter {
 		let indent = false;
 		let parseStart = 0;
 		if (range.start.line !== 0) {
-			// walk back to see if an indentation is needed for the first line of the selected blocks
-			for (let i = document.offsetAt(range.start); i >= 0; i--) {
-				let char = buffer.charAt(i);
-				if (char === '\r') {
-					parseStart = i + 1;
-					escapeCheck: for (let j = i - 1; j >= 0; j--) {
-						switch (buffer.charAt(j)) {
-							case escapeChar:
-								indent = true;
-								break escapeCheck;
-							case ' ':
-							case '\t':
-								continue;
-							default:
-								break escapeCheck;
-						}
-					}
+			parseStart = document.offsetAt(Position.create(range.start.line, 0));
+			for (let instruction of dockerfile.getInstructions()) {
+				let instructionRange = instruction.getRange();
+				if (instructionRange.start.line === range.start.line) {
 					break;
-				} else if (char === '\n') {
-					parseStart = i + 1;
-					if (buffer.charAt(i - 1) === '\r') {
-						i--;
-					}
-
-					escapeCheck: for (let j = i - 1; j >= 0; j--) {
-						switch (buffer.charAt(j)) {
-							case escapeChar:
-								indent = true;
-								break escapeCheck;
-							case ' ':
-							case '\t':
-								continue;
-							default:
-								break escapeCheck;
-						}
-					}
+				} else if (instructionRange.start.line !== instructionRange.end.line && range.start.line <= instructionRange.end.line) {
+					indent = true;
 					break;
 				}
 			}
