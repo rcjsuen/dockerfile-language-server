@@ -624,6 +624,133 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[1].range.end.character, 0);
 			});
 
+			/**
+			 * EXPOSE 8080 \
+			 * [8081 \
+			 * 
+			 * 8082]
+			 * ------------
+			 * EXPOSE 8080 \
+			 * \t8081 \
+			 * 
+			 * \t8082
+			 */
+			it("empty line after escape", function() {
+				let document = createDocument("EXPOSE 8080 \\\n8081 \\\n\n8082");
+				let range = Range.create(Position.create(1, 0), Position.create(3, 4));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 2);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[1].newText, "\t");
+				assert.equal(edits[1].range.start.line, 3);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 3);
+				assert.equal(edits[1].range.end.character, 0);
+			});
+
+			/**
+			 * EXPOSE 8080 \
+			 * [8081 \
+			 *  \t 
+			 * 8082]
+			 * ------------
+			 * EXPOSE 8080 \
+			 * \t8081 \
+			 * 
+			 * \t8082
+			 */
+			it("whitespace line after escape", function() {
+				let document = createDocument("EXPOSE 8080 \\\n8081 \\\n \t \n8082");
+				let range = Range.create(Position.create(1, 0), Position.create(3, 4));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[1].newText, "");
+				assert.equal(edits[1].range.start.line, 2);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 2);
+				assert.equal(edits[1].range.end.character, 3);
+				assert.equal(edits[2].newText, "\t");
+				assert.equal(edits[2].range.start.line, 3);
+				assert.equal(edits[2].range.start.character, 0);
+				assert.equal(edits[2].range.end.line, 3);
+				assert.equal(edits[2].range.end.character, 0);
+			});
+
+			/**
+			 * EXPOSE 8080 \
+			 * [8081 \
+			 * # comment
+			 * 8082]
+			 * ------------
+			 * EXPOSE 8080 \
+			 * \t8081 \
+			 * \t# comment
+			 * \t8082
+			 */
+			it("comment after escape", function() {
+				let document = createDocument("EXPOSE 8080 \\\n8081 \\\n# comment\n8082");
+				let range = Range.create(Position.create(1, 0), Position.create(3, 4));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[1].newText, "\t");
+				assert.equal(edits[1].range.start.line, 2);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 2);
+				assert.equal(edits[1].range.end.character, 0);
+				assert.equal(edits[2].newText, "\t");
+				assert.equal(edits[2].range.start.line, 3);
+				assert.equal(edits[2].range.start.character, 0);
+				assert.equal(edits[2].range.end.line, 3);
+				assert.equal(edits[2].range.end.character, 0);
+			});
+
+			/**
+			 * EXPOSE 8080 \
+			 * [8081 \
+			 * \t \t# comment
+			 * 8082]
+			 * ------------
+			 * EXPOSE 8080 \
+			 * \t8081 \
+			 * \t# comment
+			 * \t8082
+			 */
+			it("whitespace before comment after escape", function() {
+				let document = createDocument("EXPOSE 8080 \\\n8081 \\\n\t \t# comment\n8082");
+				let range = Range.create(Position.create(1, 0), Position.create(3, 4));
+				let edits = formatRange(document, range);
+				assert.equal(edits.length, 3);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+				assert.equal(edits[1].newText, "\t");
+				assert.equal(edits[1].range.start.line, 2);
+				assert.equal(edits[1].range.start.character, 0);
+				assert.equal(edits[1].range.end.line, 2);
+				assert.equal(edits[1].range.end.character, 3);
+				assert.equal(edits[2].newText, "\t");
+				assert.equal(edits[2].range.start.line, 3);
+				assert.equal(edits[2].range.start.character, 0);
+				assert.equal(edits[2].range.end.line, 3);
+				assert.equal(edits[2].range.end.character, 0);
+			});
+
 			it("full file", function() {
 				let document = createDocument("FROM node\n EXPOSE 8081\nHEALTHCHECK NONE");
 				let range = Range.create(Position.create(0, 1), Position.create(1, 3));

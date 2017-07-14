@@ -7,17 +7,11 @@
 import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
+import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
+import { Util } from './docker';
 
 export class DockerFormatter {
-
-	private isWhitespace(char: string): boolean {
-		return char === ' ' || char === '\t' || this.isNewline(char);
-	}
-
-	private isNewline(char: string): boolean {
-		return char === '\r' || char === '\n';
-	}
 
 	private getIndentation(formattingOptions?: FormattingOptions): string {
 		let indentation = "\t";
@@ -54,173 +48,84 @@ export class DockerFormatter {
 	}
 
 	public formatRange(document: TextDocument, range: Range, options?: FormattingOptions): TextEdit[] {
-		let indentation = this.getIndentation(options);
-		let buffer = document.getText();
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
-		let escapeChar = dockerfile.getEscapeCharacter();
-		let indent = false;
-		let parseStart = 0;
-		if (range.start.line !== 0) {
-			parseStart = document.offsetAt(Position.create(range.start.line, 0));
-			for (let instruction of dockerfile.getInstructions()) {
-				let instructionRange = instruction.getRange();
-				if (instructionRange.start.line === range.start.line) {
-					break;
-				} else if (instructionRange.start.line !== instructionRange.end.line && range.start.line <= instructionRange.end.line) {
-					indent = true;
-					break;
-				}
-			}
+		let lines = [];
+		for (let i = range.start.line; i <= range.end.line; i++) {
+			lines.push(i);
 		}
-		if (range.start.line === range.end.line) {
-			if (document.lineCount === 1) {
-				// formatting the one single line
-				for (let i = 0; i < buffer.length; i++) {
-					if (!this.isWhitespace(buffer.charAt(i))) {
-						if (i === 0) {
-							return [];
-						}
-						return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, i))) ];
-					}
-				}
-				// only whitespace characters
-				return [ TextEdit.del(Range.create(Position.create(0, 0), Position.create(0, buffer.length))) ];
-			} else {
-				// formatting the one single line
-				for (let i = parseStart; i < buffer.length; i++) {
-					if (!this.isWhitespace(buffer.charAt(i))) {
-						if (parseStart === i) {
-							// the first char is not a whitespace, either indent or no formatting
-							if (indent) {
-								return [ TextEdit.insert(document.positionAt(i), indentation) ];
-							}
-							return [];
-						}
-						if (indent) {
-							return [ TextEdit.replace(Range.create(Position.create(range.start.line, 0), document.positionAt(i)), indentation) ];
-						}
-						return [ TextEdit.del(Range.create(Position.create(range.start.line, 0), Position.create(range.start.line, i - parseStart))) ];
-					}
-				}
-			}
-		}
-
-		// search for the end of the selection, as determined by a newline or an EOF
-		let parseEnd = buffer.length;
-		for (let i = document.offsetAt(range.end); i < parseEnd; i++) {
-			if (this.isNewline(buffer.charAt(i))) {
-				parseEnd = i;
-				break;
-			}
-		}
-
-		return this.format(document, buffer.substring(parseStart, parseEnd), escapeChar, indent, parseStart, options);
+		return this.format(document, lines, options);
 	}
 
 	public formatDocument(document: TextDocument, options?: FormattingOptions): TextEdit[] {
-		let buffer = document.getText();
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
-		let escapeChar = dockerfile.getEscapeCharacter();
-		return this.format(document, buffer, escapeChar, false, 0, options);
+		let lines = [];
+		for (let i = 0; i < document.lineCount; i++) {
+			lines.push(i);
+		}
+		return this.format(document, lines, options);
 	}
 
-	private format(document: TextDocument, buffer: string, escapeChar: string, indent: boolean, documentOffset: number, options?: FormattingOptions): TextEdit[] {
+	/**
+	 * Formats the specified lines of the given document based on the
+	 * provided formatting options.
+	 * 
+	 * @param document the text document to format
+	 * @param lines the lines to format
+	 * @param options the formatting options to use to perform the format
+	 * @return the text edits to apply to format the lines of the document
+	 */
+	private format(document: TextDocument, lines: number[], options?: FormattingOptions): TextEdit[] {
+		let parser = new DockerfileParser();
+		let dockerfile = parser.parse(document);
+		let content = document.getText();
 		let indentation = this.getIndentation(options);
 		let edits = [];
-		let comment = false;
-		let lineStart = 0;
-		lineCheck: for (let i = 0; i < buffer.length; i++) {
-			switch (buffer.charAt(i)) {
-				case ' ':
-				case '\t':
-					// check for last line being whitespaces
-					if (i + 1 === buffer.length) {
-						let edit = TextEdit.del({
-							start: document.positionAt(documentOffset + lineStart),
-							end: document.positionAt(documentOffset + i + 1)
-						});
-						edits.push(edit);
-					}
-					continue;
-				case '\r':
-				case '\n':
-					// empty lines with just whitespace
-					if (lineStart !== i) {
-						let edit = TextEdit.del({
-							start: document.positionAt(documentOffset + lineStart + documentOffset),
-							end: document.positionAt(documentOffset + i)
-						});
-						edits.push(edit);
-					}
-					lineStart = i + 1;
-					comment = false;
-					break;
-				case '#':
-					comment = true;
-				default:
-					if (lineStart !== i || indent) {
-						let edit = this.createFormattingEdit(document, documentOffset + lineStart, documentOffset + i, indent, indentation);
-						edits.push(edit);
-						indent = false;
-					}
+		let indentedLines = [];
+		for (let i = 0; i < document.lineCount; i++) {
+			indentedLines[i] = false;
+		}
+		for (let instruction of dockerfile.getInstructions()) {
+			let range = instruction.getRange();
+			indentedLines[range.start.line] = false;
+			for (let i = range.start.line + 1; i <= range.end.line; i++) {
+				indentedLines[i] = true;
+			}
+		}
 
-					// skip the rest
-					for (let j = i + 1; j < buffer.length; j++) {
-						switch (buffer.charAt(j)) {
-							case escapeChar:
-								// only try to escape if we're not in a comment
-								if (!comment) {
-									// see if we're actually escaping a newline or not
-									for (let k = j + 1; j < buffer.length; k++) {
-										escapeCheck: switch (buffer.charAt(k)) {
-											case ' ':
-											case '\t':
-												// whitespace can come after the escape character
-												continue;
-											case '\r':
-												if (buffer.charAt(k + 1) === '\n') {
-													lineStart = k + 2;
-												} else {
-													lineStart = k + 1;
-												}
-												i = lineStart - 1;
-												indent = true;
-												comment = false;
-												continue lineCheck;
-											case '\n':
-												lineStart = k + 1;
-												i = k;
-												indent = true;
-												comment = false;
-												continue lineCheck;
-											default:
-												// encountered non-whitespace, ignore this escape character
-												j = k;
-												break escapeCheck;
-										}
-									}
-								}
-								break;
-							case '\r':
-								if (buffer.charAt(j + 1) === '\n') {
-									lineStart = j + 2;
-								} else {
-									lineStart = j + 1;
-								}
-								comment = false;
-								i = lineStart - 1;
-								continue lineCheck;
-							case '\n':
-								lineStart = j + 1;
-								i = j;
-								comment = false;
-								continue lineCheck;
+		lineCheck: for (let line of lines) {
+			let startOffset = document.offsetAt(Position.create(line, 0));
+			for (let i = startOffset; i < content.length; i++) {
+				switch (content.charAt(i)) {
+					case ' ':
+					case '\t':
+						break;
+					case '\r':
+					case '\n':
+						if (i !== startOffset) {
+							// only whitespace on this line, trim it
+							let edit = TextEdit.del({
+								start: document.positionAt(startOffset),
+								end: document.positionAt(i)
+							});
+							edits.push(edit);
 						}
-					}
-					// reached EOF
-					break lineCheck;
+						// process the next line
+						continue lineCheck;
+					default:
+						// non-whitespace encountered
+						if (i !== startOffset || indentedLines[line]) {
+							let edit = this.createFormattingEdit(document, startOffset, i, indentedLines[line], indentation);
+							edits.push(edit);
+						}
+						// process the next line
+						continue lineCheck;
+				}
+			}
+			if (startOffset < content.length) {
+				// only whitespace on the last line, trim it
+				let edit = TextEdit.del({
+					start: document.positionAt(startOffset),
+					end: document.positionAt(content.length)
+				});
+				edits.push(edit);
 			}
 		}
 		return edits;
