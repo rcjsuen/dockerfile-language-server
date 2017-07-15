@@ -11,6 +11,7 @@ import { Instruction } from './instruction';
 import { Line } from './line';
 import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
+import { Env } from './instructions/env';
 import { From } from './instructions/from';
 import { Onbuild } from './instructions/onbuild';
 import { StopSignal } from './instructions/stopSignal';
@@ -29,6 +30,8 @@ export class DockerfileParser {
 				return new Arg(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "COPY":
 				return new Copy(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "ENV":
+				return new Env(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "FROM":
 				return new From(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "ONBUILD":

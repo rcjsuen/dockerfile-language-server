@@ -9,6 +9,7 @@ import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Arg } from './instructions/arg';
 import { Copy } from './instructions/copy';
+import { Env } from './instructions/env';
 import { From } from './instructions/from';
 import { StopSignal } from './instructions/stopSignal';
 import { Workdir } from './instructions/workdir';
@@ -71,6 +72,19 @@ export class Dockerfile {
 			}
 		}
 		return copies;
+	}
+
+	/**
+	 * Gets all the ENV instructions that are defined in this Dockerfile.
+	 */
+	public getENVs(): Env[] {
+		let args = [];
+		for (let instruction of this.instructions) {
+			if (instruction instanceof Env) {
+				args.push(instruction);
+			}
+		}
+		return args;
 	}
 
 	/**

@@ -4,10 +4,11 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { TextDocument, Position, Location } from 'vscode-languageserver';
+import { TextDocument, Position, Range, Location } from 'vscode-languageserver';
 import { Util } from './docker';
 import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
+import { Property } from './parser/property';
 import { Arg } from './parser/instructions/arg';
 
 export class DockerDefinition {
@@ -32,18 +33,29 @@ export class DockerDefinition {
 		return null;
 	}
 
-	public static computeVariableDefinition(dockerfile: Dockerfile, position: Position): Arg {
+	public static computeVariableDefinition(dockerfile: Dockerfile, position: Position): Property {
 		let variable = null;
 		let variables = {};
 		for (let arg of dockerfile.getARGs()) {
-			let range = arg.getNameRange();
+			let property = arg.getProperty();
 			// might be an ARG with no arguments
-			if (range) {
+			if (property) {
 				// is the caret inside the definition itself
-				if (Util.isInsideRange(position, range)) {
-					return arg;
+				if (Util.isInsideRange(position, property.getNameRange())) {
+					return property;
 				}
-				variables[arg.getName()] = arg;
+				variables[property.getName()] = property;
+			}
+		}
+		for (let env of dockerfile.getENVs()) {
+			let property = env.getProperty();
+			// might be an ENV with no arguments
+			if (property) {
+				// is the caret inside the definition itself
+				if (Util.isInsideRange(position, property.getNameRange())) {
+					return property;
+				}
+				variables[property.getName()] = property;
 			}
 		}
 		for (let instruction of dockerfile.getInstructions()) {
@@ -60,8 +72,8 @@ export class DockerDefinition {
 	}
 
 	private computeVariableDefinition(uri: string, dockerfile: Dockerfile, position: Position): Location | null {
-		let arg = DockerDefinition.computeVariableDefinition(dockerfile, position);
-		return arg ? Location.create(uri, arg.getNameRange()) : null;
+		let property = DockerDefinition.computeVariableDefinition(dockerfile, position);
+		return property ? Location.create(uri, property.getNameRange()) : null;
 	}
 
 	public computeDefinition(document: TextDocument, position: Position): Location | null {

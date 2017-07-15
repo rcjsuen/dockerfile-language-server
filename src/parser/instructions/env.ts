@@ -8,7 +8,7 @@ import { Property } from '../property';
 import { Argument } from '../argument';
 import { Util } from '../../docker';
 
-export class Arg extends Instruction {
+export class Env extends Instruction {
 
 	private property: Property = undefined;
 

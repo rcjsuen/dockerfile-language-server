@@ -50,18 +50,18 @@ export class DockerHover {
 
 			if (instruction instanceof Arg) {
 				// hovering over an argument defined by ARG
-				let range = instruction.getNameRange();
-				if (Util.isInsideRange(textDocumentPosition.position, range) && instruction.getValue() !== null) {
+				let property = instruction.getProperty();
+				if (property && Util.isInsideRange(textDocumentPosition.position, property.getNameRange()) && property.getValue() !== null) {
 					return {
-						contents: instruction.getValue()
+						contents: property.getValue()
 					};
 				}
 			}
 		}
 
-		let arg = DockerDefinition.computeVariableDefinition(dockerfile, textDocumentPosition.position);
-		if (arg && arg.getValue() !== null) {
-			return { contents: arg.getValue() };
+		let property = DockerDefinition.computeVariableDefinition(dockerfile, textDocumentPosition.position);
+		if (property && property.getValue() !== null) {
+			return { contents: property.getValue() };
 		}
 
 		return null;

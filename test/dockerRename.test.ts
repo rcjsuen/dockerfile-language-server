@@ -105,131 +105,136 @@ describe("Dockerfile Document Rename tests", function() {
 		});
 	});
 
-	describe("ARG", function() {
-		it("referenced variable ${var}", function() {
-			let document = createDocument("ARG var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
-			let edits = rename(document, 0, 5, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+	function createVariablesTest(instruction: string) {
+		describe(instruction, function() {
+			it("referenced variable ${var}", function() {
+				let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
 
-			edits = rename(document, 1, 13, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+				edits = rename(document, 1, 13, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
 
-			edits = rename(document, 2, 7, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+				edits = rename(document, 2, 7, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
 
-			edits = rename(document, 3, 11, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+				edits = rename(document, 3, 11, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+			});
+
+			it("referenced variable ${var} no value", function() {
+				let document = createDocument(instruction + " var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+
+				edits = rename(document, 1, 13, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+
+				edits = rename(document, 2, 7, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+
+				edits = rename(document, 3, 11, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 13, 1, 16);
+				assertEdit(edits[2], "renamed", 2, 7, 2, 10);
+				assertEdit(edits[3], "renamed", 3, 10, 3, 13);
+			});
+
+			it("referenced variable $var", function() {
+				let document = createDocument(instruction + " var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+
+				edits = rename(document, 1, 13, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+
+				edits = rename(document, 2, 7, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+
+				edits = rename(document, 3, 11, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+			});
+
+			it("referenced variable $var no value", function() {
+				let document = createDocument(instruction + " var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+
+				edits = rename(document, 1, 13, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+
+				edits = rename(document, 2, 7, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+
+				edits = rename(document, 3, 11, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				assertEdit(edits[2], "renamed", 2, 6, 2, 9);
+				assertEdit(edits[3], "renamed", 3, 9, 3, 12);
+			});
 		});
+	}
 
-		it("referenced variable ${var} no value", function() {
-			let document = createDocument("ARG var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
-			let edits = rename(document, 0, 5, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
-
-			edits = rename(document, 1, 13, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
-
-			edits = rename(document, 2, 7, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
-
-			edits = rename(document, 3, 11, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 13, 1, 16);
-			assertEdit(edits[2], "renamed", 2, 7, 2, 10);
-			assertEdit(edits[3], "renamed", 3, 10, 3, 13);
-		});
-
-		it("referenced variable $var", function() {
-			let document = createDocument("ARG var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
-			let edits = rename(document, 0, 5, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-
-			edits = rename(document, 1, 13, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-
-			edits = rename(document, 2, 7, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-
-			edits = rename(document, 3, 11, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-		});
-
-		it("referenced variable $var no value", function() {
-			let document = createDocument("ARG var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
-			let edits = rename(document, 0, 5, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-
-			edits = rename(document, 1, 13, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-
-			edits = rename(document, 2, 7, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-
-			edits = rename(document, 3, 11, "renamed");
-			assert.equal(edits.length, 4);
-			assertEdit(edits[0], "renamed", 0, 4, 0, 7);
-			assertEdit(edits[1], "renamed", 1, 12, 1, 15);
-			assertEdit(edits[2], "renamed", 2, 6, 2, 9);
-			assertEdit(edits[3], "renamed", 3, 9, 3, 12);
-		});
-	});
+	createVariablesTest("ARG");
+	createVariablesTest("ENV");
 
 	describe("non-existent variable", function() {
 		it("${var}", function() {

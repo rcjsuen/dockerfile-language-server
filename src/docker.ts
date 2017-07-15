@@ -38,6 +38,39 @@ export class Util {
 		return char === '\r' || char === '\n';
 	}
 
+	public static findLeadingNonWhitespace(content: string, escapeChar: string): number {
+		whitespaceCheck: for (let i = 0; i < content.length; i++) {
+			switch (content.charAt(i)) {
+				case ' ':
+				case '\t':
+					continue;
+				case escapeChar:
+					for (let j = i + 1; j < content.length; j++) {
+						switch (content.charAt(j)) {
+							case ' ':
+							case '\t':
+								continue;
+							case '\r':
+								if (content.charAt(j + 1) === '\n') {
+									i = j + 1;
+									continue whitespaceCheck;
+								}
+							case '\n':
+								i = j;
+								continue whitespaceCheck;
+							default:
+								return i;
+						}
+					}
+					return i;
+				default:
+					return i;
+			}
+		}
+		// only possible if the content is the empty string
+		return -1;
+	}
+
 	/**
 	 * Determines if the given position is contained within the given range.
 	 * 

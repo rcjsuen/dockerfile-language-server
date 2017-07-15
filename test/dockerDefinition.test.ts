@@ -88,85 +88,90 @@ describe("Dockerfile Document Definition tests", function() {
 		});
 	});
 
-	describe("ARG", function() {
-		describe("${var}", function() {
-			it("value", function() {
-				let document = createDocument("ARG var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
-				let location = computeDefinition(document, Position.create(1, 13));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(2, 7));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(3, 11));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				
-				document = createDocument("ARG var_var=value\nSTOPSIGNAL ${var_var}\nUSER ${var_var}\nWORKDIR ${var_var}");
-				location = computeDefinition(document, Position.create(1, 13));
-				assertLocation(location, document.uri, 0, 4, 0, 11);
-				location = computeDefinition(document, Position.create(2, 7));
-				assertLocation(location, document.uri, 0, 4, 0, 11);
-				location = computeDefinition(document, Position.create(3, 11));
-				assertLocation(location, document.uri, 0, 4, 0, 11);
+	function createVariablesTest(instruction: string) {
+		describe(instruction, function() {
+			describe("${var}", function() {
+				it("value", function() {
+					let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+					let location = computeDefinition(document, Position.create(1, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 7));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 11));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					
+					document = createDocument(instruction + " var_var=value\nSTOPSIGNAL ${var_var}\nUSER ${var_var}\nWORKDIR ${var_var}");
+					location = computeDefinition(document, Position.create(1, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 11);
+					location = computeDefinition(document, Position.create(2, 7));
+					assertLocation(location, document.uri, 0, 4, 0, 11);
+					location = computeDefinition(document, Position.create(3, 11));
+					assertLocation(location, document.uri, 0, 4, 0, 11);
+				});
+
+				it("no value", function() {
+					let document = createDocument(instruction + " var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+					let location = computeDefinition(document, Position.create(1, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 7));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 11));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("no definition", function() {
+					let document = createDocument(instruction + "\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+					let location = computeDefinition(document, Position.create(1, 13));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(2, 7));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(3, 11));
+					assert.equal(location, null);
+				});
 			});
 
-			it("no value", function() {
-				let document = createDocument("ARG var\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
-				let location = computeDefinition(document, Position.create(1, 13));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(2, 7));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(3, 11));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-			});
+			describe("$var", function() {
+				it("value", function() {
+					let document = createDocument(instruction + " var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					let location = computeDefinition(document, Position.create(1, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 7));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 11));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
 
-			it("no definition", function() {
-				let document = createDocument("ARG\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
-				let location = computeDefinition(document, Position.create(1, 13));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(2, 7));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(3, 11));
-				assert.equal(location, null);
+					document = createDocument(instruction + " var_var=value\nSTOPSIGNAL $var_var\nUSER $var_var\nWORKDIR $var_var");
+					location = computeDefinition(document, Position.create(1, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 11);
+					location = computeDefinition(document, Position.create(2, 7));
+					assertLocation(location, document.uri, 0, 4, 0, 11);
+					location = computeDefinition(document, Position.create(3, 11));
+					assertLocation(location, document.uri, 0, 4, 0, 11);
+				});
+
+				it("no value", function() {
+					let document = createDocument(instruction + " var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					let location = computeDefinition(document, Position.create(1, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 7));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 11));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("no definition", function() {
+					let document = createDocument(instruction + "\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					let location = computeDefinition(document, Position.create(1, 13));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(2, 7));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(3, 11));
+					assert.equal(location, null);
+				});
 			});
 		});
+	}
 
-		describe("$var", function() {
-			it("value", function() {
-				let document = createDocument("ARG var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
-				let location = computeDefinition(document, Position.create(1, 13));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(2, 7));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(3, 11));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-
-				document = createDocument("ARG var_var=value\nSTOPSIGNAL $var_var\nUSER $var_var\nWORKDIR $var_var");
-				location = computeDefinition(document, Position.create(1, 13));
-				assertLocation(location, document.uri, 0, 4, 0, 11);
-				location = computeDefinition(document, Position.create(2, 7));
-				assertLocation(location, document.uri, 0, 4, 0, 11);
-				location = computeDefinition(document, Position.create(3, 11));
-				assertLocation(location, document.uri, 0, 4, 0, 11);
-			});
-
-			it("no value", function() {
-				let document = createDocument("ARG var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
-				let location = computeDefinition(document, Position.create(1, 13));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(2, 7));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-				location = computeDefinition(document, Position.create(3, 11));
-				assertLocation(location, document.uri, 0, 4, 0, 7);
-			});
-
-			it("no definition", function() {
-				let document = createDocument("ARG\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
-				let location = computeDefinition(document, Position.create(1, 13));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(2, 7));
-				assert.equal(location, null);
-				location = computeDefinition(document, Position.create(3, 11));
-				assert.equal(location, null);
-			});
-		});
-	})
+	createVariablesTest("ARG");
+	createVariablesTest("ENV");
 });
