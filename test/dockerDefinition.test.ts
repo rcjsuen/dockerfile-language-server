@@ -197,6 +197,63 @@ describe("Dockerfile Document Definition tests", function() {
 	}
 
 	createVariablesTest("ARG", "ARG", "=");
-	createVariablesTest("ENV equals delimiter", "ENV", "=");
-	createVariablesTest("ENV space delimiter", "ENV", " ");
+
+	describe("ENV", function() {
+		createVariablesTest("equals delimiter", "ENV", "=");
+		createVariablesTest("space delimiter", "ENV", " ");
+
+		describe("multiple variables", function() {
+			it("${var}", function() {
+				let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");
+				let location = computeDefinition(document, Position.create(0, 6));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(1, 12));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(0, 16));
+				assertLocation(location, document.uri, 0, 14, 0, 18);
+				location = computeDefinition(document, Position.create(1, 20));
+				assertLocation(location, document.uri, 0, 14, 0, 18);
+
+				document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo ${var} ${var2} ${var3}");
+				location = computeDefinition(document, Position.create(0, 6));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(3, 12));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(1, 2));
+				assertLocation(location, document.uri, 1, 0, 1, 4);
+				location = computeDefinition(document, Position.create(3, 20));
+				assertLocation(location, document.uri, 1, 0, 1, 4);
+				location = computeDefinition(document, Position.create(2, 2));
+				assertLocation(location, document.uri, 2, 0, 2, 4);
+				location = computeDefinition(document, Position.create(3, 28));
+				assertLocation(location, document.uri, 2, 0, 2, 4,);
+			});
+
+			it("$var", function() {
+				let document = createDocument("ENV var=value var2=value2\nRUN echo $var $var2");
+				let location = computeDefinition(document, Position.create(0, 6));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(1, 11));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(0, 16));
+				assertLocation(location, document.uri, 0, 14, 0, 18);
+				location = computeDefinition(document, Position.create(1, 17));
+				assertLocation(location, document.uri, 0, 14, 0, 18);
+
+				document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo $var $var2 $var3");
+				location = computeDefinition(document, Position.create(0, 6));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(3, 11));
+				assertLocation(location, document.uri, 0, 4, 0, 7);
+				location = computeDefinition(document, Position.create(1, 2));
+				assertLocation(location, document.uri, 1, 0, 1, 4);
+				location = computeDefinition(document, Position.create(3, 16));
+				assertLocation(location, document.uri, 1, 0, 1, 4);
+				location = computeDefinition(document, Position.create(2, 2));
+				assertLocation(location, document.uri, 2, 0, 2, 4);
+				location = computeDefinition(document, Position.create(3, 22));
+				assertLocation(location, document.uri, 2, 0, 2, 4);
+			});
+		});
+	});
 });

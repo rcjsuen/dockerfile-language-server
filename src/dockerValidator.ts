@@ -175,9 +175,10 @@ export class Validator {
 						this.checkArguments(instruction, problems, [ -1 ], function() {
 							return null;
 						});
-						let property = (instruction as Env).getProperty();
-						if (property && property.getValue() === null) {
-							let range = property.getNameRange();
+						let env = instruction as Env;
+						let properties = env.getProperties();
+						if (properties.length === 1 && properties[0].getValue() === null) {
+							let range = properties[0].getNameRange();
 							problems.push(Validator.createENVRequiresTwoArguments(range.start, range.end));
 						}
 						break;

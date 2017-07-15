@@ -48,9 +48,8 @@ export class DockerDefinition {
 			}
 		}
 		for (let env of dockerfile.getENVs()) {
-			let property = env.getProperty();
-			// might be an ENV with no arguments
-			if (property) {
+			let properties = env.getProperties();
+			for (let property of properties) {
 				// is the caret inside the definition itself
 				if (Util.isInsideRange(position, property.getNameRange())) {
 					return property;
