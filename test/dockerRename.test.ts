@@ -105,10 +105,10 @@ describe("Dockerfile Document Rename tests", function() {
 		});
 	});
 
-	function createVariablesTest(instruction: string) {
-		describe(instruction, function() {
+	function createVariablesTest(testSuiteName: string, instruction: string, delimiter: string) {
+		describe(testSuiteName, function() {
 			it("referenced variable ${var}", function() {
-				let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+				let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 				let edits = rename(document, 0, 5, "renamed");
 				assert.equal(edits.length, 4);
 				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
@@ -170,7 +170,7 @@ describe("Dockerfile Document Rename tests", function() {
 			});
 
 			it("referenced variable $var", function() {
-				let document = createDocument(instruction + " var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+				let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 				let edits = rename(document, 0, 5, "renamed");
 				assert.equal(edits.length, 4);
 				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
@@ -233,8 +233,9 @@ describe("Dockerfile Document Rename tests", function() {
 		});
 	}
 
-	createVariablesTest("ARG");
-	createVariablesTest("ENV");
+	createVariablesTest("ARG", "ARG", "=");
+	createVariablesTest("ENV equals delimiter", "ENV", "=");
+	createVariablesTest("ENV space delimiter", "ENV", " ");
 
 	describe("non-existent variable", function() {
 		it("${var}", function() {

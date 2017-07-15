@@ -14,15 +14,23 @@ export class Property {
 	private readonly valueRange: Range;
 	private readonly value: string = null;
 
-	constructor(document: TextDocument, escapeChar: string, arg: Argument) {
-		this.nameRange = Property.getNameRange(document, arg);
-		if (this.nameRange) {
+	constructor(document: TextDocument, escapeChar: string, arg: Argument, arg2?: Argument) {
+		if (arg2) {
+			this.nameRange = arg.getRange();
 			this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
-		}
-		this.valueRange = Property.getValueRange(document, escapeChar, arg);
-		if (this.valueRange) {
+			this.valueRange = arg2.getRange();
 			let value = document.getText().substring(document.offsetAt(this.valueRange.start), document.offsetAt(this.valueRange.end));
 			this.value = Property.getValue(value, escapeChar);
+		} else {
+			this.nameRange = Property.getNameRange(document, arg);
+			if (this.nameRange) {
+				this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
+			}
+			this.valueRange = Property.getValueRange(document, escapeChar, arg);
+			if (this.valueRange) {
+				let value = document.getText().substring(document.offsetAt(this.valueRange.start), document.offsetAt(this.valueRange.end));
+				this.value = Property.getValue(value, escapeChar);
+			}
 		}
 	}
 

@@ -21,6 +21,8 @@ export class Env extends Instruction {
 			let args = this.getArguments();
 			if (args.length === 1) {
 				this.property = new Property(this.document, this.escapeChar, args[0]);
+			} else if (args.length === 2) {
+				this.property = new Property(this.document, this.escapeChar, args[0], args[1]);
 			} else {
 				this.property = null;
 			}
@@ -71,8 +73,8 @@ export class Env extends Instruction {
 	public getArguments(): Argument[] {
 		let args = [];
 		let range = this.getInstructionRange();
-		let endOffset = this.document.offsetAt(range.end);
-		let extra = endOffset - this.document.offsetAt(range.start);
+		let instructionNameEndOffset = this.document.offsetAt(range.end);
+		let extra = instructionNameEndOffset - this.document.offsetAt(range.start);
 		let content = this.getTextContent();
 		let fullArgs = content.substring(extra);
 		let start = Util.findLeadingNonWhitespace(fullArgs, this.escapeChar);
@@ -116,7 +118,7 @@ export class Env extends Instruction {
 									default:
 										// whitespace doesn't extend to EOL, create an argument
 										args.push(new Argument(content.substring(argStart, i),
-											Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + i + 1))
+											Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i + 1))
 										));
 										// loop and process the encountered non-whitespace character
 										i = j - 1;
@@ -126,7 +128,7 @@ export class Env extends Instruction {
 							}
 							// went to EOF without encountering EOL
 							args.push(new Argument(content.substring(argStart, i),
-								Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + i))
+								Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i))
 							));
 							argStart = content.length;
 							break argumentLoop;
@@ -136,8 +138,13 @@ export class Env extends Instruction {
 							}
 						case '\n':
 							// immediately followed by a newline, skip the newline
+							i = i + 1;
+							continue argumentLoop;
 						case this.escapeChar:
 							// double escape found, skip it and move on
+							if (argStart === -1) {
+								argStart = i;
+							}
 							i = i + 1;
 							continue argumentLoop;
 						default:
@@ -147,13 +154,16 @@ export class Env extends Instruction {
 					}
 				case '\'':
 				case '"':
+					if (argStart === -1) {
+						argStart = i;
+					}
 					for (let j = i + 1; j < content.length; j++) {
 						if (content.charAt(j) === char) {
 							args.push(new Argument(content.substring(argStart, j + 1),
-								Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + j + 1))
+								Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + j + 1))
 							));
 							i = j;
-							argStart = i + 1;
+							argStart = -1;
 							continue argumentLoop;
 						}
 					}
@@ -161,15 +171,20 @@ export class Env extends Instruction {
 				case ' ':
 				case '\t':
 					args.push(new Argument(content.substring(argStart, i),
-						Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + i))
+						Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i))
 					));
-					argStart = i + 1;
+					argStart = -1;
+					break;
+				default:
+					if (argStart === -1) {
+						argStart = i;
+					}
 					break;
 			}
 		}
-		if (argStart !== content.length) {
+		if (argStart !== -1 && argStart !== content.length) {
 			args.push(new Argument(content.substring(argStart, content.length),
-				Range.create(this.document.positionAt(endOffset + start + argStart), this.document.positionAt(endOffset + start + argStart + content.length))
+				Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + content.length))
 			));
 		}
 		return args;

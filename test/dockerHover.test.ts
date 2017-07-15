@@ -199,24 +199,24 @@ describe("Dockerfile hover", function() {
 			assert.equal(hover, null);
 		});
 
-		function createVariablesTest(instruction: string) {
-			describe(instruction, function() {
+		function createVariablesTest(testSuiteName: string, instruction: string, delimiter: string) {
+			describe(testSuiteName, function() {
 				it("variable name", function() {
-					let document = createDocument(instruction + " z=y");
+					let document = createDocument(instruction + " z" + delimiter + "y");
 					let hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " e='f g=h'");
+					document = createDocument(instruction + " e" + delimiter + "'f g=h'");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "f g=h");
 
-					document = createDocument(instruction + " x=\"v v=w\"");
+					document = createDocument(instruction + " x" + delimiter + "\"v v=w\"");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "v v=w");
 				});
 
 				it("variable value", function() {
-					let document = createDocument(instruction + " z=y");
+					let document = createDocument(instruction + " z" + delimiter + "y");
 					let hover = onHover(document, 0, 6);
 					assert.equal(hover, null);
 				});
@@ -228,123 +228,136 @@ describe("Dockerfile hover", function() {
 				});
 
 				it("empty variable value", function() {
-					let document = createDocument(instruction + " z=");
+					let document = createDocument(instruction + " z" + delimiter + "");
 					let hover = onHover(document, 0, 5);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 				});
 
 				it("whitespace variable value", function() {
-					let document = createDocument(instruction + " z=   \t\t   ");
+					let document = createDocument(instruction + " z" + delimiter + "   \t\t   ");
 					let hover = onHover(document, 0, 5);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 				});
 
 				it("escaped", function() {
-					let document = createDocument(instruction + " \\ \t\nz=y");
+					let document = createDocument(instruction + " \\ \t\nz" + delimiter + "y");
 					let hover = onHover(document, 1, 0);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " \\ \t\rz=y");
+					document = createDocument(instruction + " \\ \t\rz" + delimiter + "y");
 					hover = onHover(document, 1, 0);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " \\ \t\r\nz=y");
+					document = createDocument(instruction + " \\ \t\r\nz" + delimiter + "y");
 					hover = onHover(document, 1, 0);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " z=y \\ \t\n \t");
+					document = createDocument(instruction + " z" + delimiter + "y \\ \t\n \t");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " z=y \\ \t\r \t");
+					document = createDocument(instruction + " z" + delimiter + "y \\ \t\r \t");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " z=y \\ \t\r\n \t");
+					document = createDocument(instruction + " z" + delimiter + "y \\ \t\r\n \t");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " z=\\\ny");
+					document = createDocument(instruction + " z" + delimiter + "\\\ny");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " z=\\\n'y'");
+					document = createDocument(instruction + " z" + delimiter + "\\\n'y'");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " z=\\\n\"y\"");
+					document = createDocument(instruction + " z" + delimiter + "\\\n\"y\"");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
-					hover = onHoverString(instruction + " a=\\", 0, 5);
-					assert.equal(hover.contents, "");
+					hover = onHoverString(instruction + " a" + delimiter + "\\", 0, 5);
+					if (delimiter === " ") {
+						// just the escape character at EOF, so considered to be the empty string
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 
-					hover = onHoverString(instruction + " a=a\\ x", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "a\\ x", 0, 5);
 					assert.equal(hover.contents, "a x");
 
-					hover = onHoverString(instruction + " a=a\\\nx", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "a\\\nx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
-					hover = onHoverString(instruction + " a=a\\\rx", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "a\\\rx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
-					hover = onHoverString(instruction + " a=a\\\r\nx", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "a\\\r\nx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
-					hover = onHoverString(instruction + " a=a\\  \nx", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "a\\  \nx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
-					hover = onHoverString(instruction + " a=a\\ \t \rx", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "a\\ \t \rx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
-					hover = onHoverString(instruction + " a=a\\  \t\t\r\nx", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "a\\  \t\t\r\nx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
-					hover = onHoverString(instruction + " a=\\b", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\\b", 0, 5);
 					assert.equal(hover.contents, "b");
 
-					hover = onHoverString(instruction + " a=\\\\b", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\\\\b", 0, 5);
 					assert.equal(hover.contents, "\\b");
 
-					hover = onHoverString(instruction + " a=\\\\\\\\\\b", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\\\\\\\\\\b", 0, 5);
 					assert.equal(hover.contents, "\\\\b");
 				});
 
 				it("escape in literals", function() {
-					let hover = onHoverString(instruction + " a=\"a\\ x\"", 0, 5);
+					let hover = onHoverString(instruction + " a" + delimiter + "\"a\\ x\"", 0, 5);
 					assert.equal(hover.contents, "a\\ x");
 
-					hover = onHoverString(instruction + " a='a\\ x'", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "'a\\ x'", 0, 5);
 					assert.equal(hover.contents, "a\\ x");
 
-					hover = onHoverString(instruction + " a=\"a \\x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"a \\x\"", 0, 5);
 					assert.equal(hover.contents, "a \\x");
 
-					hover = onHoverString(instruction + " a=\"a \\\\x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"a \\\\x\"", 0, 5);
 					assert.equal(hover.contents, "a \\x");
 
-					hover = onHoverString(instruction + " a=\"a \\\\ x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"a \\\\ x\"", 0, 5);
 					assert.equal(hover.contents, "a \\ x");
 
-					hover = onHoverString(instruction + " a=\"a \\\\\\x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"a \\\\\\x\"", 0, 5);
 					assert.equal(hover.contents, "a \\\\x");
 
-					hover = onHoverString(instruction + " a=\"a \\\\\\ x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"a \\\\\\ x\"", 0, 5);
 					assert.equal(hover.contents, "a \\\\ x");
 
-					hover = onHoverString(instruction + " a=\"a \\\nx\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"a \\\nx\"", 0, 5);
 					assert.equal(hover.contents, "a x");
 
-					hover = onHoverString(instruction + " a=\"\\\\\\\\x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"\\\\\\\\x\"", 0, 5);
 					assert.equal(hover.contents, "\\\\x");
 
-					hover = onHoverString(instruction + " a=\"\\\\\\\\\\x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"\\\\\\\\\\x\"", 0, 5);
 					assert.equal(hover.contents, "\\\\\\x");
 
-					hover = onHoverString(instruction + " a=\"\\\\\\\\\\\\x\"", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "\"\\\\\\\\\\\\x\"", 0, 5);
 					assert.equal(hover.contents, "\\\\\\x");
 
-					hover = onHoverString(instruction + " a='a \\\nx'", 0, 5);
+					hover = onHoverString(instruction + " a" + delimiter + "'a \\\nx'", 0, 5);
 					assert.equal(hover.contents, "a x");
 				});
 
@@ -355,7 +368,7 @@ describe("Dockerfile hover", function() {
 				});
 
 				it("referenced variable ${var}", function() {
-					let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 					let hover = onHover(document, 1, 13);
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 2, 7);
@@ -363,7 +376,7 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 3, 11);
 					assert.equal(hover.contents, "value");
 
-					document = createDocument(instruction + " var=value\nARG var2=value2\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}");
+					document = createDocument(instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}");
 					hover = onHover(document, 2, 13);
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 2, 20);
@@ -389,27 +402,51 @@ describe("Dockerfile hover", function() {
 				});
 
 				it("referenced variable ${var} empty value", function() {
-					let document = createDocument(instruction + " var=\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+					let document = createDocument(instruction + " var" + delimiter + "\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 					let hover = onHover(document, 1, 13);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 2, 7);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 3, 11);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 				});
 
 				it("referenced variable ${var} whitespace", function() {
-					let document = createDocument(instruction + " var=   \t\t   \nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+					let document = createDocument(instruction + " var" + delimiter + "   \t\t   \nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 					let hover = onHover(document, 1, 13);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 2, 7);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 3, 11);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 				});
 
 				it("referenced variable ${var", function() {
-					let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var\nUSER ${var\nWORKDIR ${var");
+					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var\nUSER ${var\nWORKDIR ${var");
 					let hover = onHover(document, 1, 14);
 					assert.equal(hover, null);
 					hover = onHover(document, 2, 8);
@@ -419,7 +456,7 @@ describe("Dockerfile hover", function() {
 				});
 
 				it("referenced variable $var", function() {
-					let document = createDocument(instruction + " var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 					let hover = onHover(document, 1, 13);
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 2, 7);
@@ -427,7 +464,7 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 3, 11);
 					assert.equal(hover.contents, "value");
 
-					document = createDocument(instruction + " var=value\nARG var2=value2\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2");
+					document = createDocument(instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2");
 					hover = onHover(document, 2, 13);
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 2, 17);
@@ -453,27 +490,51 @@ describe("Dockerfile hover", function() {
 				});
 
 				it("referenced variable $var empty value", function() {
-					let document = createDocument(instruction + " var=\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					let document = createDocument(instruction + " var" + delimiter + "\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 					let hover = onHover(document, 1, 13);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 2, 7);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 3, 11);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 				});
 
 				it("referenced variable $var whitespace", function() {
-					let document = createDocument(instruction + " var=   \t\t   \nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					let document = createDocument(instruction + " var" + delimiter + "   \t\t   \nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 					let hover = onHover(document, 1, 13);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 2, 7);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 					hover = onHover(document, 3, 11);
-					assert.equal(hover.contents, "");
+					if (delimiter === " ") {
+						assert.equal(hover, null);
+					} else {
+						assert.equal(hover.contents, "");
+					}
 				});
 
 				it("referenced variable \\${var}", function() {
-					let document = createDocument(instruction + " var=value\nSTOPSIGNAL \\${var}\nUSER \\${var}\nWORKDIR \\${var}");
+					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL \\${var}\nUSER \\${var}\nWORKDIR \\${var}");
 					let hover = onHover(document, 1, 15);
 					assert.equal(hover, null);
 					hover = onHover(document, 2, 10);
@@ -483,7 +544,7 @@ describe("Dockerfile hover", function() {
 				});
 
 				it("referenced variable \\$var", function() {
-					let document = createDocument(instruction + " var=value\nSTOPSIGNAL \\$var\nUSER \\$var\nWORKDIR \\$var");
+					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL \\$var\nUSER \\$var\nWORKDIR \\$var");
 					let hover = onHover(document, 1, 14);
 					assert.equal(hover, null);
 					hover = onHover(document, 2, 9);
@@ -494,8 +555,9 @@ describe("Dockerfile hover", function() {
 			});
 		}
 
-		createVariablesTest("ARG");
-		createVariablesTest("ENV");
+		createVariablesTest("ARG", "ARG", "=");
+		createVariablesTest("ENV equals delimiter", "ENV", "=");
+		createVariablesTest("ENV space delimiter", "ENV", " ");
 	});
 
 	describe("keyword nesting", function() {

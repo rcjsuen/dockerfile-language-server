@@ -88,11 +88,11 @@ describe("Dockerfile Document Definition tests", function() {
 		});
 	});
 
-	function createVariablesTest(instruction: string) {
-		describe(instruction, function() {
+	function createVariablesTest(testSuiteName: string, instruction: string, delimiter: string) {
+		describe(testSuiteName, function() {
 			describe("${var}", function() {
 				it("value", function() {
-					let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 					let location = computeDefinition(document, Position.create(1, 13));
 					assertLocation(location, document.uri, 0, 4, 0, 7);
 					location = computeDefinition(document, Position.create(2, 7));
@@ -100,7 +100,7 @@ describe("Dockerfile Document Definition tests", function() {
 					location = computeDefinition(document, Position.create(3, 11));
 					assertLocation(location, document.uri, 0, 4, 0, 7);
 					
-					document = createDocument(instruction + " var_var=value\nSTOPSIGNAL ${var_var}\nUSER ${var_var}\nWORKDIR ${var_var}");
+					document = createDocument(instruction + " var_var" + delimiter + "value\nSTOPSIGNAL ${var_var}\nUSER ${var_var}\nWORKDIR ${var_var}");
 					location = computeDefinition(document, Position.create(1, 13));
 					assertLocation(location, document.uri, 0, 4, 0, 11);
 					location = computeDefinition(document, Position.create(2, 7));
@@ -132,7 +132,7 @@ describe("Dockerfile Document Definition tests", function() {
 
 			describe("$var", function() {
 				it("value", function() {
-					let document = createDocument(instruction + " var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 					let location = computeDefinition(document, Position.create(1, 13));
 					assertLocation(location, document.uri, 0, 4, 0, 7);
 					location = computeDefinition(document, Position.create(2, 7));
@@ -140,7 +140,7 @@ describe("Dockerfile Document Definition tests", function() {
 					location = computeDefinition(document, Position.create(3, 11));
 					assertLocation(location, document.uri, 0, 4, 0, 7);
 
-					document = createDocument(instruction + " var_var=value\nSTOPSIGNAL $var_var\nUSER $var_var\nWORKDIR $var_var");
+					document = createDocument(instruction + " var_var" + delimiter + "value\nSTOPSIGNAL $var_var\nUSER $var_var\nWORKDIR $var_var");
 					location = computeDefinition(document, Position.create(1, 13));
 					assertLocation(location, document.uri, 0, 4, 0, 11);
 					location = computeDefinition(document, Position.create(2, 7));
@@ -172,6 +172,7 @@ describe("Dockerfile Document Definition tests", function() {
 		});
 	}
 
-	createVariablesTest("ARG");
-	createVariablesTest("ENV");
+	createVariablesTest("ARG", "ARG", "=");
+	createVariablesTest("ENV equals delimiter", "ENV", "=");
+	createVariablesTest("ENV space delimiter", "ENV", " ");
 });

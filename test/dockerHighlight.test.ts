@@ -133,15 +133,15 @@ describe("Dockerfile Document Highlight tests", function() {
 		});
 	});
 
-	function createVariablesTest(instruction: string) {
-		describe(instruction, function() {
+	function createVariablesTest(testSuiteName: string, instruction: string, delimiter: string) {
+		describe(testSuiteName, function() {
 			it("referenced variable ${var}", function() {
 				let arg = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
 				let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 13), Position.create(1, 16)), DocumentHighlightKind.Read);
 				let user = DocumentHighlight.create(Range.create(Position.create(2, 7), Position.create(2, 10)), DocumentHighlightKind.Read);
 				let workdir = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
 				let expected = [ arg, stopsignal, user, workdir ];
-				let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
+				let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 				let ranges = computeHighlightRanges(document, 0, 5);
 				assertHighlightRanges(ranges, expected);
 
@@ -154,7 +154,7 @@ describe("Dockerfile Document Highlight tests", function() {
 				ranges = computeHighlightRanges(document, 3, 11);
 				assertHighlightRanges(ranges, expected);
 
-				document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var}\nUSER ${var2}\nWORKDIR ${var2}");
+				document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var}\nUSER ${var2}\nWORKDIR ${var2}");
 				ranges = computeHighlightRanges(document, 1, 13);
 				assertHighlightRanges(ranges, [ arg, stopsignal ]);
 			});
@@ -185,7 +185,7 @@ describe("Dockerfile Document Highlight tests", function() {
 				let user = DocumentHighlight.create(Range.create(Position.create(2, 7), Position.create(2, 10)), DocumentHighlightKind.Read);
 				let workdir = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
 				let expected = [ arg, stopsignal, user, workdir ];
-				let document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var:+var}\nUSER ${var:+var}\nWORKDIR ${var:+var}");
+				let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var:+var}\nUSER ${var:+var}\nWORKDIR ${var:+var}");
 				let ranges = computeHighlightRanges(document, 0, 5);
 				assertHighlightRanges(ranges, expected);
 
@@ -198,7 +198,7 @@ describe("Dockerfile Document Highlight tests", function() {
 				ranges = computeHighlightRanges(document, 3, 11);
 				assertHighlightRanges(ranges, expected);
 				
-				document = createDocument(instruction + " var=value\nSTOPSIGNAL ${var:-var}\nUSER ${var:-var}\nWORKDIR ${var:-var}");
+				document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var:-var}\nUSER ${var:-var}\nWORKDIR ${var:-var}");
 				ranges = computeHighlightRanges(document, 0, 5);
 				assertHighlightRanges(ranges, expected);
 
@@ -218,7 +218,7 @@ describe("Dockerfile Document Highlight tests", function() {
 				let user = DocumentHighlight.create(Range.create(Position.create(2, 6), Position.create(2, 9)), DocumentHighlightKind.Read);
 				let workdir = DocumentHighlight.create(Range.create(Position.create(3, 9), Position.create(3, 12)), DocumentHighlightKind.Read);
 				let expected = [ arg, stopsignal, user, workdir ];
-				let document = createDocument(instruction + " var=value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+				let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 				let ranges = computeHighlightRanges(document, 0, 5);
 				assertHighlightRanges(ranges, expected);
 
@@ -254,8 +254,9 @@ describe("Dockerfile Document Highlight tests", function() {
 		});
 	}
 
-	createVariablesTest("ARG");
-	createVariablesTest("ENV");
+	createVariablesTest("ARG", "ARG", "=");
+	createVariablesTest("ENV equals delimiter", "ENV", "=");
+	createVariablesTest("ENV space delimiter", "ENV", " ");
 
 	describe("non-existent variable", function() {
 		it("${var}", function() {
