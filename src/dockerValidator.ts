@@ -7,6 +7,7 @@ import {
 } from 'vscode-languageserver';
 import { Dockerfile } from './parser/dockerfile';
 import { Instruction } from './parser/instruction';
+import { Env } from './parser/instructions/env';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { DIRECTIVE_ESCAPE } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
@@ -16,6 +17,7 @@ export enum ValidationCode {
 	ARGUMENT_MISSING,
 	ARGUMENT_EXTRA,
 	ARGUMENT_REQUIRES_ONE,
+	ARGUMENT_REQUIRES_TWO,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
@@ -169,6 +171,16 @@ export class Validator {
 							return null;
 						}, Validator.createARGRequiresOneArgument);
 						break;
+					case "ENV":
+						this.checkArguments(instruction, problems, [ -1 ], function() {
+							return null;
+						});
+						let property = (instruction as Env).getProperty();
+						if (property && property.getValue() === null) {
+							let range = property.getNameRange();
+							problems.push(Validator.createENVRequiresTwoArguments(range.start, range.end));
+						}
+						break;
 					case "FROM":
 						this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string) {
 							if (index === 1) {
@@ -228,6 +240,7 @@ export class Validator {
 		"instructionExtraArgument": "Instruction has an extra argument",
 		"instructionMissingArgument": "Instruction has no arguments",
 		"instructionRequiresOneArgument": "${0} requires exactly one argument",
+		"instructionRequiresTwoArguments": "${0} must have two arguments",
 		"instructionUnknown": "Unknown instruction: ${0}",
 		"instructionCasing": "Instructions should be written in uppercase letters",
 
@@ -268,6 +281,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_ARGRequiresOneArgument() {
 		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresOneArgument"], "ARG");
+	}
+
+	public static getDiagnosticMessage_ENVRequiresTwoArguments() {
+		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresTwoArguments"], "ENV");
 	}
 
 	public static getDiagnosticMessage_InstructionRequiresOneOrThreeArguments() {
@@ -312,6 +329,10 @@ export class Validator {
 
 	static createARGRequiresOneArgument(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_ARGRequiresOneArgument(), ValidationCode.ARGUMENT_REQUIRES_ONE);
+	}
+
+	static createENVRequiresTwoArguments(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_ENVRequiresTwoArguments(), ValidationCode.ARGUMENT_REQUIRES_TWO);
 	}
 
 	static createRequiresOneOrThreeArguments(start: Position, end: Position): Diagnostic {

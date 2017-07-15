@@ -128,6 +128,17 @@ function assertInstructionRequiresOneArgument(diagnostic: Diagnostic, startLine:
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertENVRequiresTwoArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_TWO);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_ENVRequiresTwoArguments());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInstructionRequiresOneOrThreeArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -939,6 +950,25 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM busybox\nARG a=a\\ \\b \\c");
 			assert.equal(diagnostics.length, 1);
 			assertInstructionRequiresOneArgument(diagnostics[0], 1, 12, 1, 14);
+		});
+	});
+
+	describe("ENV", function() {
+		describe("source image", function() {
+			it("ok", function() {
+				// valid as the variable is equal to the empty string in this case
+				testValidArgument("ENV", "a=");
+				testValidArgument("ENV", "a=b");
+
+				let diagnostics = validate("FROM node\nENV a b");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("requires two", function() {
+				let diagnostics = validate("FROM node\nENV a");
+				assert.equal(diagnostics.length, 1);
+				assertENVRequiresTwoArguments(diagnostics[0], 1, 4, 1, 5);
+			});
 		});
 	});
 

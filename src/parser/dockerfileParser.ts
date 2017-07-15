@@ -321,7 +321,7 @@ export class DockerfileParser {
 									instructionEnd = j;
 								}
 								lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-								dockerfile.addInstruction(new Instruction(document, lineRange, this.escapeChar, instruction, lineRange));
+								dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, lineRange));
 								i = j;
 								continue lineCheck;
 							default:
