@@ -275,7 +275,7 @@ describe("Dockerfile Document Highlight tests", function() {
 			assertHighlightRanges(ranges, expected);
 		});
 
-		it("referenced variable $var no value", function() {
+		it("$var", function() {
 			let stopsignal = DocumentHighlight.create(Range.create(Position.create(1, 12), Position.create(1, 15)), DocumentHighlightKind.Read);
 			let user = DocumentHighlight.create(Range.create(Position.create(2, 6), Position.create(2, 9)), DocumentHighlightKind.Read);
 			let workdir = DocumentHighlight.create(Range.create(Position.create(3, 9), Position.create(3, 12)), DocumentHighlightKind.Read);
