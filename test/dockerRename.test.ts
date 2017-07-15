@@ -286,8 +286,121 @@ describe("Dockerfile Document Rename tests", function() {
 	}
 
 	createVariablesTest("ARG", "ARG", "=");
-	createVariablesTest("ENV equals delimiter", "ENV", "=");
-	createVariablesTest("ENV space delimiter", "ENV", " ");
+
+	describe("ENV", function() {
+		createVariablesTest("equals delimiter", "ENV", "=");
+		createVariablesTest("space delimiter", "ENV", " ");
+
+		describe("multiple variables", function() {
+			it("${var}", function() {
+				let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 11, 1, 14);
+
+				edits = rename(document, 1, 12, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 11, 1, 14);
+
+				edits = rename(document, 0, 16, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 14, 0, 18);
+				assertEdit(edits[1], "renamed", 1, 18, 1, 22);
+
+				edits = rename(document, 1, 20, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 14, 0, 18);
+				assertEdit(edits[1], "renamed", 1, 18, 1, 22);
+
+				document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo ${var} ${var2} ${var3}");
+				edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 3, 11, 3, 14);
+
+				edits = rename(document, 3, 12, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 3, 11, 3, 14);
+
+				edits = rename(document, 1, 2, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 1, 0, 1, 4);
+				assertEdit(edits[1], "renamed", 3, 18, 3, 22);
+
+				edits = rename(document, 3, 20, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 1, 0, 1, 4);
+				assertEdit(edits[1], "renamed", 3, 18, 3, 22);
+
+				edits = rename(document, 2, 2, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 2, 0, 2, 4);
+				assertEdit(edits[1], "renamed", 3, 26, 3, 30);
+
+				edits = rename(document, 3, 28, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 2, 0, 2, 4);
+				assertEdit(edits[1], "renamed", 3, 26, 3, 30);
+			});
+
+			it("$var", function() {
+				let document = createDocument("ENV var=value var2=value2\nRUN echo $var $var2");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 10, 1, 13);
+
+				edits = rename(document, 1, 12, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 1, 10, 1, 13);
+
+				edits = rename(document, 0, 16, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 14, 0, 18);
+				assertEdit(edits[1], "renamed", 1, 15, 1, 19);
+
+				edits = rename(document, 1, 16, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 14, 0, 18);
+				assertEdit(edits[1], "renamed", 1, 15, 1, 19);
+
+				document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo $var $var2 $var3");
+				edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 3, 10, 3, 13);
+
+				edits = rename(document, 3, 12, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+				assertEdit(edits[1], "renamed", 3, 10, 3, 13);
+
+				edits = rename(document, 1, 2, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 1, 0, 1, 4);
+				assertEdit(edits[1], "renamed", 3, 15, 3, 19);
+
+				edits = rename(document, 3, 16, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 1, 0, 1, 4);
+				assertEdit(edits[1], "renamed", 3, 15, 3, 19);
+
+				edits = rename(document, 2, 2, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 2, 0, 2, 4);
+				assertEdit(edits[1], "renamed", 3, 21, 3, 25);
+
+				edits = rename(document, 3, 22, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 2, 0, 2, 4);
+				assertEdit(edits[1], "renamed", 3, 21, 3, 25);
+			});
+		});
+	});
 
 	describe("non-existent variable", function() {
 		it("${var}", function() {

@@ -273,8 +273,85 @@ describe("Dockerfile Document Highlight tests", function() {
 	}
 
 	createVariablesTest("ARG", "ARG", "=");
-	createVariablesTest("ENV equals delimiter", "ENV", "=");
-	createVariablesTest("ENV space delimiter", "ENV", " ");
+
+	describe("ENV", function() {
+		createVariablesTest("equals delimiter", "ENV", "=");
+		createVariablesTest("space delimiter", "ENV", " ");
+
+		describe("multiple variables", function() {
+			it("${var}", function() {
+				let varDeclaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				let varDeclaration2 = DocumentHighlight.create(Range.create(Position.create(0, 14), Position.create(0, 18)), DocumentHighlightKind.Write);
+				let varReference = DocumentHighlight.create(Range.create(Position.create(1, 11), Position.create(1, 14)), DocumentHighlightKind.Read);
+				let varReference2 = DocumentHighlight.create(Range.create(Position.create(1, 18), Position.create(1, 22)), DocumentHighlightKind.Read);
+				let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 1, 12);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 0, 16);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				ranges = computeHighlightRanges(document, 1, 20);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				
+				varDeclaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				varDeclaration2 = DocumentHighlight.create(Range.create(Position.create(1, 0), Position.create(1, 4)), DocumentHighlightKind.Write);
+				let varDeclaration3 = DocumentHighlight.create(Range.create(Position.create(2, 0), Position.create(2, 4)), DocumentHighlightKind.Write);
+				varReference = DocumentHighlight.create(Range.create(Position.create(3, 11), Position.create(3, 14)), DocumentHighlightKind.Read);
+				varReference2 = DocumentHighlight.create(Range.create(Position.create(3, 18), Position.create(3, 22)), DocumentHighlightKind.Read);
+				let varReference3 = DocumentHighlight.create(Range.create(Position.create(3, 26), Position.create(3, 30)), DocumentHighlightKind.Read);
+				document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo ${var} ${var2} ${var3}");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 3, 12);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 1, 2);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				ranges = computeHighlightRanges(document, 3, 20);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				ranges = computeHighlightRanges(document, 2, 2);
+				assertHighlightRanges(ranges, [ varDeclaration3, varReference3 ]);
+				ranges = computeHighlightRanges(document, 3, 29);
+				assertHighlightRanges(ranges, [ varDeclaration3, varReference3 ]);
+			});
+
+			it("$var", function() {
+				let varDeclaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				let varDeclaration2 = DocumentHighlight.create(Range.create(Position.create(0, 14), Position.create(0, 18)), DocumentHighlightKind.Write);
+				let varReference = DocumentHighlight.create(Range.create(Position.create(1, 10), Position.create(1, 13)), DocumentHighlightKind.Read);
+				let varReference2 = DocumentHighlight.create(Range.create(Position.create(1, 15), Position.create(1, 19)), DocumentHighlightKind.Read);
+				let document = createDocument("ENV var=value var2=value2\nRUN echo $var $var2");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 1, 12);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 0, 16);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				ranges = computeHighlightRanges(document, 1, 18);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				
+				varDeclaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				varDeclaration2 = DocumentHighlight.create(Range.create(Position.create(1, 0), Position.create(1, 4)), DocumentHighlightKind.Write);
+				let varDeclaration3 = DocumentHighlight.create(Range.create(Position.create(2, 0), Position.create(2, 4)), DocumentHighlightKind.Write);
+				varReference = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
+				varReference2 = DocumentHighlight.create(Range.create(Position.create(3, 15), Position.create(3, 19)), DocumentHighlightKind.Read);
+				let varReference3 = DocumentHighlight.create(Range.create(Position.create(3, 21), Position.create(3, 25)), DocumentHighlightKind.Read);
+				document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo $var $var2 $var3");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 3, 12);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 1, 2);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				ranges = computeHighlightRanges(document, 3, 18);
+				assertHighlightRanges(ranges, [ varDeclaration2, varReference2 ]);
+				ranges = computeHighlightRanges(document, 2, 2);
+				assertHighlightRanges(ranges, [ varDeclaration3, varReference3 ]);
+				ranges = computeHighlightRanges(document, 3, 24);
+				assertHighlightRanges(ranges, [ varDeclaration3, varReference3 ]);
+			});
+		});
+	});
 
 	describe("non-existent variable", function() {
 		it("${var}", function() {

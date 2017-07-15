@@ -568,8 +568,63 @@ describe("Dockerfile hover", function() {
 		}
 
 		createVariablesTest("ARG", "ARG", "=");
-		createVariablesTest("ENV equals delimiter", "ENV", "=");
-		createVariablesTest("ENV space delimiter", "ENV", " ");
+
+		describe("ENV", function() {
+			createVariablesTest("equals delimiter", "ENV", "=");
+			createVariablesTest("space delimiter", "ENV", " ");
+
+			describe("multiple variables", function() {
+				it("${var}", function() {
+					let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 1, 12);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 0, 16);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 1, 20);
+
+					document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo ${var} ${var2} ${var3}");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 12);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 1, 2);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 3, 20);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 3, 28);
+					assert.equal(hover.contents, "value3");
+				});
+
+				it("$var", function() {
+					let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 1, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 0, 16);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 1, 17);
+
+					document = createDocument("ENV var=value \\\nvar2=value2 \\\nvar3=value3\nRUN echo $var $var2 $var3");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 1, 2);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 3, 16);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 3, 22);
+					assert.equal(hover.contents, "value3");
+				});
+			});
+		});
 	});
 
 	describe("keyword nesting", function() {
