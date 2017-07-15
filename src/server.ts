@@ -111,10 +111,12 @@ function getSeverity(severity: string): ValidationSeverity {
 connection.onDidChangeConfiguration((change) => {
 	let settings = <Settings>change.settings;
 	let maintainer = ValidationSeverity.WARNING;
+	let instructionCasing = ValidationSeverity.WARNING;
 	if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
 		maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
+		instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
 	}
-	validatorSettings = { deprecatedMaintainer: maintainer };
+	validatorSettings = { deprecatedMaintainer: maintainer, instructionCasing: instructionCasing };
 	// validate all the documents again
 	Object.keys(documents).forEach((key) => {
 		validateTextDocument(documents[key]);
