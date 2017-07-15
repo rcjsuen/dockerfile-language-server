@@ -176,13 +176,16 @@ export class Instruction extends Line {
 						break variableLoop;
 					} else {
 						for (let j = i + 1; j < arg.length; j++) {
-							if (arg.charAt(j) === '$') {
-								variables.push(new Variable(
-									arg.substring(i + 1, j),
-									Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)))
-								);
-								i = j - 1;
-								continue variableLoop;
+							switch (arg.charAt(j)) {
+								case '$':
+								case '\'':
+								case '"':
+									variables.push(new Variable(
+										arg.substring(i + 1, j),
+										Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)))
+									);
+									i = j - 1;
+									continue variableLoop;
 							}
 						}
 						variables.push(new Variable(

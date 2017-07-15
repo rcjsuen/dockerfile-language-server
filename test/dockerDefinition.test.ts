@@ -140,6 +140,10 @@ describe("Dockerfile Document Definition tests", function() {
 					location = computeDefinition(document, Position.create(3, 11));
 					assertLocation(location, document.uri, 0, 4, 0, 7);
 
+					document = createDocument(instruction + " var" + delimiter + "value\nRUN echo \"$var\"");
+					location = computeDefinition(document, Position.create(1, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+
 					document = createDocument(instruction + " var_var" + delimiter + "value\nSTOPSIGNAL $var_var\nUSER $var_var\nWORKDIR $var_var");
 					location = computeDefinition(document, Position.create(1, 13));
 					assertLocation(location, document.uri, 0, 4, 0, 11);
@@ -147,6 +151,10 @@ describe("Dockerfile Document Definition tests", function() {
 					assertLocation(location, document.uri, 0, 4, 0, 11);
 					location = computeDefinition(document, Position.create(3, 11));
 					assertLocation(location, document.uri, 0, 4, 0, 11);
+
+					document = createDocument(instruction + " var" + delimiter + "value\nRUN echo '$var'");
+					location = computeDefinition(document, Position.create(1, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
 				});
 
 				it("no value", function() {
@@ -157,6 +165,14 @@ describe("Dockerfile Document Definition tests", function() {
 					assertLocation(location, document.uri, 0, 4, 0, 7);
 					location = computeDefinition(document, Position.create(3, 11));
 					assertLocation(location, document.uri, 0, 4, 0, 7);
+
+					document = createDocument(instruction + " var\nRUN echo \"$var\"");
+					location = computeDefinition(document, Position.create(1, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+
+					document = createDocument(instruction + " var\nRUN echo '$var'");
+					location = computeDefinition(document, Position.create(1, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
 				});
 
 				it("no definition", function() {
@@ -166,6 +182,14 @@ describe("Dockerfile Document Definition tests", function() {
 					location = computeDefinition(document, Position.create(2, 7));
 					assert.equal(location, null);
 					location = computeDefinition(document, Position.create(3, 11));
+					assert.equal(location, null);
+
+					document = createDocument(instruction + "\nRUN echo \"$var\"");
+					location = computeDefinition(document, Position.create(1, 12));
+					assert.equal(location, null);
+
+					document = createDocument(instruction + "\nRUN echo '$var'");
+					location = computeDefinition(document, Position.create(1, 12));
 					assert.equal(location, null);
 				});
 			});

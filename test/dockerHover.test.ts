@@ -533,6 +533,18 @@ describe("Dockerfile hover", function() {
 					}
 				});
 
+				it("referenced variable '$var'", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nRUN echo '$var'");
+					let hover = onHover(document, 1, 12);
+					assert.equal(hover.contents, "value");
+				});
+
+				it("referenced variable \"$var\"", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nRUN echo \"$var\"");
+					let hover = onHover(document, 1, 12);
+					assert.equal(hover.contents, "value");
+				});
+
 				it("referenced variable \\${var}", function() {
 					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL \\${var}\nUSER \\${var}\nWORKDIR \\${var}");
 					let hover = onHover(document, 1, 15);

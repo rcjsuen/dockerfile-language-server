@@ -230,6 +230,15 @@ describe("Dockerfile Document Highlight tests", function() {
 
 				ranges = computeHighlightRanges(document, 3, 11);
 				assertHighlightRanges(ranges, expected);
+
+				let run = DocumentHighlight.create(Range.create(Position.create(1, 11), Position.create(1, 14)), DocumentHighlightKind.Read);
+				document = createDocument(instruction + " var" + delimiter + "value\nRUN echo \"$var\"");
+				ranges = computeHighlightRanges(document, 1, 13);
+				assertHighlightRanges(ranges, [ arg, run ]);
+
+				document = createDocument(instruction + " var" + delimiter + "value\nRUN echo '$var'");
+				ranges = computeHighlightRanges(document, 1, 13);
+				assertHighlightRanges(ranges, [ arg, run ]);
 			});
 
 			it("referenced variable $var no value", function() {
@@ -250,6 +259,15 @@ describe("Dockerfile Document Highlight tests", function() {
 
 				ranges = computeHighlightRanges(document, 3, 11);
 				assertHighlightRanges(ranges, expected);
+
+				let run = DocumentHighlight.create(Range.create(Position.create(1, 11), Position.create(1, 14)), DocumentHighlightKind.Read);
+				document = createDocument(instruction + " var\nRUN echo \"$var\"");
+				ranges = computeHighlightRanges(document, 1, 13);
+				assertHighlightRanges(ranges, [ arg, run ]);
+
+				document = createDocument(instruction + " var\nRUN echo '$var'");
+				ranges = computeHighlightRanges(document, 1, 13);
+				assertHighlightRanges(ranges, [ arg, run ]);
 			});
 		});
 	}
@@ -294,6 +312,15 @@ describe("Dockerfile Document Highlight tests", function() {
 			document = createDocument("FROM busybox\nSTOPSIGNAL $var2\nUSER $var\nWORKDIR $var");
 			ranges = computeHighlightRanges(document, 1, 13);
 			assertHighlightRanges(ranges, [ stopsignal ]);
+
+			let run = DocumentHighlight.create(Range.create(Position.create(0, 11), Position.create(0, 14)), DocumentHighlightKind.Read);
+			document = createDocument("RUN echo \"$var\"");
+			ranges = computeHighlightRanges(document, 0, 12);
+			assertHighlightRanges(ranges, [ run ]);
+
+			document = createDocument("RUN echo '$var'");
+			ranges = computeHighlightRanges(document, 0, 12);
+			assertHighlightRanges(ranges, [ run ]);
 		});
 	});
 });
