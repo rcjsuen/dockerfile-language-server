@@ -195,6 +195,17 @@ function assertDeprecatedMaintainer(diagnostic: Diagnostic, severity: Diagnostic
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertSyntaxMissingEquals(diagnostic: Diagnostic, argument: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.SYNTAX_MISSING_EQUALS);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_SyntaxMissingEquals(argument));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function testValidArgument(instruction: string, argument: string) {
 	let gaps = [ " ", "\t", " \\\n", " \\\r", " \\\r\n" ];
 	for (let gap of gaps) {
@@ -1018,6 +1029,16 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("FROM node\nENV a");
 				assert.equal(diagnostics.length, 1);
 				assertENVRequiresTwoArguments(diagnostics[0], 1, 4, 1, 5);
+			});
+
+			it("syntax missing equals", function() {
+				let diagnostics = validate("FROM node\nENV a=b c");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingEquals(diagnostics[0], "c", 1, 8, 1, 9);
+				
+				diagnostics = validate("FROM node\nENV a=b c d=e");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingEquals(diagnostics[0], "c", 1, 8, 1, 9);
 			});
 		});
 	});

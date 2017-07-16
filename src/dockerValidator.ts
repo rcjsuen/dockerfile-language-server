@@ -25,6 +25,7 @@ export enum ValidationCode {
 	INVALID_AS,
 	INVALID_PORT,
 	INVALID_SIGNAL,
+	SYNTAX_MISSING_EQUALS,
 	UNKNOWN_INSTRUCTION,
 	DEPRECATED_MAINTAINER
 }
@@ -192,6 +193,13 @@ export class Validator {
 						if (properties.length === 1 && properties[0].getValue() === null) {
 							let range = properties[0].getNameRange();
 							problems.push(Validator.createENVRequiresTwoArguments(range.start, range.end));
+						} else if (properties.length !== 0) {
+							for (let property of properties) {
+								if (property.getValue() === null) {
+									let range = property.getNameRange();
+									problems.push(Validator.createSyntaxMissingEquals(range.start, range.end, property.getName()));
+								}
+							}
 						}
 						break;
 					case "FROM":
@@ -250,6 +258,8 @@ export class Validator {
 		"invalidAs": "Second argument should be AS",
 		"invalidPort": "Invalid containerPort: ${0}",
 		"invalidStopSignal": "Invalid signal: ${0}",
+
+		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
 
 		"instructionExtraArgument": "Instruction has an extra argument",
 		"instructionMissingArgument": "Instruction has no arguments",
@@ -313,6 +323,10 @@ export class Validator {
 		return Validator.formatMessage(Validator.dockerProblems["instructionUnknown"], instruction);
 	}
 
+	public static getDiagnosticMessage_SyntaxMissingEquals(argument: string) {
+		return Validator.formatMessage(Validator.dockerProblems["syntaxMissingEquals"], argument);
+	}
+
 	public static getDiagnosticMessage_InstructionCasing() {
 		return Validator.dockerProblems["instructionCasing"];
 	}
@@ -359,6 +373,10 @@ export class Validator {
 
 	static createNoSourceImage(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_NoSourceImage(), ValidationCode.NO_SOURCE_IMAGE);
+	}
+
+	static createSyntaxMissingEquals(start: Position, end: Position, argument: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_SyntaxMissingEquals(argument), ValidationCode.SYNTAX_MISSING_EQUALS);
 	}
 
 	static createUnknownInstruction(start: Position, end: Position, instruction: string): Diagnostic {
