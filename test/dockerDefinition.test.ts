@@ -281,5 +281,42 @@ describe("Dockerfile Document Definition tests", function() {
 				assertLocation(location, document.uri, 2, 0, 2, 4);
 			});
 		});
+
+		describe("reuse variable name", function() {
+
+			/**
+			 * ENV aa=x
+			 * ENV aa=y bb=${aa}
+			 * ENV cc=${aa}
+			 */
+			it("${var}", function() {
+				let document = createDocument("ENV aa=x\nENV aa=y bb=${aa}\nENV cc=${aa}");
+				let location = computeDefinition(document, Position.create(0, 5));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(1, 5));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(1, 15));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(2, 10));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+			});
+
+			/**
+			 * ENV aa=x
+			 * ENV aa=y bb=$aa
+			 * ENV cc=$aa
+			 */
+			it("$var", function() {
+				let document = createDocument("ENV aa=x\nENV aa=y bb=$aa\nENV cc=$aa");
+				let location = computeDefinition(document, Position.create(0, 5));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(1, 5));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(1, 14));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(2, 9));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+			});
+		});
 	});
 });

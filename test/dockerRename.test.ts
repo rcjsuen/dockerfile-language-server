@@ -333,6 +333,81 @@ describe("Dockerfile Document Rename tests", function() {
 			});
 		});
 
+		describe("reuse variable name", function() {
+
+			/**
+			 * ENV aa=x
+			 * ENV aa=y bb=${aa}
+			 * ENV cc=${aa}
+			 */
+			it("${var}", function() {
+				let document = createDocument("ENV aa=x\nENV aa=y bb=${aa}\nENV cc=${aa}");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 14, 1, 16);
+				assertEdit(edits[3], "renamed", 2, 9, 2, 11);
+
+				edits = rename(document, 1, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 14, 1, 16);
+				assertEdit(edits[3], "renamed", 2, 9, 2, 11);
+
+				edits = rename(document, 1, 15, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 14, 1, 16);
+				assertEdit(edits[3], "renamed", 2, 9, 2, 11);
+
+				edits = rename(document, 2, 10, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 14, 1, 16);
+				assertEdit(edits[3], "renamed", 2, 9, 2, 11);
+			});
+
+			/**
+			 * ENV aa=x
+			 * ENV aa=y bb=$aa
+			 * ENV cc=$aa
+			 */
+			it("$var", function() {
+				let document = createDocument("ENV aa=x\nENV aa=y bb=$aa\nENV cc=$aa");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 13, 1, 15);
+				assertEdit(edits[3], "renamed", 2, 8, 2, 10);
+
+				edits = rename(document, 1, 5, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 13, 1, 15);
+				assertEdit(edits[3], "renamed", 2, 8, 2, 10);
+
+				edits = rename(document, 1, 14, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 13, 1, 15);
+				assertEdit(edits[3], "renamed", 2, 8, 2, 10);
+
+				edits = rename(document, 2, 9, "renamed");
+				assert.equal(edits.length, 4);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 4, 1, 6);
+				assertEdit(edits[2], "renamed", 1, 13, 1, 15);
+				assertEdit(edits[3], "renamed", 2, 8, 2, 10);
+			});
+		});
+
 		describe("multiple variables", function() {
 			it("${var}", function() {
 				let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");

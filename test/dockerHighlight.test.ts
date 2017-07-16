@@ -383,6 +383,51 @@ describe("Dockerfile Document Highlight tests", function() {
 				assertHighlightRanges(ranges, [ varDeclaration3, varReference3 ]);
 			});
 		});
+
+		describe("reuse variable name", function() {
+
+			/**
+			 * ENV aa=x
+			 * ENV aa=y bb=${aa}
+			 * ENV cc=${aa}
+			 */
+			it("${var}", function() {
+				let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 6)), DocumentHighlightKind.Write);
+				let write = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 6)), DocumentHighlightKind.Write);
+				let read = DocumentHighlight.create(Range.create(Position.create(1, 14), Position.create(1, 16)), DocumentHighlightKind.Read);
+				let read2 = DocumentHighlight.create(Range.create(Position.create(2, 9), Position.create(2, 11)), DocumentHighlightKind.Read);
+				let document = createDocument("ENV aa=x\nENV aa=y bb=${aa}\nENV cc=${aa}");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+				ranges = computeHighlightRanges(document, 1, 5);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+				ranges = computeHighlightRanges(document, 1, 15);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+				ranges = computeHighlightRanges(document, 2, 10);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+			});
+
+			/**
+			 * ENV aa=x
+			 * ENV aa=y bb=$aa
+			 * ENV cc=$aa
+			 */
+			it("$var", function() {
+				let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 6)), DocumentHighlightKind.Write);
+				let write = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 6)), DocumentHighlightKind.Write);
+				let read = DocumentHighlight.create(Range.create(Position.create(1, 13), Position.create(1, 15)), DocumentHighlightKind.Read);
+				let read2 = DocumentHighlight.create(Range.create(Position.create(2, 8), Position.create(2, 10)), DocumentHighlightKind.Read);
+				let document = createDocument("ENV aa=x\nENV aa=y bb=$aa\nENV cc=$aa");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+				ranges = computeHighlightRanges(document, 1, 5);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+				ranges = computeHighlightRanges(document, 1, 14);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+				ranges = computeHighlightRanges(document, 2, 9);
+				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
+			});
+		});
 	});
 
 	describe("non-existent variable", function() {

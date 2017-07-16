@@ -21,4 +21,8 @@ export class Line {
 	public getTextContent(): string {
 		return this.document.getText().substring(this.document.offsetAt(this.range.start), this.document.offsetAt(this.range.end));
 	}
+
+	public isAfter(line: Line): boolean {
+		return this.range.start.line > line.range.start.line;
+	}
 }

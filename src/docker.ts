@@ -84,4 +84,11 @@ export class Util {
 				range.start.character <= position.character &&
 				position.character <= range.end.character;
 	}
+
+	public static rangeEquals(range: Range, range2: Range) {
+		return range.start.line === range2.start.line
+			&& range.start.character === range2.start.character
+			&& range.end.line === range2.end.line
+			&& range.end.character === range2.end.character;
+	}
 }

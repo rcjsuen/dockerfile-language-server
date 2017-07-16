@@ -52,9 +52,10 @@ export class DockerDefinition {
 			for (let property of properties) {
 				// is the caret inside the definition itself
 				if (Util.isInsideRange(position, property.getNameRange())) {
-					return property;
+					return variables[property.getName()] ? variables[property.getName()] : property;
+				} else if (!variables[property.getName()]) {
+					variables[property.getName()] = property;
 				}
-				variables[property.getName()] = property;
 			}
 		}
 		for (let instruction of dockerfile.getInstructions()) {

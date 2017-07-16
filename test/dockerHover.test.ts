@@ -599,6 +599,43 @@ describe("Dockerfile hover", function() {
 				});
 			});
 
+			describe("reuse variable name", function() {
+
+				/**
+				 * ENV aa=x
+				 * ENV aa=y bb=${aa}
+				 * ENV cc=${aa}
+				 */
+				it("${var}", function() {
+					let document = createDocument("ENV aa=x\nENV aa=y bb=${aa}\nENV cc=${aa}");
+					let hover = onHover(document, 0, 5);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 1, 15);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 2, 10);
+					assert.equal(hover.contents, "y");
+				});
+
+				/**
+				 * ENV aa=x
+				 * ENV aa=y bb=$aa
+				 * ENV cc=$aa
+				 */
+				it("$var", function() {
+					let document = createDocument("ENV aa=x\nENV aa=y bb=$aa\nENV cc=$aa");
+					let hover = onHover(document, 0, 5);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 1, 14);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 2, 9);
+					assert.equal(hover.contents, "y");
+				});
+			});
+
 			describe("multiple variables", function() {
 				it("${var}", function() {
 					let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");
