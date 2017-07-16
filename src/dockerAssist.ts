@@ -66,56 +66,32 @@ export class DockerAssist {
 			}
 		}
 
-		let prefix = this.calculateTruePrefix(buffer, offset, escapeCharacter);
+		let previousWord = "";
 
-		// if we only have empty lines and comments, only suggest FROM
-		if (prefix === "" && dockerfile.getInstructions().length === 0) {
-			return [ this.createFROM(prefix, offset, "FROM") ];
-		}
-
-		var previousWord = "";
-		var whitespace = false;
-		var newline = false;
-		lineCheck: for (let i = offset - 1; i >= 0; i--) {
-			let char = buffer.charAt(i);
-			switch (char) {
-				case '\n':
-					newline = true;
-					if (buffer.charAt(i - 1) === '\r') {
-						i = i - 1;
-					}
+		for (let instruction of dockerfile.getInstructions()) {
+			if (Util.isInsideRange(position, instruction.getInstructionRange())) {
+				break;
+			} else if (Util.isInsideRange(position, instruction.getRange())) {
+				if (instruction.getKeyword() !== "ONBUILD") {
+					return [];
+				}
+				
+				let args = instruction.getArguments();
+				if (args.length === 0 || Util.isInsideRange(position, args[0].getRange())) {
+					previousWord = "ONBUILD";
 					break;
-				case ' ':
-				case '\t':
-					if (whitespace && !newline && previousWord !== "" && previousWord !== "ONBUILD") {
-						break lineCheck;
-					} else {
-						whitespace = true;
-					}
-					break;
-				default:
-					if (newline) {
-						if (char === escapeCharacter) {
-							// encountered a newline, it was escaped, keep processing
-							newline = false;
-							continue;
-						}
-						break lineCheck;
-					}
-					// whitespace encountered, start processing this as the previous word
-					if (whitespace) {
-						previousWord = char.toUpperCase() + previousWord;
-					}
-					break;
+				}
+				return [];
 			}
 		}
 
-		if (previousWord !== "" && previousWord !== "ONBUILD") {
-			// only suggest proposals if at the front or after an ONBUILD
-			return [];
-		}
+		let prefix = this.calculateTruePrefix(buffer, offset, escapeCharacter);
 
 		if (prefix === "") {
+			if (dockerfile.getInstructions().length === 0) {
+				// if we don't have any instructions, only suggest FROM
+				return [ this.createFROM(prefix, offset, "FROM") ];
+			}
 			// no prefix, return all the proposals
 			return this.createProposals(KEYWORDS, previousWord, "", offset);
 		}

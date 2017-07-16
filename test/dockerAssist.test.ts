@@ -1277,6 +1277,23 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(proposals.length, 0);
 			});
 
+			/**
+			 * Test that an ONBUILD within an ONBUILD doesn't confuse the parser.
+			 */
+			it('ONBUILD ONBUILD O', function() {
+				var proposals = compute("FROM node\nONBUILD ONBUILD W", 27);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nONBUILD ONBUILD w", 27);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nONBUILD onbuild W", 27);
+				assert.equal(proposals.length, 0);
+
+				proposals = compute("FROM node\nONBUILD onbuild w", 27);
+				assert.equal(proposals.length, 0);
+			});
+
 			it('false ONBUILD instruction', function() {
 				var proposals = compute("FROM node\nRUN echo \"ONBUILD W", 29);
 				assert.equal(proposals.length, 0);
