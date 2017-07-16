@@ -14,6 +14,7 @@ import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
 	CASING_INSTRUCTION,
+	CASING_DIRECTIVE,
 	ARGUMENT_MISSING,
 	ARGUMENT_EXTRA,
 	ARGUMENT_REQUIRES_ONE,
@@ -36,6 +37,7 @@ export enum ValidationSeverity {
 
 export const ValidatorSettingsDefaults: ValidatorSettings = {
 	deprecatedMaintainer: ValidationSeverity.WARNING,
+	directiveCasing: ValidationSeverity.WARNING,
 	instructionCasing: ValidationSeverity.WARNING
 }
 
@@ -60,10 +62,20 @@ export class Validator {
 
 		let directiveName = directive.getDirective();
 		let value = directive.getValue();
-		if (directiveName === DIRECTIVE_ESCAPE && value !== '\\' && value !== '`' && value !== "") {
-			// if the directive's value is invalid or isn't the empty string, flag it
-			let range = directive.getValueRange();
-			problems.push(Validator.createInvalidEscapeDirective(range.start, range.end, value));
+		if (directiveName === DIRECTIVE_ESCAPE) {
+			if (value !== '\\' && value !== '`' && value !== "") {
+				// if the directive's value is invalid or isn't the empty string, flag it
+				let range = directive.getValueRange();
+				problems.push(Validator.createInvalidEscapeDirective(range.start, range.end, value));
+			}
+
+			if (directive.getName() !== DIRECTIVE_ESCAPE) {
+				let range = directive.getNameRange();
+				let diagnostic = this.createLowercaseDirective(range.start, range.end);
+				if (diagnostic) {
+					problems.push(diagnostic);
+				}
+			}
 		}
 	}
 
@@ -228,6 +240,7 @@ export class Validator {
 	}
 
 	private static dockerProblems = {
+		"directiveCasing": "Parser directives should be written in lowercase letters",
 		"directiveEscapeInvalid": "invalid ESCAPE '${0}'. Must be ` or \\",
 
 		"noSourceImage": "No source image provided with `FROM`",
@@ -250,6 +263,10 @@ export class Validator {
 	
 	private static formatMessage(text: string, variable: string): string {
 		return text.replace("${0}", variable);
+	}
+
+	public static getDiagnosticMessage_DirectiveCasing() {
+		return Validator.dockerProblems["directiveCasing"];
 	}
 
 	public static getDiagnosticMessage_DirectiveEscapeInvalid(value: string) {
@@ -350,6 +367,15 @@ export class Validator {
 
 	static createError(start: Position, end: Position, description: string, code?: ValidationCode): Diagnostic {
 		return Validator.createDiagnostic(DiagnosticSeverity.Error, start, end, description, code);
+	}
+
+	private createLowercaseDirective(start: Position, end: Position): Diagnostic {
+		if (this.settings.directiveCasing === ValidationSeverity.ERROR) {
+			return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveCasing(), ValidationCode.CASING_DIRECTIVE);
+		} else if (this.settings.directiveCasing === ValidationSeverity.WARNING) {
+			return Validator.createWarning(start, end, Validator.getDiagnosticMessage_DirectiveCasing(), ValidationCode.CASING_DIRECTIVE);
+		}
+		return null;
 	}
 
 	createUppercaseInstruction(start: Position, end: Position): Diagnostic {

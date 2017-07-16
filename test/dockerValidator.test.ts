@@ -19,6 +19,7 @@ function validate(content: string, settings?: ValidatorSettings) {
 	if (!settings) {
 		settings = {
 			deprecatedMaintainer: ValidationSeverity.IGNORE,
+			directiveCasing: ValidationSeverity.WARNING,
 			instructionCasing: ValidationSeverity.WARNING
 		};
 	}
@@ -78,6 +79,17 @@ function assertInvalidStopSignal(diagnostic: Diagnostic, signal: string, startLi
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidSignal(signal));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
+function assertDirectiveCasing(diagnostic: Diagnostic, severity: DiagnosticSeverity, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.CASING_DIRECTIVE);
+	assert.equal(diagnostic.severity, severity);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_DirectiveCasing());
 	assert.equal(diagnostic.range.start.line, startLine);
 	assert.equal(diagnostic.range.start.character, startCharacter);
 	assert.equal(diagnostic.range.end.line, endLine);
@@ -855,11 +867,6 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 0);
 			});
 
-			it("casing ignored", function() {
-				let diagnostics = validate("# EsCaPe=`\nFROM node");
-				assert.equal(diagnostics.length, 0);
-			});
-
 			it("invalid escape directive", function() {
 				let diagnostics = validate("# escape=ab\nFROM node");
 				assert.equal(diagnostics.length, 1);
@@ -890,6 +897,49 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("#escape=\n");
 				assert.equal(diagnostics.length, 1);
 				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
+			});
+		});
+
+		describe("escape casing", function() {
+			it("lowercase", function() {
+				let diagnostics = validate("# escape=`\nFROM node");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("mixed", function() {
+				let diagnostics = validate("# esCAPe=`\nFROM node");
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 2, 0, 8);
+			});
+
+			it("uppercase", function() {
+				let diagnostics = validate("# ESCAPE=`\nFROM node");
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 2, 0, 8);
+			});
+
+			it("default", function() {
+				let validator = new Validator();
+				let diagnostics = validator.validate(KEYWORDS, createDocument("# esCAPe=`\nFROM node"));
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 2, 0, 8);
+			});
+
+			it("ignore", function() {
+				let diagnostics = validate("# esCAPe=`\nFROM node", { directiveCasing: ValidationSeverity.IGNORE });
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("warning", function() {
+				let diagnostics = validate("# esCAPe=`\nFROM node", { directiveCasing: ValidationSeverity.WARNING });
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 2, 0, 8);
+			});
+
+			it("error", function() {
+				let diagnostics = validate("# esCAPe=`\nFROM node", { directiveCasing: ValidationSeverity.ERROR });
+				assert.equal(diagnostics.length, 1);
+				assertDirectiveCasing(diagnostics[0], DiagnosticSeverity.Error, 0, 2, 0, 8);
 			});
 		});
 	});

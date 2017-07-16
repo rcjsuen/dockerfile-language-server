@@ -4,5 +4,7 @@ export interface ValidatorSettings {
 
 	deprecatedMaintainer?: ValidationSeverity;
 
+	directiveCasing?: ValidationSeverity;
+
 	instructionCasing?: ValidationSeverity;
 }

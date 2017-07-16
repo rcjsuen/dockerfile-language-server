@@ -90,6 +90,7 @@ interface Settings {
 		languageserver: {
 			diagnostics?: {
 				deprecatedMaintainer?: string,
+				directiveCasing?: string,
 				instructionCasing?: string
 			}
 		}
@@ -111,12 +112,14 @@ function getSeverity(severity: string): ValidationSeverity {
 connection.onDidChangeConfiguration((change) => {
 	let settings = <Settings>change.settings;
 	let maintainer = ValidationSeverity.WARNING;
+	let directiveCasing = ValidationSeverity.WARNING;
 	let instructionCasing = ValidationSeverity.WARNING;
 	if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
 		maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
+		directiveCasing = getSeverity(settings.docker.languageserver.diagnostics.directiveCasing);
 		instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
 	}
-	validatorSettings = { deprecatedMaintainer: maintainer, instructionCasing: instructionCasing };
+	validatorSettings = { deprecatedMaintainer: maintainer, instructionCasing: instructionCasing, directiveCasing: directiveCasing };
 	// validate all the documents again
 	Object.keys(documents).forEach((key) => {
 		validateTextDocument(documents[key]);

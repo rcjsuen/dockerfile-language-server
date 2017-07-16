@@ -48,6 +48,7 @@ interface Settings {
       diagnostics?: {
         // string values must be equal to "ignore", "warning", or "error"
         deprecatedMaintainer?: string,
+        directiveCasing?: string,
         instructionCasing?: string
       }
     }
