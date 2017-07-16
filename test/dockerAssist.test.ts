@@ -5,7 +5,7 @@
 import * as assert from "assert";
 
 import {
-	TextDocument, CompletionItem, CompletionItemKind, InsertTextFormat
+	TextDocument, Position, CompletionItem, CompletionItemKind, InsertTextFormat
 } from 'vscode-languageserver';
 import { KEYWORDS } from '../src/docker';
 import { DockerAssist } from '../src/dockerAssist';
@@ -21,6 +21,15 @@ function compute(content: string, offset: number, snippetSupport?: boolean): Com
 	let document = createDocument(content);
 	let assist = new DockerAssist(document, snippetSupport);
 	return assist.computeProposals(document, document.positionAt(offset));
+}
+
+function computePosition(content: string, line: number, character: number, snippetSupport?: boolean): CompletionItem[] {
+	if (snippetSupport === undefined) {
+		snippetSupport = true;
+	}
+	let document = createDocument(content);
+	let assist = new DockerAssist(document, snippetSupport);
+	return assist.computeProposals(document, Position.create(line, character));
 }
 
 function assertOnlyFROM(proposals: CompletionItem[], line: number, number: number, prefixLength: number) {
@@ -336,6 +345,17 @@ function assertWORKDIR(item: CompletionItem, line: number, character: number, pr
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
+}
+
+function assertSourceImage(item: CompletionItem, sourceImage: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(item.label, sourceImage);
+	assert.equal(item.kind, CompletionItemKind.Reference);
+	assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+	assert.equal(item.textEdit.newText, sourceImage);
+	assert.equal(item.textEdit.range.start.line, startLine);
+	assert.equal(item.textEdit.range.start.character, startCharacter);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
 }
 
 function assertOnlyDirectiveEscape(items: CompletionItem[], line: number, character: number, prefixLength: number) {
@@ -1196,6 +1216,28 @@ describe('Docker Content Assist Tests', function() {
 			});
 		});
 	})
+
+	describe("COPY", function() {
+		describe("--from=", function() {
+			it("no sources", function() {
+				var proposals = computePosition("FROM busybox\nCOPY --from=", 1, 12);
+				assert.equal(proposals.length, 0);
+			});
+
+			it("source image", function() {
+				var proposals = computePosition("FROM busybox AS source\nCOPY --from=", 1, 12);
+				assert.equal(proposals.length, 1);
+				assertSourceImage(proposals[0], "source", 1, 12, 1, 12);
+			});
+
+			it("source images alphabetical", function() {
+				var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=", 2, 12);
+				assert.equal(proposals.length, 2);
+				assertSourceImage(proposals[0], "dev", 2, 12, 2, 12);
+				assertSourceImage(proposals[1], "setup", 2, 12, 2, 12);
+			});
+		});
+	});
 
 	describe('ONBUILD nesting', function() {
 		it('all', function() {

@@ -12,7 +12,8 @@ export class From extends Instruction {
 	}
 
 	public getBuildStage(): string | null {
-		return this.getRangeContent(this.getBuildStageRange());
+		let range = this.getBuildStageRange();
+		return range === null ? null : this.getRangeContent(range);
 	}
 
 	public getBuildStageRange(): Range | null {

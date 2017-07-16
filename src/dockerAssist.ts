@@ -10,6 +10,7 @@ import {
 } from 'vscode-languageserver';
 import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { DockerfileParser } from './parser/dockerfileParser';
+import { Copy } from './parser/instructions/copy';
 
 export class DockerAssist {
 
@@ -68,20 +69,38 @@ export class DockerAssist {
 
 		let previousWord = "";
 
-		for (let instruction of dockerfile.getInstructions()) {
+		instructionsCheck: for (let instruction of dockerfile.getInstructions()) {
 			if (Util.isInsideRange(position, instruction.getInstructionRange())) {
 				break;
 			} else if (Util.isInsideRange(position, instruction.getRange())) {
-				if (instruction.getKeyword() !== "ONBUILD") {
-					return [];
+				switch (instruction.getKeyword()) {
+					case "COPY":
+						let copy = instruction as Copy;
+						let copyArgs = instruction.getArguments();
+						if (copyArgs.length !== 0 && copyArgs[0].getValue().indexOf("--from=") === 0 && copy.getFromValueRange().start.character === position.character) {
+							let items: CompletionItem[] = [];
+							for (let from of dockerfile.getFROMs()) {
+								let stage = from.getBuildStage();
+								if (stage) {
+									items.push(this.createSourceImageCompletionItem(stage, "", offset));
+								}
+							}
+							items.sort((item: CompletionItem, item2: CompletionItem) => {
+								return item.label.localeCompare(item2.label);
+							});
+							return items;
+						}
+						return [];
+					case "ONBUILD":
+						let onbuildArgs = instruction.getArguments();
+						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
+							previousWord = "ONBUILD";
+							break instructionsCheck;
+						}
+						return [];
+					default:
+						return [];
 				}
-				
-				let args = instruction.getArguments();
-				if (args.length === 0 || Util.isInsideRange(position, args[0].getRange())) {
-					previousWord = "ONBUILD";
-					break;
-				}
-				return [];
 			}
 		}
 
@@ -345,6 +364,15 @@ export class DockerAssist {
 			textEdit: textEdit,
 			label: label,
 			kind: CompletionItemKind.Keyword,
+			insertTextFormat: InsertTextFormat.PlainText,
+		};
+	}
+
+	private createSourceImageCompletionItem(label: string, prefix: string, offset: number): CompletionItem {
+		return {
+			textEdit: this.createTextEdit(prefix, offset, label),
+			label: label,
+			kind: CompletionItemKind.Reference,
 			insertTextFormat: InsertTextFormat.PlainText,
 		};
 	}
