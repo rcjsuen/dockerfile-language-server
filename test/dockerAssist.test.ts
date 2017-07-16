@@ -1236,6 +1236,12 @@ describe('Docker Content Assist Tests', function() {
 				assertSourceImage(proposals[0], "dev", 2, 12, 2, 12);
 				assertSourceImage(proposals[1], "setup", 2, 12, 2, 12);
 			});
+
+			it("source image prefix", function() {
+				var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=s", 2, 13);
+				assert.equal(proposals.length, 1);
+				assertSourceImage(proposals[0], "setup", 2, 12, 2, 13);
+			});
 		});
 	});
 
