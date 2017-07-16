@@ -57,7 +57,10 @@ connection.onInitialize((params): InitializeResult => {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			codeActionProvider: true,
 			completionProvider: {
-				resolveProvider: true
+				resolveProvider: true,
+				triggerCharacters: [
+					'='
+				]
 			},
 			executeCommandProvider: {
 				commands: [
