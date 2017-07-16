@@ -36,6 +36,26 @@ export class DockerHover {
 		}
 
 		for (let instruction of dockerfile.getInstructions()) {
+			for (let variable of instruction.getVariables()) {
+				// are we hovering over a variable
+				if (Util.isInsideRange(textDocumentPosition.position, variable.getNameRange())) {
+					let instructions = dockerfile.getInstructions();
+					for (let i = instructions.length - 1; i >= 0; i--) {
+						// only look for variables defined before the current instruction
+						if (instruction.isAfter(instructions[i]) && instructions[i] instanceof Env) {
+							for (let property of (instructions[i] as Env).getProperties()) {
+								// check that the names match
+								if (property.getName() === variable.getName()) {
+									return property.getValue() !== null ? { contents: property.getValue() } : null;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for (let instruction of dockerfile.getInstructions()) {
 			let instructionRange = instruction.getInstructionRange();
 			if (Util.isInsideRange(textDocumentPosition.position, instructionRange)) {
 				return this.markdown.getMarkdown(instruction.getKeyword());
@@ -66,25 +86,6 @@ export class DockerHover {
 						return {
 							contents: property.getValue()
 						};
-					}
-
-					// get the variables of this ENV instruction
-					for (let variable of instruction.getVariables()) {
-						// are we hovering over a variable nested in an ENV
-						if (Util.isInsideRange(textDocumentPosition.position, variable.getNameRange())) {
-							let instructions = dockerfile.getInstructions();
-							for (let i = instructions.length - 1; i >= 0; i--) {
-								// only look for variables defined before the current instruction
-								if (instruction.isAfter(instructions[i]) && instructions[i] instanceof Env) {
-									for (let property of (instructions[i] as Env).getProperties()) {
-										// check that the names match
-										if (property.getName() === variable.getName()) {
-											return { contents: property.getValue() };
-										}
-									}
-								}
-							}
-						}
 					}
 				}
 			}

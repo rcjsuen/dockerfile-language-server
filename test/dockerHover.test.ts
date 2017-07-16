@@ -690,6 +690,35 @@ describe("Dockerfile hover", function() {
 		});
 	});
 
+	describe("ARG and ENV", function() {
+		describe("same variable name", function() {
+
+			/**
+			 * ARG aa=b
+			 * ENV aa=c
+			 * ARG aa=d
+			 * RUN echo ${aa}
+			 */
+			it("${var}", function() {
+				let document = createDocument("ARG aa=b\nENV aa=c\nARG aa=d\nRUN echo ${aa}");
+				let hover = onHover(document, 3, 11);
+				assert.equal(hover.contents, "c");
+			});
+
+			/**
+			 * ARG aa=b
+			 * ENV aa=c
+			 * ARG aa=d
+			 * RUN echo $aa
+			 */
+			it("${var}", function() {
+				let document = createDocument("ARG aa=b\nENV aa=c\nARG aa=d\nRUN echo $aa");
+				let hover = onHover(document, 3, 10);
+				assert.equal(hover.contents, "c");
+			});
+		});
+	});
+
 	describe("keyword nesting", function() {
 		it("ONBUILD EXPOSE", function() {
 			let document = createDocument("ONBUILD EXPOSE 8080");
