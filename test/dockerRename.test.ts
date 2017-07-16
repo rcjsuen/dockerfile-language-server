@@ -291,6 +291,48 @@ describe("Dockerfile Document Rename tests", function() {
 		createVariablesTest("equals delimiter", "ENV", "=");
 		createVariablesTest("space delimiter", "ENV", " ");
 
+		describe("single variable delimited by space", function() {
+			it("${var}", function() {
+				let document = createDocument("ENV aa bb cc dd\nRUN echo ${aa} ${cc}");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 11, 1, 13);
+
+				edits = rename(document, 1, 12, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 11, 1, 13);
+
+				edits = rename(document, 0, 11, "renamed");
+				assert.equal(edits.length, 0);
+
+				edits = rename(document, 1, 18, "renamed");
+				assert.equal(edits.length, 1);
+				assertEdit(edits[0], "renamed", 1, 17, 1, 19);
+			});
+
+			it("$var", function() {
+				let document = createDocument("ENV aa bb cc dd\nRUN echo $aa $cc");
+				let edits = rename(document, 0, 5, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 10, 1, 12);
+
+				edits = rename(document, 1, 11, "renamed");
+				assert.equal(edits.length, 2);
+				assertEdit(edits[0], "renamed", 0, 4, 0, 6);
+				assertEdit(edits[1], "renamed", 1, 10, 1, 12);
+
+				edits = rename(document, 0, 11, "renamed");
+				assert.equal(edits.length, 0);
+
+				edits = rename(document, 1, 15, "renamed");
+				assert.equal(edits.length, 1);
+				assertEdit(edits[0], "renamed", 1, 14, 1, 16);
+			});
+		});
+
 		describe("multiple variables", function() {
 			it("${var}", function() {
 				let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");

@@ -573,6 +573,32 @@ describe("Dockerfile hover", function() {
 			createVariablesTest("equals delimiter", "ENV", "=");
 			createVariablesTest("space delimiter", "ENV", " ");
 
+			describe("single variable delimited by space", function() {
+				it("${var}", function() {
+					let document = createDocument("ENV aa bb cc dd\nRUN echo ${aa} ${cc}");
+					let hover = onHover(document, 0, 5);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 1, 12);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 0, 11);
+					assert.equal(hover, null);
+					hover = onHover(document, 1, 18);
+					assert.equal(hover, null);
+				});
+
+				it("$var", function() {
+					let document = createDocument("ENV aa bb cc dd\nRUN echo $aa $cc");
+					let hover = onHover(document, 0, 5);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 1, 11);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 0, 11);
+					assert.equal(hover, null);
+					hover = onHover(document, 1, 15);
+					assert.equal(hover, null);
+				});
+			});
+
 			describe("multiple variables", function() {
 				it("${var}", function() {
 					let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");

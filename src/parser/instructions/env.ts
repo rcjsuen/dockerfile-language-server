@@ -33,6 +33,12 @@ export class Env extends PropertyInstruction {
 						new Property(this.document, this.escapeChar, args[1])
 					];
 				}
+			} else if (args[0].getValue().indexOf('=') === -1) {
+				let text = this.document.getText();
+				let start = args[1].getRange().start
+				let end = args[args.length - 1].getRange().end;
+				text = text.substring(this.document.offsetAt(start), this.document.offsetAt(end));
+				this.properties = [ new Property(this.document, this.escapeChar, args[0], new Argument(text, Range.create(args[1].getRange().start, args[args.length - 1].getRange().end))) ];
 			} else {
 				this.properties = [];
 				for (let i = 0; i < args.length; i++) {

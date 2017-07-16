@@ -278,6 +278,38 @@ describe("Dockerfile Document Highlight tests", function() {
 		createVariablesTest("equals delimiter", "ENV", "=");
 		createVariablesTest("space delimiter", "ENV", " ");
 
+		describe("single variable delimited by space", function() {
+			it("${var}", function() {
+				let varDeclaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 6)), DocumentHighlightKind.Write);
+				let varReference = DocumentHighlight.create(Range.create(Position.create(1, 11), Position.create(1, 13)), DocumentHighlightKind.Read);
+				let document = createDocument("ENV aa bb cc dd\nRUN echo ${aa} ${cc}");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 1, 12);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 0, 11);
+				assert.equal(ranges.length, 0);
+				ranges = computeHighlightRanges(document, 1, 18);
+				assert.equal(ranges.length, 1);
+				assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 17, 1, 19);
+			});
+
+			it("$var", function() {
+				let varDeclaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 6)), DocumentHighlightKind.Write);
+				let varReference = DocumentHighlight.create(Range.create(Position.create(1, 10), Position.create(1, 12)), DocumentHighlightKind.Read);
+				let document = createDocument("ENV aa bb cc dd\nRUN echo $aa $cc");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 1, 11);
+				assertHighlightRanges(ranges, [ varDeclaration, varReference ]);
+				ranges = computeHighlightRanges(document, 0, 11);
+				assert.equal(ranges.length, 0);
+				ranges = computeHighlightRanges(document, 1, 15);
+				assert.equal(ranges.length, 1);
+				assertHighlight(ranges[0], DocumentHighlightKind.Read, 1, 14, 1, 16);
+			});
+		});
+
 		describe("multiple variables", function() {
 			it("${var}", function() {
 				let varDeclaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);

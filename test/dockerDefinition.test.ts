@@ -202,6 +202,32 @@ describe("Dockerfile Document Definition tests", function() {
 		createVariablesTest("equals delimiter", "ENV", "=");
 		createVariablesTest("space delimiter", "ENV", " ");
 
+		describe("single variable delimited by space", function() {
+			it("${var}", function() {
+				let document = createDocument("ENV aa bb cc dd\nRUN echo ${aa} ${cc}");
+				let location = computeDefinition(document, Position.create(0, 5));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(1, 12));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(0, 11));
+				assert.equal(location, null);
+				location = computeDefinition(document, Position.create(1, 18));
+				assert.equal(location, null);
+			});
+
+			it("$var", function() {
+				let document = createDocument("ENV aa bb cc dd\nRUN echo $aa $cc");
+				let location = computeDefinition(document, Position.create(0, 5));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(1, 11));
+				assertLocation(location, document.uri, 0, 4, 0, 6);
+				location = computeDefinition(document, Position.create(0, 11));
+				assert.equal(location, null);
+				location = computeDefinition(document, Position.create(1, 15));
+				assert.equal(location, null);
+			});
+		});
+
 		describe("multiple variables", function() {
 			it("${var}", function() {
 				let document = createDocument("ENV var=value var2=value2\nRUN echo ${var} ${var2}");
