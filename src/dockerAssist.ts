@@ -85,8 +85,7 @@ export class DockerAssist {
 			}
 		}
 
-		let prefix = this.calculateTruePrefix(buffer, offset, escapeCharacter);
-
+		let prefix = DockerAssist.calculateTruePrefix(buffer, offset, escapeCharacter);
 		if (prefix === "") {
 			if (dockerfile.getInstructions().length === 0) {
 				// if we don't have any instructions, only suggest FROM
@@ -144,14 +143,15 @@ export class DockerAssist {
 
 	/**
 	 * Walks back in the text buffer to calculate the true prefix of the
-	 * current text caret offset. Orion's provided prefix does not include
-	 * symbols but we do want to consider that a prefix in Dockerfiles.
+	 * current text caret offset. This function will handle the
+	 * Dockerfile escape characters to skip escaped newline characters
+	 * where applicable.
 	 * 
 	 * @param buffer the content of the opened file
 	 * @param offset the current text caret's offset
 	 * @param escapeCharacter the escape character defined in this Dockerfile
 	 */
-	calculateTruePrefix(buffer: string, offset: number, escapeCharacter: string): string {
+	private static calculateTruePrefix(buffer: string, offset: number, escapeCharacter: string): string {
 		var char = buffer.charAt(offset - 1);
 		switch (char) {
 			case '\n':
