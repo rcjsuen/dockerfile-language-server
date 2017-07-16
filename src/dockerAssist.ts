@@ -297,10 +297,10 @@ export class DockerAssist {
 
 	createHEALTHCHECK_CMD(prefix: string, offset: number): CompletionItem {
 		return this.createKeywordCompletionItem("HEALTHCHECK",
-			"HEALTHCHECK --interval=30s --timeout=30s --retries=3 CMD [ \"executable\" ]",
+			"HEALTHCHECK --interval=30s --timeout=30s --start-period=0s --retries=3 CMD [ \"executable\" ]",
 			prefix,
 			offset,
-			"HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --retries=${3:3} CMD [ \"${4:executable}\" ]",
+			"HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --start-period=${3:0s} --retries=${4:3} CMD [ \"${5:executable}\" ]",
 			"HEALTHCHECK_CMD");
 	}
 
