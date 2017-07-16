@@ -26,7 +26,7 @@ function createInvalidEscapeDirective(): Diagnostic {
 }
 
 function createLowercase(): Diagnostic {
-	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.LOWERCASE);
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.CASING_INSTRUCTION);
 }
 
 function createAS(): Diagnostic {

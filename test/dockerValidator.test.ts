@@ -85,7 +85,7 @@ function assertInvalidStopSignal(diagnostic: Diagnostic, signal: string, startLi
 }
 
 function assertInstructionCasing(diagnostic: Diagnostic, severity: DiagnosticSeverity, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.LOWERCASE);
+	assert.equal(diagnostic.code, ValidationCode.CASING_INSTRUCTION);
 	assert.equal(diagnostic.severity, severity);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InstructionCasing());
@@ -1181,7 +1181,7 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("from node test");
 				assertDiagnostics(diagnostics,
-					[ ValidationCode.LOWERCASE, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE ],
+					[ ValidationCode.CASING_INSTRUCTION, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE ],
 					[ assertInstructionCasing, assertInstructionRequiresOneOrThreeArguments ],
 					[ [ DiagnosticSeverity.Warning, 0, 0, 0, 4 ], [ 0, 10, 0, 14 ] ]);
 			});

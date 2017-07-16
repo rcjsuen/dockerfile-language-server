@@ -13,7 +13,7 @@ import { DIRECTIVE_ESCAPE } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
-	LOWERCASE,
+	CASING_INSTRUCTION,
 	ARGUMENT_MISSING,
 	ARGUMENT_EXTRA,
 	ARGUMENT_REQUIRES_ONE,
@@ -354,9 +354,9 @@ export class Validator {
 
 	createUppercaseInstruction(start: Position, end: Position): Diagnostic {
 		if (this.settings.instructionCasing === ValidationSeverity.ERROR) {
-			return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
+			return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.CASING_INSTRUCTION);
 		} else if (this.settings.instructionCasing === ValidationSeverity.WARNING) {
-			return Validator.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.LOWERCASE);
+			return Validator.createWarning(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.CASING_INSTRUCTION);
 		}
 		return null;
 	}

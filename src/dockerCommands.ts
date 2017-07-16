@@ -24,7 +24,7 @@ export class DockerCommands {
 		let commands = [];
 		for (let i = 0; i < diagnostics.length; i++) {
 			switch (diagnostics[i].code) {
-				case ValidationCode.LOWERCASE:
+				case ValidationCode.CASING_INSTRUCTION:
 					commands.push({
 						title: "Convert instruction to uppercase",
 						command: CommandIds.UPPERCASE,
