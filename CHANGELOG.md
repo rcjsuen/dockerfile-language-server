@@ -5,12 +5,12 @@ All notable changes to this project will be documented in this file.
 
 ### Added
   - textDocument/completion
-    - suggest build stage names in a COPY instruction (#44)
+    - suggest build stage names in a COPY instruction ([#44](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/44))
     - add '=' as a trigger character
-  - created a CHANGELOG.md file to document the project's changes (#77)
+  - created a CHANGELOG.md file to document the project's changes ([#77](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/77))
 
 ### Fixed
-  - fixed a typo in completion items for WORKDIR (#76)
+  - fixed a typo in completion items for WORKDIR ([#76](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/76))
 
 ## 0.0.1 - 2017-07-16
 ### Added
@@ -60,3 +60,5 @@ All notable changes to this project will be documented in this file.
   - escape parser directive
 - textDocument/formatting
 - textDocument/rangeFormatting
+
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.1...HEAD
