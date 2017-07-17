@@ -1351,14 +1351,46 @@ describe('Docker Content Assist Tests', function() {
 	});
 
 	describe("HEALTHCHECK", function() {
-		describe("arguments", function() {
-			it("full", function() {
-				var items = computePosition("FROM busybox\nHEALTHCHECK ", 1, 12, true);
-				assertHealthcheckItems(items, 1, 12, 1, 12, true);
+		function testHealthcheck(snippetSupport: boolean) {
+			describe("arguments", function() {
+				it("full", function() {
+					var items = computePosition("FROM busybox\nHEALTHCHECK ", 1, 12, snippetSupport);
+					assertHealthcheckItems(items, 1, 12, 1, 12, snippetSupport);
+				});
 
-				items = computePosition("FROM busybox\nHEALTHCHECK ", 1, 12, false);
-				assertHealthcheckItems(items, 1, 12, 1, 12, false);
+				it("prefix", function() {
+					var items = computePosition("FROM busybox\nHEALTHCHECK -", 1, 13, snippetSupport);
+					assertHealthcheckItems(items, 1, 12, 1, 13, snippetSupport);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK --", 1, 14, snippetSupport);
+					assertHealthcheckItems(items, 1, 12, 1, 14, snippetSupport);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK --inter", 1, 19, snippetSupport);
+					assert.equal(items.length, 1);
+					assertHEALTHCHECK_FlagInterval(items[0], 1, 12, 1, 19, snippetSupport);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK --ret", 1, 17, snippetSupport);
+					assert.equal(items.length, 1);
+					assertHEALTHCHECK_FlagRetries(items[0], 1, 12, 1, 17, snippetSupport);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK --start", 1, 19, snippetSupport);
+					assert.equal(items.length, 1);
+					assertHEALTHCHECK_FlagStartPeriod(items[0], 1, 12, 1, 19, snippetSupport);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK --time", 1, 18, snippetSupport);
+					assert.equal(items.length, 1);
+					assertHEALTHCHECK_FlagTimeout(items[0], 1, 12, 1, 18, snippetSupport);
+				});
 			});
+		}
+
+		describe("snippets", function() {
+			testHealthcheck(true);
+		});
+		
+
+		describe("plain text", function() {
+			testHealthcheck(false);
 		});
 	});
 

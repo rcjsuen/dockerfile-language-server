@@ -69,6 +69,7 @@ export class DockerAssist {
 			}
 		}
 
+		let prefix = DockerAssist.calculateTruePrefix(buffer, offset, escapeCharacter);
 		let previousWord = "";
 
 		instructionsCheck: for (let instruction of dockerfile.getInstructions()) {
@@ -79,11 +80,7 @@ export class DockerAssist {
 					case "COPY":
 						return this.createBuildStageProposals(dockerfile, instruction as Copy, position, offset);
 					case "HEALTHCHECK":
-						let items = this.createHealthcheckProposals(dockerfile, instruction, position, offset);
-						if (items !== null) {
-							return items;
-						}
-						break instructionsCheck;
+						return this.createHealthcheckProposals(dockerfile, instruction, position, offset, prefix);
 					case "ONBUILD":
 						let onbuildArgs = instruction.getArguments();
 						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
@@ -97,7 +94,6 @@ export class DockerAssist {
 			}
 		}
 
-		let prefix = DockerAssist.calculateTruePrefix(buffer, offset, escapeCharacter);
 		if (prefix === "") {
 			if (dockerfile.getInstructions().length === 0) {
 				// if we don't have any instructions, only suggest FROM
@@ -174,16 +170,26 @@ export class DockerAssist {
 		return [];
 	}
 
-	private createHealthcheckProposals(dockerfile: Dockerfile, instruction: Instruction, position: Position, offset: number) {
-		if (Util.isInsideRange(position, instruction.getRange()) && !Util.isInsideRange(position, instruction.getInstructionRange())) {
-			let items: CompletionItem[] = [];
-			items.push(this.createHEALTHCHECK_FlagInterval("", offset));
-			items.push(this.createHEALTHCHECK_FlagRetries("", offset));
-			items.push(this.createHEALTHCHECK_FlagStartPeriod("", offset));
-			items.push(this.createHEALTHCHECK_FlagTimeout("", offset));
-			return items;
+	private createHealthcheckProposals(dockerfile: Dockerfile, instruction: Instruction, position: Position, offset: number, prefix: string) {
+		// make sure we're not in the instruction itself
+		if (Util.isInsideRange(position, instruction.getInstructionRange())) {
+			return [];
 		}
-		return [];
+
+		let items: CompletionItem[] = [];
+		if ("--interval".indexOf(prefix) === 0) {
+			items.push(this.createHEALTHCHECK_FlagInterval(prefix, offset));
+		}
+		if ("--retries".indexOf(prefix) === 0) {
+			items.push(this.createHEALTHCHECK_FlagRetries(prefix, offset));
+		}
+		if ("--start-period".indexOf(prefix) === 0) {
+			items.push(this.createHEALTHCHECK_FlagStartPeriod(prefix, offset));
+		}
+		if ("--timeout".indexOf(prefix) === 0) {
+			items.push(this.createHEALTHCHECK_FlagTimeout(prefix, offset));
+		}
+		return items;
 	}
 
 	/**
