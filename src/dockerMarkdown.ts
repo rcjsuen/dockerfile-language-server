@@ -31,6 +31,11 @@ export class MarkdownDocumentation {
 		"hoverEscape": "Sets the character to use to escape characters and newlines in this Dockerfile. If unspecified, the default escape character is `\\`.\n\n",
 
 		"hoverOnlineDocumentationFooter": "\n\n[Online documentation](${0})",
+		
+		"hoverHealthcheckFlagInterval": "The seconds to wait for the health check to run after the container has started, and then again the number of seconds to wait before running again after the previous check has completed.",
+		"hoverHealthcheckFlagRetries": "The number of consecutive failures of this health check before the container is considered to be `unhealthy`.",
+		"hoverHealthcheckFlagStartPeriod": "The number of seconds to wait for the container to startup. Failures during this grace period will not count towards the maximum number of retries. However, should a health check succeed during this period then any subsequent failures will count towards the maximum number of retries.",
+		"hoverHealthcheckFlagTimeout": "The number of seconds to wait for the check to complete before considering it to have failed.",
 
 		"proposalArgNameOnly": "Define a variable that users can set at build-time when using `docker build`.\n\n",
 		"proposalArgDefaultValue": "Define a variable with the given default value that users can override at build-time when using `docker build`.\n\n",
@@ -121,6 +126,22 @@ export class MarkdownDocumentation {
 					"HEALTHCHECK NONE\n" +
 					"```" + 
 					this.formatMessage(this.dockerMessages["hoverOnlineDocumentationFooter"], "https://docs.docker.com/engine/reference/builder/#healthcheck")
+			},
+
+			HEALTHCHECK_FlagInterval: {
+				contents:  this.dockerMessages["hoverHealthcheckFlagInterval"]
+			},
+
+			HEALTHCHECK_FlagRetries: {
+				contents:  this.dockerMessages["hoverHealthcheckFlagRetries"]
+			},
+
+			HEALTHCHECK_FlagStartPeriod: {
+				contents:  this.dockerMessages["hoverHealthcheckFlagStartPeriod"]
+			},
+
+			HEALTHCHECK_FlagTimeout: {
+				contents:  this.dockerMessages["hoverHealthcheckFlagTimeout"]
 			},
 
 			LABEL: {

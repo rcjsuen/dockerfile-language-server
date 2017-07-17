@@ -688,6 +688,32 @@ describe("Dockerfile hover", function() {
 				});
 			});
 		});
+
+		describe("HEALTHCHECK", function() {
+			it("--interval", function() {
+				let document = createDocument("HEALTHCHECK --interval");
+				let hover = onHover(document, 0, 17);
+				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
+			});
+
+			it("--retries", function() {
+				let document = createDocument("HEALTHCHECK --retries");
+				let hover = onHover(document, 0, 17);
+				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagRetries"));
+			});
+
+			it("--start-period", function() {
+				let document = createDocument("HEALTHCHECK --start-period");
+				let hover = onHover(document, 0, 17);
+				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagStartPeriod"));
+			});
+
+			it("--timeout", function() {
+				let document = createDocument("HEALTHCHECK --timeout");
+				let hover = onHover(document, 0, 17);
+				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagTimeout"));
+			});
+		});
 	});
 
 	describe("ARG and ENV", function() {

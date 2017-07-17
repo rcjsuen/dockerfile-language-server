@@ -89,6 +89,23 @@ export class DockerHover {
 					}
 				}
 			}
+
+			if (instruction.getKeyword() === "HEALTHCHECK") {
+				for (let arg of instruction.getArguments()) {
+					if (Util.isInsideRange(textDocumentPosition.position, arg.getRange())) {
+						let value = arg.getValue();
+						if (value.indexOf("--interval") === 0) {
+							return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
+						} else if (value.indexOf("--retries") === 0) {
+							return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
+						} else if (value.indexOf("--start-period") === 0) {
+							return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
+						} else if (value.indexOf("--timeout") === 0) {
+							return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
+						}
+					}
+				}
+			}
 		}
 
 		let property = DockerDefinition.computeVariableDefinition(dockerfile, textDocumentPosition.position);
