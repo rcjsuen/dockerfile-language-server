@@ -192,6 +192,70 @@ function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: nu
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
+function assertHEALTHCHECK_FlagInterval(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(item.label, "--interval=30s");
+	assert.equal(item.kind, CompletionItemKind.Field);
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "--interval=${1:30s}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "--interval=");
+	}
+	assert.equal(item.textEdit.range.start.line, startLine);
+	assert.equal(item.textEdit.range.start.character, startCharacter);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
+}
+
+function assertHEALTHCHECK_FlagTimeout(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(item.label, "--timeout=30s");
+	assert.equal(item.kind, CompletionItemKind.Field);
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "--timeout=${1:30s}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "--timeout=");
+	}
+	assert.equal(item.textEdit.range.start.line, startLine);
+	assert.equal(item.textEdit.range.start.character, startCharacter);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
+}
+
+function assertHEALTHCHECK_FlagStartPeriod(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(item.label, "--start-period=0s");
+	assert.equal(item.kind, CompletionItemKind.Field);
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "--start-period=${1:0s}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "--start-period=");
+	}
+	assert.equal(item.textEdit.range.start.line, startLine);
+	assert.equal(item.textEdit.range.start.character, startCharacter);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
+}
+
+function assertHEALTHCHECK_FlagRetries(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(item.label, "--retries=3");
+	assert.equal(item.kind, CompletionItemKind.Field);
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "--retries=${1:3}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "--retries=");
+	}
+	assert.equal(item.textEdit.range.start.line, startLine);
+	assert.equal(item.textEdit.range.start.character, startCharacter);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
+}
+
 function assertHEALTHCHECK_NONE(item: CompletionItem, line: number, character: number, prefixLength: number) {
 	assert.equal(item.label, "HEALTHCHECK NONE");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
@@ -443,6 +507,15 @@ function assertProposals(proposals: CompletionItem[], offset: number, prefix: nu
 	}
 }
 
+function assertHealthcheckItems(items: CompletionItem[], startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(items.length, 4);
+	// alphabetical order
+	assertHEALTHCHECK_FlagInterval(items[0], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertHEALTHCHECK_FlagRetries(items[1], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertHEALTHCHECK_FlagStartPeriod(items[2], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertHEALTHCHECK_FlagTimeout(items[3], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+}
+
 function assertONBUILDProposals(proposals: CompletionItem[], offset: number, prefix: number, prefixLength: number) {
 	// +1 for two ARG proposals
 	// +1 for two HEALTHCHECK proposals
@@ -630,7 +703,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\n";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+			} else if (instruction === "ONBUILD") {
 				let split = content.split("\n");
 				let lastLine = split.length - 1;
 				assertONBUILDProposals(proposals, lastLine, 0, 0);
@@ -640,7 +717,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\r\n";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+			} else if (instruction === "ONBUILD") {
 				let split = content.split("\n");
 				let lastLine = split.length - 1;
 				assertONBUILDProposals(proposals, lastLine, 0, 0);
@@ -650,7 +731,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + " \n";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+			} else if (instruction === "ONBUILD") {
 				let split = content.split("\n");
 				let lastLine = split.length - 1;
 				assertONBUILDProposals(proposals, lastLine, 0, 0);
@@ -660,7 +745,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + " \r\n";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+			} else if (instruction === "ONBUILD") {
 				let split = content.split("\n");
 				let lastLine = split.length - 1;
 				assertONBUILDProposals(proposals, lastLine, 0, 0);
@@ -670,7 +759,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + escapeChar + "\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+			} else if (instruction === "ONBUILD") {
 				let lastLine = content.split("\n").length;
 				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
 			} else {
@@ -679,7 +772,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + escapeChar + "\r\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+			} else if (instruction === "ONBUILD") {
 				let lastLine = content.split("\n").length;
 				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
 			} else {
@@ -688,7 +785,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+			} else if (instruction === "ONBUILD") {
 				let lastLine = content.split("\n").length;
 				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
 			} else {
@@ -697,7 +798,11 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\r\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "ONBUILD") {
+			if (instruction === "HEALTHCHECK") {
+				let split = content.split("\n");
+				let lastLine = split.length - 1;
+				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+			} else if (instruction === "ONBUILD") {
 				let lastLine = content.split("\n").length;
 				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
 			} else {
@@ -1241,6 +1346,18 @@ describe('Docker Content Assist Tests', function() {
 				var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=s", 2, 13);
 				assert.equal(proposals.length, 1);
 				assertSourceImage(proposals[0], "setup", 2, 12, 2, 13);
+			});
+		});
+	});
+
+	describe("HEALTHCHECK", function() {
+		describe("arguments", function() {
+			it("full", function() {
+				var items = computePosition("FROM busybox\nHEALTHCHECK ", 1, 12, true);
+				assertHealthcheckItems(items, 1, 12, 1, 12, true);
+
+				items = computePosition("FROM busybox\nHEALTHCHECK ", 1, 12, false);
+				assertHealthcheckItems(items, 1, 12, 1, 12, false);
 			});
 		});
 	});

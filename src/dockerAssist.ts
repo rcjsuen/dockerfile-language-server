@@ -12,6 +12,7 @@ import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Copy } from './parser/instructions/copy';
+import { Instruction } from './parser/instruction';
 
 export class DockerAssist {
 
@@ -77,6 +78,12 @@ export class DockerAssist {
 				switch (instruction.getKeyword()) {
 					case "COPY":
 						return this.createBuildStageProposals(dockerfile, instruction as Copy, position, offset);
+					case "HEALTHCHECK":
+						let items = this.createHealthcheckProposals(dockerfile, instruction, position, offset);
+						if (items !== null) {
+							return items;
+						}
+						break instructionsCheck;
 					case "ONBUILD":
 						let onbuildArgs = instruction.getArguments();
 						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
@@ -162,6 +169,18 @@ export class DockerAssist {
 			items.sort((item: CompletionItem, item2: CompletionItem) => {
 				return item.label.localeCompare(item2.label);
 			});
+			return items;
+		}
+		return [];
+	}
+
+	private createHealthcheckProposals(dockerfile: Dockerfile, instruction: Instruction, position: Position, offset: number) {
+		if (Util.isInsideRange(position, instruction.getRange()) && !Util.isInsideRange(position, instruction.getInstructionRange())) {
+			let items: CompletionItem[] = [];
+			items.push(this.createHEALTHCHECK_FlagInterval("", offset));
+			items.push(this.createHEALTHCHECK_FlagRetries("", offset));
+			items.push(this.createHEALTHCHECK_FlagStartPeriod("", offset));
+			items.push(this.createHEALTHCHECK_FlagTimeout("", offset));
 			return items;
 		}
 		return [];
@@ -304,6 +323,26 @@ export class DockerAssist {
 			"HEALTHCHECK_CMD");
 	}
 
+	private createHEALTHCHECK_FlagInterval(prefix: string, offset: number): CompletionItem {
+		let insertText = this.snippetSupport ? "--interval=${1:30s}" : "--interval=";
+		return this.createFlagCompletionItem("--interval=30s", prefix, offset, insertText, "HEALTHCHECK_FlagInterval");
+	}
+
+	private createHEALTHCHECK_FlagRetries(prefix: string, offset: number): CompletionItem {
+		let insertText = this.snippetSupport ? "--retries=${1:3}" : "--retries=";
+		return this.createFlagCompletionItem("--retries=3", prefix, offset, insertText, "HEALTHCHECK_FlagRetries");
+	}
+
+	private createHEALTHCHECK_FlagStartPeriod(prefix: string, offset: number): CompletionItem {
+		let insertText = this.snippetSupport ? "--start-period=${1:0s}" : "--start-period=";
+		return this.createFlagCompletionItem("--start-period=0s", prefix, offset, insertText, "HEALTHCHECK_FlagStartPeriod");
+	}
+
+	private createHEALTHCHECK_FlagTimeout(prefix: string, offset: number): CompletionItem {
+		let insertText = this.snippetSupport ? "--timeout=${1:30s}" : "--timeout=";
+		return this.createFlagCompletionItem("--timeout=30s", prefix, offset, insertText, "HEALTHCHECK_FlagTimeout");
+	}
+
 	createHEALTHCHECK_NONE(prefix: string, offset: number): CompletionItem {
 		return this.createPlainTextCompletionItem("HEALTHCHECK NONE", prefix, offset, "HEALTHCHECK NONE", "HEALTHCHECK_NONE");
 	}
@@ -372,6 +411,17 @@ export class DockerAssist {
 			label: label,
 			kind: CompletionItemKind.Keyword,
 			insertTextFormat: InsertTextFormat.PlainText,
+		};
+	}
+
+	private createFlagCompletionItem(label: string, prefix: string, offset: number, insertText: string, markdown: string): CompletionItem {
+		let textEdit = this.createTextEdit(prefix, offset, insertText);
+		return {
+			data: markdown,
+			textEdit: textEdit,
+			label: label,
+			kind: CompletionItemKind.Field,
+			insertTextFormat: this.snippetSupport ? InsertTextFormat.Snippet : InsertTextFormat.PlainText,
 		};
 	}
 
