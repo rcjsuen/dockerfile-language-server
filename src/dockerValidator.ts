@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import {
-	TextDocument, Position, Diagnostic, DiagnosticSeverity
+	TextDocument, Range, Position, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
 import { Dockerfile } from './parser/dockerfile';
 import { Instruction } from './parser/instruction';
@@ -27,6 +27,7 @@ export enum ValidationCode {
 	INVALID_SIGNAL,
 	SYNTAX_MISSING_EQUALS,
 	UNKNOWN_INSTRUCTION,
+	UNKNOWN_FLAG,
 	DEPRECATED_MAINTAINER
 }
 
@@ -102,7 +103,7 @@ export class Validator {
 			problems.push(Validator.createMissingArgument(range.start, range.end));
 		} else if (expectedArgCount[0] === -1) {
 			for (let i = 0; i < args.length; i++) {
-				let createInvalidDiagnostic = validate(i, args[i].getValue());
+				let createInvalidDiagnostic = validate(i, args[i].getValue(), args[i].getRange());
 				if (createInvalidDiagnostic) {
 					let range = args[i].getRange();
 					problems.push(createInvalidDiagnostic(range.start, range.end, args[i].getValue()));
@@ -235,6 +236,18 @@ export class Validator {
 							return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-' ? null : Validator.createInvalidPort;
 						});
 						break;
+					case "COPY":
+						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string, range: Range) {
+							if (index === 0) {
+								// see if the first argument is a --from=buildStage
+								let diagnostic = this.checkFlagName(argument, range, "from");
+								if (diagnostic !== null) {
+									problems.push(diagnostic);
+								}
+							}
+							return null;
+						}.bind(this));
+						break;
 					default:
 						this.checkArguments(instruction, problems, [ -1 ], function() {
 							return null;
@@ -245,6 +258,19 @@ export class Validator {
 		}
 
 		return problems;
+	}
+
+	private checkFlagName(argument: string, range: Range, expectedFlagName: string): Diagnostic {
+		if (argument.indexOf("--") === 0) {
+			let index = argument.indexOf('=');
+			index = index === -1 ? argument.length : index;
+			let actualFlagName = argument.substring(2, index);
+			if (actualFlagName !== expectedFlagName) {
+				let offset = this.document.offsetAt(range.start);
+				return Validator.createFlagUnknown(this.document.positionAt(offset + 2), this.document.positionAt(offset + 2 + actualFlagName.length), actualFlagName);
+			}
+		}
+		return null;
 	}
 
 	private static dockerProblems = {
@@ -260,6 +286,8 @@ export class Validator {
 		"invalidStopSignal": "Invalid signal: ${0}",
 
 		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
+		
+		"flagUnknown": "Unknown flag: ${0}",
 
 		"instructionExtraArgument": "Instruction has an extra argument",
 		"instructionMissingArgument": "Instruction has no arguments",
@@ -285,6 +313,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_NoSourceImage() {
 		return Validator.dockerProblems["noSourceImage"];
+	}
+
+	public static getDiagnosticMessage_FlagUnknown(flag: string) {
+		return Validator.formatMessage(Validator.dockerProblems["flagUnknown"], flag);
 	}
 
 	public static getDiagnosticMessage_InvalidAs() {
@@ -337,6 +369,10 @@ export class Validator {
 
 	static createInvalidEscapeDirective(start: Position, end: Position, value: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
+	}
+
+	static createFlagUnknown(start: Position, end: Position, flag: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagUnknown(flag), ValidationCode.UNKNOWN_FLAG);
 	}
 
 	static createInvalidAs(start: Position, end: Position): Diagnostic {

@@ -52,6 +52,17 @@ function assertNoSourceImage(diagnostic: Diagnostic, startLine: number, startCha
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertFlagUnknown(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_FLAG);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagUnknown(flag));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInvalidAs(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_AS);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1011,6 +1022,36 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM busybox\nARG a=a\\ \\b \\c");
 			assert.equal(diagnostics.length, 1);
 			assertInstructionRequiresOneArgument(diagnostics[0], 1, 12, 1, 14);
+		});
+	});
+
+	describe("COPY", function() {
+		describe("build stages", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --from=bb . .");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("unknown flag", function() {
+				let diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x=bb . .");
+				assert.equal(diagnostics.length, 1);
+				assertFlagUnknown(diagnostics[0], "x", 2, 7, 2, 8);
+
+				// empty value
+				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x= . .");
+				assert.equal(diagnostics.length, 1);
+				assertFlagUnknown(diagnostics[0], "x", 2, 7, 2, 8);
+
+				// no equals sign
+				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x . .");
+				assert.equal(diagnostics.length, 1);
+				assertFlagUnknown(diagnostics[0], "x", 2, 7, 2, 8);
+
+				// flags are case-sensitive
+				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --FROM=bb . .");
+				assert.equal(diagnostics.length, 1);
+				assertFlagUnknown(diagnostics[0], "FROM", 2, 7, 2, 11);
+			});
 		});
 	});
 
