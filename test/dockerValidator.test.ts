@@ -173,6 +173,17 @@ function assertInstructionRequiresOneOrThreeArguments(diagnostic: Diagnostic, st
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertInstructionUnnecessaryArgument(diagnostic: Diagnostic, instruction: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_UNNECESSARY);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_HealthcheckNoneUnnecessaryArgument());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInstructionUnknown(diagnostic: Diagnostic, instruction: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_INSTRUCTION);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1384,6 +1395,18 @@ describe("Docker Validator Tests", function() {
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=30s NONE");
 					assert.equal(diagnostics.length, 0);
+				});
+
+				it("argments specified", function() {
+					// single argument
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK NONE --interval=10s");
+					assert.equal(diagnostics.length, 1);
+					assertInstructionUnnecessaryArgument(diagnostics[0], "HEALTHCHECK NONE", 1, 17, 1, 31);
+
+					// multiple arguments
+					diagnostics = validate("FROM alpine\nHEALTHCHECK NONE a b c");
+					assert.equal(diagnostics.length, 1);
+					assertInstructionUnnecessaryArgument(diagnostics[0], "HEALTHCHECK NONE", 1, 17, 1, 22);
 				});
 			});
 		});

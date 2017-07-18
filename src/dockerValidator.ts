@@ -20,6 +20,7 @@ export enum ValidationCode {
 	ARGUMENT_REQUIRES_ONE,
 	ARGUMENT_REQUIRES_TWO,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
+	ARGUMENT_UNNECESSARY,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_AS,
@@ -226,6 +227,14 @@ export class Validator {
 								if (uppercase === "NONE") {
 									// ignore all flags
 									flagsStart = 0;
+									if (i + 1 <= args.length - 1) {
+										// get the next argument
+										let start = args[i + 1].getRange().start;
+										// get the last argument
+										let end = args[args.length - 1].getRange().end;
+										// highlight everything after the NONE and warn the user
+										problems.push(Validator.createHealthcheckNoneUnnecessaryArgument(start, end));
+									}
 									break;
 								} else if (uppercase === "CMD") {
 									// check for flags stopping at i
@@ -325,6 +334,7 @@ export class Validator {
 		"instructionMissingArgument": "Instruction has no arguments",
 		"instructionRequiresOneArgument": "${0} requires exactly one argument",
 		"instructionRequiresTwoArguments": "${0} must have two arguments",
+		"instructionUnnecessaryArgument": "${0} takes no arguments",
 		"instructionUnknown": "Unknown instruction: ${0}",
 		"instructionCasing": "Instructions should be written in uppercase letters",
 
@@ -383,6 +393,10 @@ export class Validator {
 		return Validator.dockerProblems["fromRequiresOneOrThreeArguments"];
 	}
 
+	public static getDiagnosticMessage_HealthcheckNoneUnnecessaryArgument() {
+		return Validator.formatMessage(Validator.dockerProblems["instructionUnnecessaryArgument"], "HEALTHCHECK NONE");
+	}
+
 	public static getDiagnosticMessage_InstructionUnknown(instruction: string) {
 		return Validator.formatMessage(Validator.dockerProblems["instructionUnknown"], instruction);
 	}
@@ -425,6 +439,10 @@ export class Validator {
 
 	static createExtraArgument(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionExtraArgument(), ValidationCode.ARGUMENT_EXTRA);
+	}
+
+	private static createHealthcheckNoneUnnecessaryArgument(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_HealthcheckNoneUnnecessaryArgument(), ValidationCode.ARGUMENT_UNNECESSARY);
 	}
 
 	static createARGRequiresOneArgument(start: Position, end: Position): Diagnostic {

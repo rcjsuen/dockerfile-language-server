@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
   - check the spelling of instruction flags ([#75](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/75))
     - COPY's from
     - HEALTHCHECK's interval, retries, start-period, timeout
+  - HEALTHCHECK
+    - warn if arguments follow a HEALTHCHECK NONE ([#84](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/84))
 - created a CHANGELOG.md file to document the project's changes ([#77](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/77))
 
 ### Fixed
