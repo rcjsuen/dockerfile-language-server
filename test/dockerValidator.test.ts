@@ -1310,6 +1310,91 @@ describe("Docker Validator Tests", function() {
 		});
 	});
 
+	describe("HEALTHCHECK", function() {
+		describe("flags", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s --retries=3 --start-period=0s --timeout=30s CMD ls");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s CMD ls");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=3 CMD ls");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --start-period=0s CMD ls");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=30s CMD ls");
+				assert.equal(diagnostics.length, 0);
+
+				// flags don't make sense for a NONE but the builder ignores so we should too
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s --retries=3 --start-period=0s --timeout=30s NONE");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s NONE");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=3 NONE");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --start-period=0s NONE");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=30s NONE");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			describe("unknown flag", function() {
+				it("wrong name", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=30s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "interva", 1, 14, 1, 21);
+
+					// empty value
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva= CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "interva", 1, 14, 1, 21);
+
+					// no equals sign
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "interva", 1, 14, 1, 21);
+
+					// no CMD
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "interva", 1, 14, 1, 21);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "interva", 1, 14, 1, 21);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=30s");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "interva", 1, 14, 1, 21);
+
+					// flags are case-sensitive
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --INTERVAL=30s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "INTERVAL", 1, 14, 1, 22);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --RETRIES=3 CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "RETRIES", 1, 14, 1, 21);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --START-PERIOD=0s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "START-PERIOD", 1, 14, 1, 26);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --TIMEOUT=30s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknown(diagnostics[0], "TIMEOUT", 1, 14, 1, 21);
+				});
+			})
+		});
+	});
+
 	describe("MAINTAINER", function() {
 		it("default", function() {
 			let validator = new Validator();

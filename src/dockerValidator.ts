@@ -211,6 +211,38 @@ export class Validator {
 							return null;
 						}, Validator.createRequiresOneOrThreeArguments);
 						break;
+					case "HEALTHCHECK":
+						let args = instruction.getArguments();
+						if (args.length === 0) {
+							// all instructions are expected to have at least one argument
+							let range = instruction.getInstructionRange();
+							problems.push(Validator.createMissingArgument(range.start, range.end));
+						} else {
+							// check all the args
+							let flagsStart = args.length;
+							for (let i = 0; i < args.length; i++) {
+								let value = args[i].getValue();
+								let uppercase = value.toUpperCase();
+								if (uppercase === "NONE") {
+									// ignore all flags
+									flagsStart = 0;
+									break;
+								} else if (uppercase === "CMD") {
+									// check for flags stopping at i
+									flagsStart = i;
+									break;
+								}
+							}
+
+							let flags = [ "interval", "retries", "start-period", "timeout" ];
+							for (let i = 0; i < flagsStart; i++) {
+								let diagnostic = this.checkFlagName(args[i].getValue(), args[i].getRange(), flags);
+								if (diagnostic !== null) {
+									problems.push(diagnostic);
+								}
+							}
+						}
+						break;
 					case "STOPSIGNAL":
 						this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
 							if (argument.indexOf("SIG") === 0 || argument.indexOf('$') != -1) {
@@ -260,12 +292,12 @@ export class Validator {
 		return problems;
 	}
 
-	private checkFlagName(argument: string, range: Range, expectedFlagName: string): Diagnostic {
+	private checkFlagName(argument: string, range: Range, expectedFlagNames: string[]): Diagnostic {
 		if (argument.indexOf("--") === 0) {
 			let index = argument.indexOf('=');
 			index = index === -1 ? argument.length : index;
 			let actualFlagName = argument.substring(2, index);
-			if (actualFlagName !== expectedFlagName) {
+			if (expectedFlagNames.indexOf(actualFlagName) === -1) {
 				let offset = this.document.offsetAt(range.start);
 				return Validator.createFlagUnknown(this.document.positionAt(offset + 2), this.document.positionAt(offset + 2 + actualFlagName.length), actualFlagName);
 			}

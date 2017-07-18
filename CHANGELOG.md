@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
     - HEALTHCHECK CMD flags ([#69](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/69))
   - textDocument/hover
     - HEALTHCHECK CMD flags ([#82](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/82))
+  - textDocument/publishDiagnostics
+    - check the spelling of instruction flags
+      - COPY's from
+      - HEALTHCHECK's interval, retries, start-period, timeout
   - created a CHANGELOG.md file to document the project's changes ([#77](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/77))
 
 ### Fixed
