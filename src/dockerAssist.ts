@@ -12,6 +12,7 @@ import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Copy } from './parser/instructions/copy';
+import { Healthcheck } from './parser/instructions/healthcheck';
 import { Instruction } from './parser/instruction';
 
 export class DockerAssist {
@@ -80,7 +81,7 @@ export class DockerAssist {
 					case "COPY":
 						return this.createBuildStageProposals(dockerfile, instruction as Copy, position, offset);
 					case "HEALTHCHECK":
-						return this.createHealthcheckProposals(dockerfile, instruction, position, offset, prefix);
+						return this.createHealthcheckProposals(dockerfile, instruction as Healthcheck, position, offset, prefix);
 					case "ONBUILD":
 						let onbuildArgs = instruction.getArguments();
 						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
@@ -170,9 +171,9 @@ export class DockerAssist {
 		return [];
 	}
 
-	private createHealthcheckProposals(dockerfile: Dockerfile, instruction: Instruction, position: Position, offset: number, prefix: string) {
-		// make sure we're not in the instruction itself
-		if (Util.isInsideRange(position, instruction.getInstructionRange())) {
+	private createHealthcheckProposals(dockerfile: Dockerfile, healthcheck: Healthcheck, position: Position, offset: number, prefix: string) {
+		let subcommand = healthcheck.getSubcommand();
+		if (subcommand && subcommand.isBefore(position)) {
 			return [];
 		}
 

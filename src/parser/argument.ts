@@ -2,7 +2,7 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { Range } from 'vscode-languageserver';
+import { Range, Position } from 'vscode-languageserver';
 
 export class Argument {
 
@@ -20,5 +20,12 @@ export class Argument {
 
 	public getValue(): string {
 		return this.value;
+	}
+
+	public isBefore(position: Position): boolean {
+		if (this.range.start.line < position.line) {
+			return true;
+		}
+		return this.range.end.line > position.line ? false : this.range.end.character < position.character;
 	}
 }

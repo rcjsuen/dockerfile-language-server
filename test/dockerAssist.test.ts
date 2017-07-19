@@ -1381,6 +1381,32 @@ describe('Docker Content Assist Tests', function() {
 					assert.equal(items.length, 1);
 					assertHEALTHCHECK_FlagTimeout(items[0], 1, 12, 1, 18, snippetSupport);
 				});
+
+				it("after command", function() {
+					var items = computePosition("FROM busybox\nHEALTHCHECK CMD", 1, 15, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK cmd", 1, 15, snippetSupport);
+					assert.equal(items.length, 0);
+
+					var items = computePosition("FROM busybox\nHEALTHCHECK CMD ", 1, 16, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK cmd ", 1, 16, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK NONE", 1, 16, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK none", 1, 16, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK NONE ", 1, 17, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK none ", 1, 17, snippetSupport);
+					assert.equal(items.length, 0);
+				});
 			});
 		}
 
