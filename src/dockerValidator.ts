@@ -26,6 +26,7 @@ export enum ValidationCode {
 	INVALID_AS,
 	INVALID_PORT,
 	INVALID_SIGNAL,
+	INVALID_SYNTAX,
 	SYNTAX_MISSING_EQUALS,
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
@@ -269,8 +270,20 @@ export class Validator {
 
 							let flags = [ "interval", "retries", "start-period", "timeout" ];
 							for (let i = 0; i < flagsStart; i++) {
-								let diagnostic = this.checkFlagName(args[i].getValue(), args[i].getRange(), flags);
-								if (diagnostic !== null) {
+								let value = args[i].getValue();
+								let range = args[i].getRange();
+								let diagnostic = this.checkFlagName(value, range, flags);
+								if (diagnostic === null) {
+									if (value.indexOf("--retries=") === 0) {
+										value = value.substring(10);
+										// test for NaN or numbers with decimals
+										if (isNaN(parseInt(value)) || value.indexOf('.') !== -1) {
+											let start = Position.create(range.start.line, range.start.character + 10);
+											let end = Position.create(range.end.line, range.end.character);
+											problems.push(Validator.createInvalidSyntax(start, end, value));
+										}
+									}
+								} else {
 									problems.push(diagnostic);
 								}
 							}
@@ -349,6 +362,7 @@ export class Validator {
 		"invalidAs": "Second argument should be AS",
 		"invalidPort": "Invalid containerPort: ${0}",
 		"invalidStopSignal": "Invalid signal: ${0}",
+		"invalidSyntax": "parsing \"${0}\": invalid syntax",
 
 		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
 		
@@ -396,6 +410,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_InvalidSignal(signal: string) {
 		return Validator.formatMessage(Validator.dockerProblems["invalidStopSignal"], signal);
+	}
+
+	public static getDiagnosticMessage_InvalidSyntax(syntax: string) {
+		return Validator.formatMessage(Validator.dockerProblems["invalidSyntax"], syntax);
 	}
 
 	public static getDiagnosticMessage_InstructionExtraArgument() {
@@ -460,6 +478,10 @@ export class Validator {
 
 	static createInvalidStopSignal(start: Position, end: Position, signal: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidSignal(signal), ValidationCode.INVALID_SIGNAL);
+	}
+
+	static createInvalidSyntax(start: Position, end: Position, syntax: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidSyntax(syntax), ValidationCode.INVALID_SYNTAX);
 	}
 
 	static createMissingArgument(start: Position, end: Position): Diagnostic {

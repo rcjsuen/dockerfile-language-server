@@ -98,6 +98,17 @@ function assertInvalidStopSignal(diagnostic: Diagnostic, signal: string, startLi
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertInvalidSyntax(diagnostic: Diagnostic, syntax: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.INVALID_SYNTAX);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidSyntax(syntax));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertDirectiveCasing(diagnostic: Diagnostic, severity: DiagnosticSeverity, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.CASING_DIRECTIVE);
 	assert.equal(diagnostic.severity, severity);
@@ -1435,6 +1446,25 @@ describe("Docker Validator Tests", function() {
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --TIMEOUT=30s CMD ls");
 					assert.equal(diagnostics.length, 1);
 					assertFlagUnknown(diagnostics[0], "TIMEOUT", 1, 14, 1, 21);
+				});
+
+				it("--retries", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=3 CMD ls");
+					assert.equal(diagnostics.length, 0);
+
+					// leading zeroes
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=001 CMD ls");
+					assert.equal(diagnostics.length, 0);
+				});
+
+				it("invalid --retries value", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=a CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertInvalidSyntax(diagnostics[0], "a", 1, 22, 1, 23);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=1.0 CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertInvalidSyntax(diagnostics[0], "1.0", 1, 22, 1, 25);
 				});
 			});
 		});
