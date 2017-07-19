@@ -12,6 +12,7 @@ import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
 import { Env } from './instructions/env';
 import { From } from './instructions/from';
+import { Healthcheck } from './instructions/healthcheck';
 import { StopSignal } from './instructions/stopSignal';
 import { Workdir } from './instructions/workdir';
 import { User } from './instructions/user';
@@ -108,6 +109,19 @@ export class Dockerfile {
 		let froms = [];
 		for (let instruction of this.instructions) {
 			if (instruction instanceof From) {
+				froms.push(instruction);
+			}
+		}
+		return froms;
+	}
+
+	/**
+	 * Gets all the HEALTHCHECK instructions that are defined in this Dockerfile.
+	 */
+	public getHEALTHCHECKs(): Healthcheck[] {
+		let froms = [];
+		for (let instruction of this.instructions) {
+			if (instruction instanceof Healthcheck) {
 				froms.push(instruction);
 			}
 		}

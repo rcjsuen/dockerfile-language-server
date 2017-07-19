@@ -43,7 +43,8 @@ export const ValidatorSettingsDefaults: ValidatorSettings = {
 	deprecatedMaintainer: ValidationSeverity.WARNING,
 	directiveCasing: ValidationSeverity.WARNING,
 	instructionCasing: ValidationSeverity.WARNING,
-	instructionCmdMultiple: ValidationSeverity.WARNING
+	instructionCmdMultiple: ValidationSeverity.WARNING,
+	instructionHealthcheckMultiple: ValidationSeverity.WARNING
 }
 
 export class Validator {
@@ -152,6 +153,16 @@ export class Validator {
 			// more than one CMD found, warn the user
 			for (let cmd of cmds) {
 				let diagnostic = this.createMultipleInstructions(cmd.getInstructionRange(), this.settings.instructionCmdMultiple, "CMD");
+				if (diagnostic) {
+					problems.push(diagnostic);
+				}
+			}
+		}
+		let healthchecks = dockerfile.getHEALTHCHECKs();
+		if (healthchecks.length > 1) {
+			// more than one HEALTHCHECK found, warn the user
+			for (let healthcheck of healthchecks) {
+				let diagnostic = this.createMultipleInstructions(healthcheck.getInstructionRange(), this.settings.instructionHealthcheckMultiple, "HEALTHCHECK");
 				if (diagnostic) {
 					problems.push(diagnostic);
 				}

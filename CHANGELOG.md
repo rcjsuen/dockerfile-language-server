@@ -7,7 +7,10 @@ All notable changes to this project will be documented in this file.
 - settings
   - docker.languageserver.diagnostics.instructionCmdMultiple? ([#81](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/81))
     - value = ( "ignore" | "warning" | "error" )
-    - toggles the severity if multiple CMD instructions are fouund in the Dockerfile
+    - toggles the diagnostic severity if multiple CMD instructions are fouund in the Dockerfile
+  - docker.languageserver.diagnostics.instructionHealthcheckMultiple? ([#80](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/80))
+    - value = ( "ignore" | "warning" | "error" )
+    - toggles the diagnostic severity if multiple HEALTHCHECK instructions are fouund in the Dockerfile
 - textDocument/completion
   - suggest build stage names in a COPY instruction ([#44](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/44))
   - add '=' as a trigger character
@@ -21,6 +24,7 @@ All notable changes to this project will be documented in this file.
     - HEALTHCHECK's interval, retries, start-period, timeout
   - multiple instructions found when only one allowed
     - CMD ([#81](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/81))
+    - HEALTHCHECK ([#80](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/80))
   - HEALTHCHECK
     - warn if arguments follow a HEALTHCHECK NONE ([#84](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/84))
 - created a CHANGELOG.md file to document the project's changes ([#77](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/77))

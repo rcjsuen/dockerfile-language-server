@@ -13,4 +13,6 @@ export interface ValidatorSettings {
 	instructionCasing?: ValidationSeverity;
 
 	instructionCmdMultiple?: ValidationSeverity;
+
+	instructionHealthcheckMultiple?: ValidationSeverity;
 }

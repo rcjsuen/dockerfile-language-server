@@ -21,7 +21,8 @@ function validate(content: string, settings?: ValidatorSettings) {
 			deprecatedMaintainer: ValidationSeverity.IGNORE,
 			directiveCasing: ValidationSeverity.WARNING,
 			instructionCasing: ValidationSeverity.WARNING,
-			instructionCmdMultiple: ValidationSeverity.IGNORE
+			instructionCmdMultiple: ValidationSeverity.IGNORE,
+			instructionHealthcheckMultiple: ValidationSeverity.IGNORE
 		};
 	}
 	let validator = new Validator(settings);
@@ -730,33 +731,52 @@ describe("Docker Validator Tests", function() {
 		});
 
 		describe("multiples", function() {
-			describe("CMD", function() {
+			function createMutiplesTest(instruction: string, args: string, settingsName: string) {
+				let line = instruction + " " + args;
+				let content = "FROM busybox\n" + line + "\n" + line;
+				let instructionLength = instruction.length;
+
 				it("default", function() {
 					let validator = new Validator();
-					let diagnostics = validator.validate(KEYWORDS, createDocument("FROM busybox\nCMD ls\nCMD ls"));
+					let diagnostics = validator.validate(KEYWORDS, createDocument(content));
 					assert.equal(diagnostics.length, 2);
-					assertInstructionMultiple(diagnostics[0], DiagnosticSeverity.Warning, "CMD", 1, 0, 1, 3);
-					assertInstructionMultiple(diagnostics[1], DiagnosticSeverity.Warning,"CMD", 2, 0, 2, 3);
+					assertInstructionMultiple(diagnostics[0], DiagnosticSeverity.Warning, instruction, 1, 0, 1, instructionLength);
+					assertInstructionMultiple(diagnostics[1], DiagnosticSeverity.Warning, instruction, 2, 0, 2, instructionLength);
 				});
 
 				it("ignore", function() {
-					let diagnostics = validate("FROM busybox\nCMD ls\nCMD ls", { instructionCmdMultiple: ValidationSeverity.IGNORE });
+					let settings = {};
+					settings[settingsName] = ValidationSeverity.IGNORE;
+					let diagnostics = validate(content, settings);
 					assert.equal(diagnostics.length, 0);
 				});
 
 				it("warning", function() {
-					let diagnostics = validate("FROM busybox\nCMD ls\nCMD ls", { instructionCmdMultiple: ValidationSeverity.WARNING });
+					let settings = {};
+					settings[settingsName] = ValidationSeverity.WARNING;
+					let diagnostics = validate(content, settings);
 					assert.equal(diagnostics.length, 2);
-					assertInstructionMultiple(diagnostics[0], DiagnosticSeverity.Warning, "CMD", 1, 0, 1, 3);
-					assertInstructionMultiple(diagnostics[1], DiagnosticSeverity.Warning,"CMD", 2, 0, 2, 3);
+					assertInstructionMultiple(diagnostics[0], DiagnosticSeverity.Warning, instruction, 1, 0, 1, instructionLength);
+					assertInstructionMultiple(diagnostics[1], DiagnosticSeverity.Warning, instruction, 2, 0, 2, instructionLength);
 				});
 
 				it("error", function() {
-					let diagnostics = validate("FROM busybox\nCMD ls\nCMD ls", { instructionCmdMultiple: ValidationSeverity.ERROR });
+					let settings = {};
+					settings[settingsName] = ValidationSeverity.ERROR;
+					let diagnostics = validate(content, settings);
 					assert.equal(diagnostics.length, 2);
-					assertInstructionMultiple(diagnostics[0], DiagnosticSeverity.Error, "CMD", 1, 0, 1, 3);
-					assertInstructionMultiple(diagnostics[1], DiagnosticSeverity.Error,"CMD", 2, 0, 2, 3);
+					assertInstructionMultiple(diagnostics[0], DiagnosticSeverity.Error, instruction, 1, 0, 1, instructionLength);
+					assertInstructionMultiple(diagnostics[1], DiagnosticSeverity.Error, instruction, 2, 0, 2, instructionLength);
 				});
+			};
+
+			describe("CMD", function() {
+				createMutiplesTest("CMD", "ls", "instructionCmdMultiple");
+			});
+			
+
+			describe("HEALTHCHECK", function() {
+				createMutiplesTest("HEALTHCHECK", "NONE", "instructionHealthcheckMultiple");
 			});
 		});
 

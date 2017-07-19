@@ -50,7 +50,8 @@ interface Settings {
         deprecatedMaintainer?: string,
         directiveCasing?: string,
         instructionCasing?: string,
-        instructionCmdMultiple?: string
+        instructionCmdMultiple?: string,
+        instructionHealthcheckMultiple?: string
       }
     }
   }

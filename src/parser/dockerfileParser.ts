@@ -14,6 +14,7 @@ import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
 import { Env } from './instructions/env';
 import { From } from './instructions/from';
+import { Healthcheck } from './instructions/healthcheck';
 import { Onbuild } from './instructions/onbuild';
 import { StopSignal } from './instructions/stopSignal';
 import { Workdir } from './instructions/workdir';
@@ -37,6 +38,8 @@ export class DockerfileParser {
 				return new Env(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "FROM":
 				return new From(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "HEALTHCHECK":
+				return new Healthcheck(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "ONBUILD":
 				return new Onbuild(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "STOPSIGNAL":
