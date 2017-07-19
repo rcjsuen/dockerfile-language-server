@@ -1395,6 +1395,18 @@ describe('Docker Content Assist Tests', function() {
 					items = computePosition("FROM busybox\nHEALTHCHECK cmd ", 1, 16, snippetSupport);
 					assert.equal(items.length, 0);
 
+					items = computePosition("FROM busybox\nHEALTHCHECK CMD\\\n", 2, 0, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK cmd\\\n", 2, 0, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK CMD \\\n", 2, 0, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK cmd \\\n", 2, 0, snippetSupport);
+					assert.equal(items.length, 0);
+
 					items = computePosition("FROM busybox\nHEALTHCHECK NONE", 1, 16, snippetSupport);
 					assert.equal(items.length, 0);
 
@@ -1405,6 +1417,18 @@ describe('Docker Content Assist Tests', function() {
 					assert.equal(items.length, 0);
 
 					items = computePosition("FROM busybox\nHEALTHCHECK none ", 1, 17, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK NONE \\\n", 2, 0, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK none \\\n", 2, 0, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK NONE\\\n", 2, 0, snippetSupport);
+					assert.equal(items.length, 0);
+
+					items = computePosition("FROM busybox\nHEALTHCHECK none\\\n", 2, 0, snippetSupport);
 					assert.equal(items.length, 0);
 				});
 			});
