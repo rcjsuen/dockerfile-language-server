@@ -21,6 +21,7 @@ export enum ValidationCode {
 	ARGUMENT_REQUIRES_TWO,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	ARGUMENT_UNNECESSARY,
+	FLAG_AT_LEAST_ONE,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_AS,
@@ -276,11 +277,16 @@ export class Validator {
 								if (diagnostic === null) {
 									if (value.indexOf("--retries=") === 0) {
 										value = value.substring(10);
+										let integer = parseInt(value);
 										// test for NaN or numbers with decimals
-										if (isNaN(parseInt(value)) || value.indexOf('.') !== -1) {
+										if (isNaN(integer) || value.indexOf('.') !== -1) {
 											let start = Position.create(range.start.line, range.start.character + 10);
 											let end = Position.create(range.end.line, range.end.character);
 											problems.push(Validator.createInvalidSyntax(start, end, value));
+										} else if (integer < 1) {
+											let start = Position.create(range.start.line, range.start.character + 10);
+											let end = Position.create(range.end.line, range.end.character);
+											problems.push(Validator.createFlagAtLeastOne(start, end, "--retries", integer.toString()));
 										}
 									}
 								} else {
@@ -365,7 +371,8 @@ export class Validator {
 		"invalidSyntax": "parsing \"${0}\": invalid syntax",
 
 		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
-		
+
+		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
 		"flagUnknown": "Unknown flag: ${0}",
 
 		"instructionExtraArgument": "Instruction has an extra argument",
@@ -380,8 +387,11 @@ export class Validator {
 		"deprecatedMaintainer": "MAINTAINER has been deprecated",
 	};
 	
-	private static formatMessage(text: string, variable: string): string {
-		return text.replace("${0}", variable);
+	private static formatMessage(text: string, ...variables: string[]): string {
+		for (let i = 0; i < variables.length; i++) {
+			text = text.replace("${" + i + "}", variables[i]);
+		}
+		return text;
 	}
 
 	public static getDiagnosticMessage_DirectiveCasing() {
@@ -394,6 +404,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_NoSourceImage() {
 		return Validator.dockerProblems["noSourceImage"];
+	}
+
+	public static getDiagnosticMessage_FlagAtLeastOne(flagName: string, flagValue: string) {
+		return Validator.formatMessage(Validator.dockerProblems["flagAtLeastOne"], flagName, flagValue);
 	}
 
 	public static getDiagnosticMessage_FlagUnknown(flag: string) {
@@ -462,6 +476,10 @@ export class Validator {
 
 	static createInvalidEscapeDirective(start: Position, end: Position, value: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
+	}
+
+	static createFlagAtLeastOne(start: Position, end: Position, flagName: string, flagValue: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagAtLeastOne(flagName, flagValue), ValidationCode.FLAG_AT_LEAST_ONE);
 	}
 
 	static createFlagUnknown(start: Position, end: Position, flag: string): Diagnostic {

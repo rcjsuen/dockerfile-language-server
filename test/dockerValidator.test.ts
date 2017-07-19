@@ -54,6 +54,17 @@ function assertNoSourceImage(diagnostic: Diagnostic, startLine: number, startCha
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertFlagAtLeastOne(diagnostic: Diagnostic, flagName: string, flagValue: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FLAG_AT_LEAST_ONE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagAtLeastOne(flagName, flagValue));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertFlagUnknown(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_FLAG);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1465,6 +1476,16 @@ describe("Docker Validator Tests", function() {
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=1.0 CMD ls");
 					assert.equal(diagnostics.length, 1);
 					assertInvalidSyntax(diagnostics[0], "1.0", 1, 22, 1, 25);
+				});
+
+				it("--retries at least one", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=0 CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagAtLeastOne(diagnostics[0], "--retries", "0", 1, 22, 1, 23);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=-1 CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagAtLeastOne(diagnostics[0], "--retries", "-1", 1, 22, 1, 24);
 				});
 			});
 		});
