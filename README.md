@@ -49,7 +49,8 @@ interface Settings {
         // string values must be equal to "ignore", "warning", or "error"
         deprecatedMaintainer?: string,
         directiveCasing?: string,
-        instructionCasing?: string
+        instructionCasing?: string,
+        instructionCmdMultiple?: string
       }
     }
   }

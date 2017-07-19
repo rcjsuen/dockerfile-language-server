@@ -8,6 +8,7 @@ import { Comment } from './comment';
 import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Arg } from './instructions/arg';
+import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
 import { Env } from './instructions/env';
 import { From } from './instructions/from';
@@ -59,6 +60,19 @@ export class Dockerfile {
 			}
 		}
 		return args;
+	}
+
+	/**
+	 * Gets all the CMD instructions that are defined in this Dockerfile.
+	 */
+	public getCMDs(): Cmd[] {
+		let cmds = [];
+		for (let instruction of this.instructions) {
+			if (instruction instanceof Cmd) {
+				cmds.push(instruction);
+			}
+		}
+		return cmds;
 	}
 
 	/**

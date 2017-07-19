@@ -27,6 +27,7 @@ export enum ValidationCode {
 	INVALID_PORT,
 	INVALID_SIGNAL,
 	SYNTAX_MISSING_EQUALS,
+	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
 	UNKNOWN_FLAG,
 	DEPRECATED_MAINTAINER
@@ -41,7 +42,8 @@ export enum ValidationSeverity {
 export const ValidatorSettingsDefaults: ValidatorSettings = {
 	deprecatedMaintainer: ValidationSeverity.WARNING,
 	directiveCasing: ValidationSeverity.WARNING,
-	instructionCasing: ValidationSeverity.WARNING
+	instructionCasing: ValidationSeverity.WARNING,
+	instructionCmdMultiple: ValidationSeverity.WARNING
 }
 
 export class Validator {
@@ -143,6 +145,17 @@ export class Validator {
 		if (instructions.length === 0 || dockerfile.getARGs().length === instructions.length) {
 			// no instructions in this file, or only ARGs
 			problems.push(Validator.createNoSourceImage(document.positionAt(0), document.positionAt(0)));
+		}
+
+		let cmds = dockerfile.getCMDs();
+		if (cmds.length > 1) {
+			// more than one CMD found, warn the user
+			for (let cmd of cmds) {
+				let diagnostic = this.createMultipleInstructions(cmd.getInstructionRange(), this.settings.instructionCmdMultiple, "CMD");
+				if (diagnostic) {
+					problems.push(diagnostic);
+				}
+			}
 		}
 		let hasFrom = false;
 		for (let instruction of dockerfile.getInstructions()) {
@@ -332,6 +345,7 @@ export class Validator {
 
 		"instructionExtraArgument": "Instruction has an extra argument",
 		"instructionMissingArgument": "Instruction has no arguments",
+		"instructionMultiple": "There can only be one ${0} instruction in a Dockerfile",
 		"instructionRequiresOneArgument": "${0} requires exactly one argument",
 		"instructionRequiresTwoArguments": "${0} must have two arguments",
 		"instructionUnnecessaryArgument": "${0} takes no arguments",
@@ -395,6 +409,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_HealthcheckNoneUnnecessaryArgument() {
 		return Validator.formatMessage(Validator.dockerProblems["instructionUnnecessaryArgument"], "HEALTHCHECK NONE");
+	}
+
+	public static getDiagnosticMessage_InstructionMultiple(instruction: string) {
+		return Validator.formatMessage(Validator.dockerProblems["instructionMultiple"], instruction);
 	}
 
 	public static getDiagnosticMessage_InstructionUnknown(instruction: string) {
@@ -471,6 +489,15 @@ export class Validator {
 
 	static createError(start: Position, end: Position, description: string, code?: ValidationCode): Diagnostic {
 		return Validator.createDiagnostic(DiagnosticSeverity.Error, start, end, description, code);
+	}
+
+	private createMultipleInstructions(range: Range, severity: ValidationSeverity, instruction: string): Diagnostic {
+		if (severity === ValidationSeverity.ERROR) {
+			return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_InstructionMultiple(instruction), ValidationCode.MULTIPLE_INSTRUCTIONS);
+		} else if (severity  === ValidationSeverity.WARNING) {
+			return Validator.createWarning(range.start, range.end, Validator.getDiagnosticMessage_InstructionMultiple(instruction), ValidationCode.MULTIPLE_INSTRUCTIONS);
+		}
+		return null;
 	}
 
 	private createLowercaseDirective(start: Position, end: Position): Diagnostic {

@@ -10,6 +10,7 @@ import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Line } from './line';
 import { Arg } from './instructions/arg';
+import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
 import { Env } from './instructions/env';
 import { From } from './instructions/from';
@@ -28,6 +29,8 @@ export class DockerfileParser {
 		switch (instruction.toUpperCase()) {
 			case "ARG":
 				return new Arg(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "CMD":
+				return new Cmd(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "COPY":
 				return new Copy(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "ENV":

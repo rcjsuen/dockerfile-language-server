@@ -11,4 +11,6 @@ export interface ValidatorSettings {
 	directiveCasing?: ValidationSeverity;
 
 	instructionCasing?: ValidationSeverity;
+
+	instructionCmdMultiple?: ValidationSeverity;
 }

@@ -95,7 +95,8 @@ interface Settings {
 			diagnostics?: {
 				deprecatedMaintainer?: string,
 				directiveCasing?: string,
-				instructionCasing?: string
+				instructionCasing?: string,
+				instructionCmdMultiple?: string
 			}
 		}
 	}
@@ -118,12 +119,19 @@ connection.onDidChangeConfiguration((change) => {
 	let maintainer = ValidationSeverity.WARNING;
 	let directiveCasing = ValidationSeverity.WARNING;
 	let instructionCasing = ValidationSeverity.WARNING;
+	let instructionCmdMultiple = ValidationSeverity.WARNING;
 	if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
 		maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
 		directiveCasing = getSeverity(settings.docker.languageserver.diagnostics.directiveCasing);
 		instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
+		instructionCmdMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionCmdMultiple);
 	}
-	validatorSettings = { deprecatedMaintainer: maintainer, instructionCasing: instructionCasing, directiveCasing: directiveCasing };
+	validatorSettings = {
+		deprecatedMaintainer: maintainer,
+		directiveCasing: directiveCasing,
+		instructionCasing: instructionCasing,
+		instructionCmdMultiple: instructionCmdMultiple
+	};
 	// validate all the documents again
 	Object.keys(documents).forEach((key) => {
 		validateTextDocument(documents[key]);
