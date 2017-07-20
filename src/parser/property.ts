@@ -140,6 +140,11 @@ export class Property {
 							// the expectation is that this is === '\n'
 							i = j;
 							continue parseValue;
+						} else if (char2 === escapeChar) {
+							// add the escaped character
+							escapedValue = escapedValue + char
+							// now start parsing from the next escape character
+							i = i + 1;
 						} else {
 							// the expectation is that this j = i + 2 here
 							escapedValue = escapedValue + char + char2;

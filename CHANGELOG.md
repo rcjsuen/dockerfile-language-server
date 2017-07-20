@@ -43,6 +43,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - fixed a typo in completion items for WORKDIR ([#76](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/76))
+- fixed a parsing problem with ENV variables and escaped characters ([#94](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/94))
 
 ## 0.0.1 - 2017-07-16
 ### Added

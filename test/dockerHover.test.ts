@@ -618,6 +618,12 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "a b");
 					hover = onHover(document, 1, 12);
 					assert.equal(hover.contents, "a b");
+
+					document = createDocument("ENV xx a\\ \\ b\nRUN echo ${xx}");
+					hover = onHover(document, 0, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 1, 12);
+					assert.equal(hover.contents, "a  b");
 				});
 
 				it("$var", function() {
@@ -626,6 +632,12 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "a b");
 					hover = onHover(document, 1, 11);
 					assert.equal(hover.contents, "a b");
+
+					document = createDocument("ENV xx a\\ \\ b\nRUN echo $xx");
+					hover = onHover(document, 0, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 1, 11);
+					assert.equal(hover.contents, "a  b");
 				});
 			});
 
