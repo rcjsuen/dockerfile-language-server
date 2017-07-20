@@ -11,6 +11,7 @@ import { Arg } from './instructions/arg';
 import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
 import { Env } from './instructions/env';
+import { Entrypoint } from './instructions/entrypoint';
 import { From } from './instructions/from';
 import { Healthcheck } from './instructions/healthcheck';
 import { StopSignal } from './instructions/stopSignal';
@@ -87,6 +88,19 @@ export class Dockerfile {
 			}
 		}
 		return copies;
+	}
+
+	/**
+	 * Gets all the ENTRYPOINT instructions that are defined in this Dockerfile.
+	 */
+	public getENTRYPOINTs(): Entrypoint[] {
+		let froms = [];
+		for (let instruction of this.instructions) {
+			if (instruction instanceof Entrypoint) {
+				froms.push(instruction);
+			}
+		}
+		return froms;
 	}
 
 	/**

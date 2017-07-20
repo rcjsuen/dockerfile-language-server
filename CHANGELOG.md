@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
   - docker.languageserver.diagnostics.instructionCmdMultiple? ([#81](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/81))
     - value = ( "ignore" | "warning" | "error" )
     - toggles the diagnostic severity if multiple CMD instructions are found in the Dockerfile
+  - docker.languageserver.diagnostics.instructionEntrypointMultiple? ([#90](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/90))
+    - value = ( "ignore" | "warning" | "error" )
+    - toggles the diagnostic severity if multiple ENTRYPOINT instructions are found in the Dockerfile
   - docker.languageserver.diagnostics.instructionHealthcheckMultiple? ([#80](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/80))
     - value = ( "ignore" | "warning" | "error" )
     - toggles the diagnostic severity if multiple HEALTHCHECK instructions are found in the Dockerfile
@@ -24,6 +27,7 @@ All notable changes to this project will be documented in this file.
     - HEALTHCHECK's interval, retries, start-period, timeout
   - multiple instructions found when only one allowed
     - CMD ([#81](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/81))
+    - ENTRYPOINT ([#90](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/90))
     - HEALTHCHECK ([#80](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/80))
   - check that the same flag is not used twice ([#83](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/83))
     - COPY's from

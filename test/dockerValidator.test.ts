@@ -22,6 +22,7 @@ function validate(content: string, settings?: ValidatorSettings) {
 			directiveCasing: ValidationSeverity.WARNING,
 			instructionCasing: ValidationSeverity.WARNING,
 			instructionCmdMultiple: ValidationSeverity.IGNORE,
+			instructionEntrypointMultiple: ValidationSeverity.IGNORE,
 			instructionHealthcheckMultiple: ValidationSeverity.IGNORE
 		};
 	}
@@ -806,7 +807,10 @@ describe("Docker Validator Tests", function() {
 			describe("CMD", function() {
 				createMutiplesTest("CMD", "ls", "instructionCmdMultiple");
 			});
-			
+
+			describe("ENTRYPOINT", function() {
+				createMutiplesTest("ENTRYPOINT", "ls", "instructionEntrypointMultiple");
+			});
 
 			describe("HEALTHCHECK", function() {
 				createMutiplesTest("HEALTHCHECK", "NONE", "instructionHealthcheckMultiple");

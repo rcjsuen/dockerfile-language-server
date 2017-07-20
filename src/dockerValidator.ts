@@ -49,6 +49,7 @@ export const ValidatorSettingsDefaults: ValidatorSettings = {
 	directiveCasing: ValidationSeverity.WARNING,
 	instructionCasing: ValidationSeverity.WARNING,
 	instructionCmdMultiple: ValidationSeverity.WARNING,
+	instructionEntrypointMultiple: ValidationSeverity.WARNING,
 	instructionHealthcheckMultiple: ValidationSeverity.WARNING
 }
 
@@ -158,6 +159,16 @@ export class Validator {
 			// more than one CMD found, warn the user
 			for (let cmd of cmds) {
 				let diagnostic = this.createMultipleInstructions(cmd.getInstructionRange(), this.settings.instructionCmdMultiple, "CMD");
+				if (diagnostic) {
+					problems.push(diagnostic);
+				}
+			}
+		}
+		let entrypoints = dockerfile.getENTRYPOINTs();
+		if (entrypoints.length > 1) {
+			// more than one ENTRYPOINT found, warn the user
+			for (let entrypoint of entrypoints) {
+				let diagnostic = this.createMultipleInstructions(entrypoint.getInstructionRange(), this.settings.instructionEntrypointMultiple, "ENTRYPOINT");
 				if (diagnostic) {
 					problems.push(diagnostic);
 				}

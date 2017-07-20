@@ -13,6 +13,7 @@ import { Arg } from './instructions/arg';
 import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
 import { Env } from './instructions/env';
+import { Entrypoint } from './instructions/entrypoint';
 import { From } from './instructions/from';
 import { Healthcheck } from './instructions/healthcheck';
 import { Onbuild } from './instructions/onbuild';
@@ -34,6 +35,8 @@ export class DockerfileParser {
 				return new Cmd(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "COPY":
 				return new Copy(document, lineRange, this.escapeChar, instruction, instructionRange);
+			case "ENTRYPOINT":
+				return new Entrypoint(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "ENV":
 				return new Env(document, lineRange, this.escapeChar, instruction, instructionRange);
 			case "FROM":

@@ -97,6 +97,7 @@ interface Settings {
 				directiveCasing?: string,
 				instructionCasing?: string,
 				instructionCmdMultiple?: string,
+				instructionEntrypointMultiple?: string,
 				instructionHealthcheckMultiple?: string
 			}
 		}
@@ -121,12 +122,14 @@ connection.onDidChangeConfiguration((change) => {
 	let directiveCasing = ValidationSeverity.WARNING;
 	let instructionCasing = ValidationSeverity.WARNING;
 	let instructionCmdMultiple = ValidationSeverity.WARNING;
+	let instructionEntrypointMultiple = ValidationSeverity.WARNING;
 	let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
 	if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
 		maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
 		directiveCasing = getSeverity(settings.docker.languageserver.diagnostics.directiveCasing);
 		instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
 		instructionCmdMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionCmdMultiple);
+		instructionEntrypointMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionEntrypointMultiple);
 		instructionHealthcheckMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionHealthcheckMultiple);
 	}
 	validatorSettings = {
@@ -134,6 +137,7 @@ connection.onDidChangeConfiguration((change) => {
 		directiveCasing: directiveCasing,
 		instructionCasing: instructionCasing,
 		instructionCmdMultiple: instructionCmdMultiple,
+		instructionEntrypointMultiple: instructionEntrypointMultiple,
 		instructionHealthcheckMultiple: instructionHealthcheckMultiple
 	};
 	// validate all the documents again
