@@ -3,12 +3,16 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range, Position } from 'vscode-languageserver';
-import { Instruction } from '../instruction';
+import { ModifiableInstruction } from './modifiableInstruction';
 
-export class Copy extends Instruction {
+export class Copy extends ModifiableInstruction {
 
 	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range, escapeChar, instruction, instructionRange);
+	}
+
+	public stopSearchingForFlags(argument: string): boolean {
+		return argument.indexOf("--") === -1;
 	}
 
 	public getFromValue(): string | null {

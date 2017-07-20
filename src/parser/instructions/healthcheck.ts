@@ -4,12 +4,18 @@
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range, Position } from 'vscode-languageserver';
 import { Argument } from '../argument';
-import { Instruction } from '../instruction';
+import { Flag } from '../flag';
+import { ModifiableInstruction } from './modifiableInstruction';
 
-export class Healthcheck extends Instruction {
+export class Healthcheck extends ModifiableInstruction {
 
 	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range, escapeChar, instruction, instructionRange);
+	}
+
+	protected stopSearchingForFlags(argument: string): boolean {
+		argument = argument.toUpperCase();
+		return argument === "CMD" || argument === "NONE";
 	}
 
 	public getSubcommand(): Argument {

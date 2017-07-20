@@ -6,8 +6,10 @@ import {
 	TextDocument, Range, Position, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
 import { Dockerfile } from './parser/dockerfile';
+import { Flag } from './parser/flag';
 import { Instruction } from './parser/instruction';
 import { Env } from './parser/instructions/env';
+import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { DIRECTIVE_ESCAPE } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
@@ -22,6 +24,7 @@ export enum ValidationCode {
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	ARGUMENT_UNNECESSARY,
 	FLAG_AT_LEAST_ONE,
+	FLAG_DUPLICATE,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_AS,
@@ -203,7 +206,7 @@ export class Validator {
 					}
 				}
 
-				switch (keyword) {
+				validateInstruction: switch (keyword) {
 					case "ARG":
 						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
 							if (index > 0) {
@@ -246,13 +249,10 @@ export class Validator {
 							problems.push(Validator.createMissingArgument(range.start, range.end));
 						} else {
 							// check all the args
-							let flagsStart = args.length;
 							for (let i = 0; i < args.length; i++) {
 								let value = args[i].getValue();
 								let uppercase = value.toUpperCase();
 								if (uppercase === "NONE") {
-									// ignore all flags
-									flagsStart = 0;
 									if (i + 1 <= args.length - 1) {
 										// get the next argument
 										let start = args[i + 1].getRange().start;
@@ -261,38 +261,32 @@ export class Validator {
 										// highlight everything after the NONE and warn the user
 										problems.push(Validator.createHealthcheckNoneUnnecessaryArgument(start, end));
 									}
-									break;
-								} else if (uppercase === "CMD") {
-									// check for flags stopping at i
-									flagsStart = i;
-									break;
+									// don't need to validate flags of a NONE
+									break validateInstruction;
 								}
 							}
 
-							let flags = [ "interval", "retries", "start-period", "timeout" ];
-							for (let i = 0; i < flagsStart; i++) {
-								let value = args[i].getValue();
-								let range = args[i].getRange();
-								let diagnostic = this.checkFlagName(value, range, flags);
-								if (diagnostic === null) {
-									if (value.indexOf("--retries=") === 0) {
-										value = value.substring(10);
-										let integer = parseInt(value);
-										// test for NaN or numbers with decimals
-										if (isNaN(integer) || value.indexOf('.') !== -1) {
-											let start = Position.create(range.start.line, range.start.character + 10);
-											let end = Position.create(range.end.line, range.end.character);
-											problems.push(Validator.createInvalidSyntax(start, end, value));
-										} else if (integer < 1) {
-											let start = Position.create(range.start.line, range.start.character + 10);
-											let end = Position.create(range.end.line, range.end.character);
-											problems.push(Validator.createFlagAtLeastOne(start, end, "--retries", integer.toString()));
-										}
+							let validFlags = [ "interval", "retries", "start-period", "timeout" ];
+							let flags = (instruction as ModifiableInstruction).getFlags();
+							for (let flag of flags) {
+								let flagName = flag.getName();
+								if (validFlags.indexOf(flagName) === -1) {
+									let nameRange = flag.getNameRange();
+									problems.push(Validator.createFlagUnknown(nameRange.start, nameRange.end, flag.getName()));
+								} else if (flagName === "retries") {
+									let value = flag.getValue();
+									let valueRange = flag.getValueRange();
+									let integer = parseInt(value);
+									// test for NaN or numbers with decimals
+									if (isNaN(integer) || value.indexOf('.') !== -1) {
+										problems.push(Validator.createInvalidSyntax(valueRange.start, valueRange.end, value));
+									} else if (integer < 1) {
+										problems.push(Validator.createFlagAtLeastOne(valueRange.start, valueRange.end, "--retries", integer.toString()));
 									}
-								} else {
-									problems.push(diagnostic);
 								}
 							}
+
+							this.checkDuplicateFlags(flags, validFlags, problems);
 						}
 						break;
 					case "STOPSIGNAL":
@@ -331,6 +325,8 @@ export class Validator {
 							}
 							return null;
 						}.bind(this));
+						let flags = (instruction as ModifiableInstruction).getFlags();
+						this.checkDuplicateFlags(flags, [ "from" ], problems);
 						break;
 					default:
 						this.checkArguments(instruction, problems, [ -1 ], function() {
@@ -357,6 +353,22 @@ export class Validator {
 		return null;
 	}
 
+	private checkDuplicateFlags(flags: Flag[], validFlags: string[], problems: Diagnostic[]): void {
+		let flagNames = flags.map(function(flag) {
+			return flag.getName();
+		});
+		for (let validFlag of validFlags) {
+			let index = flagNames.indexOf(validFlag);
+			let lastIndex = flagNames.lastIndexOf(validFlag);
+			if (index !== lastIndex) {
+				let range = flags[index].getNameRange();
+				problems.push(Validator.createFlagDuplicate(range.start, range.end, flagNames[index]));
+				range = flags[lastIndex].getNameRange();
+				problems.push(Validator.createFlagDuplicate(range.start, range.end, flagNames[index]));
+			}
+		}
+	}
+
 	private static dockerProblems = {
 		"directiveCasing": "Parser directives should be written in lowercase letters",
 		"directiveEscapeInvalid": "invalid ESCAPE '${0}'. Must be ` or \\",
@@ -373,6 +385,7 @@ export class Validator {
 		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
 
 		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
+		"flagDuplicate": "Duplicate flag specified: ${0}",
 		"flagUnknown": "Unknown flag: ${0}",
 
 		"instructionExtraArgument": "Instruction has an extra argument",
@@ -408,6 +421,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_FlagAtLeastOne(flagName: string, flagValue: string) {
 		return Validator.formatMessage(Validator.dockerProblems["flagAtLeastOne"], flagName, flagValue);
+	}
+
+	public static getDiagnosticMessage_FlagDuplicate(flag: string) {
+		return Validator.formatMessage(Validator.dockerProblems["flagDuplicate"], flag);
 	}
 
 	public static getDiagnosticMessage_FlagUnknown(flag: string) {
@@ -480,6 +497,10 @@ export class Validator {
 
 	static createFlagAtLeastOne(start: Position, end: Position, flagName: string, flagValue: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagAtLeastOne(flagName, flagValue), ValidationCode.FLAG_AT_LEAST_ONE);
+	}
+
+	static createFlagDuplicate(start: Position, end: Position, flag: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagDuplicate(flag), ValidationCode.FLAG_DUPLICATE);
 	}
 
 	static createFlagUnknown(start: Position, end: Position, flag: string): Diagnostic {

@@ -65,6 +65,17 @@ function assertFlagAtLeastOne(diagnostic: Diagnostic, flagName: string, flagValu
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertFlagDuplicate(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FLAG_DUPLICATE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagDuplicate(flag));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertFlagUnknown(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_FLAG);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1148,6 +1159,13 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 1);
 				assertFlagUnknown(diagnostics[0], "FROM", 2, 7, 2, 11);
 			});
+
+			it("duplicate flag", function() {
+				let diagnostics = validate("FROM alpine\nCOPY --from=x --from=y . .");
+				assert.equal(diagnostics.length, 2);
+				assertFlagDuplicate(diagnostics[0], "from", 1, 7, 1, 11);
+				assertFlagDuplicate(diagnostics[1], "from", 1, 16, 1, 20);
+			});
 		});
 	});
 
@@ -1459,6 +1477,13 @@ describe("Docker Validator Tests", function() {
 					assertFlagUnknown(diagnostics[0], "TIMEOUT", 1, 14, 1, 21);
 				});
 
+				it("duplicate flag", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s --interval=30s CMD ls");
+					assert.equal(diagnostics.length, 2);
+					assertFlagDuplicate(diagnostics[0], "interval", 1, 14, 1, 22);
+					assertFlagDuplicate(diagnostics[1], "interval", 1, 29, 1, 37);
+				});
+
 				it("--retries", function() {
 					let diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=3 CMD ls");
 					assert.equal(diagnostics.length, 0);
@@ -1508,6 +1533,9 @@ describe("Docker Validator Tests", function() {
 					assert.equal(diagnostics.length, 0);
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=30s NONE");
+					assert.equal(diagnostics.length, 0);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=20s --timeout=30s NONE");
 					assert.equal(diagnostics.length, 0);
 				});
 
