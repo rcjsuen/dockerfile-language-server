@@ -51,6 +51,7 @@ interface Settings {
         directiveCasing?: string,
         instructionCasing?: string,
         instructionCmdMultiple?: string,
+        instructionEntrypointMultiple?: string
         instructionHealthcheckMultiple?: string
       }
     }
