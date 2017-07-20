@@ -696,6 +696,18 @@ describe("Dockerfile hover", function() {
 				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
 			});
 
+			it("--interval=\\$x", function() {
+				let document = createDocument("HEALTHCHECK --interval=\\$x");
+				let hover = onHover(document, 0, 17);
+				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
+			});
+
+			it("--interval=\\a", function() {
+				let document = createDocument("HEALTHCHECK --interval=\\a");
+				let hover = onHover(document, 0, 17);
+				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
+			});
+
 			it("--retries", function() {
 				let document = createDocument("HEALTHCHECK --retries");
 				let hover = onHover(document, 0, 17);

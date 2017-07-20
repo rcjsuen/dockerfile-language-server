@@ -119,6 +119,26 @@ describe("Dockerfile Document Definition tests", function() {
 					assertLocation(location, document.uri, 0, 4, 0, 7);
 				});
 
+				it("nested no value", function() {
+					let document = createDocument(instruction + " var\nSTOPSIGNAL prefix${var}\nUSER prefix${var}\nWORKDIR prefix${var}");
+					let location = computeDefinition(document, Position.create(1, 19));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 17));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("nested escaped", function() {
+					let document = createDocument(instruction + " var\nSTOPSIGNAL prefix\\${var}\nUSER prefix\\${var}\nWORKDIR prefix\\${var}");
+					let location = computeDefinition(document, Position.create(1, 20));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(2, 14));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(3, 18));
+					assert.equal(location, null);
+				});
+
 				it("no definition", function() {
 					let document = createDocument(instruction + "\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 					let location = computeDefinition(document, Position.create(1, 13));
@@ -173,6 +193,26 @@ describe("Dockerfile Document Definition tests", function() {
 					document = createDocument(instruction + " var\nRUN echo '$var'");
 					location = computeDefinition(document, Position.create(1, 12));
 					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("nested no value", function() {
+					let document = createDocument(instruction + " var\nSTOPSIGNAL prefix$var\nUSER prefix$var\nWORKDIR prefix$var");
+					let location = computeDefinition(document, Position.create(1, 19));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 13));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 17));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("nested escaped", function() {
+					let document = createDocument(instruction + " var\nSTOPSIGNAL prefix\\$var\nUSER prefix\\$var\nWORKDIR prefix\\$var");
+					let location = computeDefinition(document, Position.create(1, 20));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(2, 14));
+					assert.equal(location, null);
+					location = computeDefinition(document, Position.create(3, 18));
+					assert.equal(location, null);
 				});
 
 				it("no definition", function() {
