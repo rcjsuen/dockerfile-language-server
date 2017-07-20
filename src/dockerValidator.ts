@@ -25,6 +25,7 @@ export enum ValidationCode {
 	ARGUMENT_UNNECESSARY,
 	FLAG_AT_LEAST_ONE,
 	FLAG_DUPLICATE,
+	FLAG_MISSING_VALUE,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_AS,
@@ -286,17 +287,20 @@ export class Validator {
 									problems.push(Validator.createFlagUnknown(nameRange.start, nameRange.end, flag.getName()));
 								} else if (flagName === "retries") {
 									let value = flag.getValue();
-									let valueRange = flag.getValueRange();
-									let integer = parseInt(value);
-									// test for NaN or numbers with decimals
-									if (isNaN(integer) || value.indexOf('.') !== -1) {
-										problems.push(Validator.createInvalidSyntax(valueRange.start, valueRange.end, value));
-									} else if (integer < 1) {
-										problems.push(Validator.createFlagAtLeastOne(valueRange.start, valueRange.end, "--retries", integer.toString()));
+									if (value) {
+										let valueRange = flag.getValueRange();
+										let integer = parseInt(value);
+										// test for NaN or numbers with decimals
+										if (isNaN(integer) || value.indexOf('.') !== -1) {
+											problems.push(Validator.createInvalidSyntax(valueRange.start, valueRange.end, value));
+										} else if (integer < 1) {
+											problems.push(Validator.createFlagAtLeastOne(valueRange.start, valueRange.end, "--retries", integer.toString()));
+										}
 									}
 								}
 							}
 
+							this.checkFlagValue(flags, validFlags, problems);
 							this.checkDuplicateFlags(flags, validFlags, problems);
 						}
 						break;
@@ -337,6 +341,7 @@ export class Validator {
 							return null;
 						}.bind(this));
 						let flags = (instruction as ModifiableInstruction).getFlags();
+						this.checkFlagValue(flags, [ "from" ], problems);
 						this.checkDuplicateFlags(flags, [ "from" ], problems);
 						break;
 					default:
@@ -362,6 +367,17 @@ export class Validator {
 			}
 		}
 		return null;
+	}
+
+	private checkFlagValue(flags: Flag[], validFlagNames: string[], problems: Diagnostic[]): void {
+		for (let flag of flags) {
+			let flagName = flag.getName();
+			// only validate flags with the right name
+			if (flag.getValue() === null && validFlagNames.indexOf(flagName) !== -1) {
+				let range = flag.getNameRange();
+				problems.push(Validator.createFlagMissingValue(range.start, range.end, flagName));
+			}
+		}
 	}
 
 	private checkDuplicateFlags(flags: Flag[], validFlags: string[], problems: Diagnostic[]): void {
@@ -397,6 +413,7 @@ export class Validator {
 
 		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
 		"flagDuplicate": "Duplicate flag specified: ${0}",
+		"flagMissingValue": "Missing a value on flag: ${0}",
 		"flagUnknown": "Unknown flag: ${0}",
 
 		"instructionExtraArgument": "Instruction has an extra argument",
@@ -436,6 +453,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_FlagDuplicate(flag: string) {
 		return Validator.formatMessage(Validator.dockerProblems["flagDuplicate"], flag);
+	}
+
+	public static getDiagnosticMessage_FlagMissingValue(flag: string) {
+		return Validator.formatMessage(Validator.dockerProblems["flagMissingValue"], flag);
 	}
 
 	public static getDiagnosticMessage_FlagUnknown(flag: string) {
@@ -512,6 +533,10 @@ export class Validator {
 
 	static createFlagDuplicate(start: Position, end: Position, flag: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagDuplicate(flag), ValidationCode.FLAG_DUPLICATE);
+	}
+
+	static createFlagMissingValue(start: Position, end: Position, flag: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagMissingValue(flag), ValidationCode.FLAG_MISSING_VALUE);
 	}
 
 	static createFlagUnknown(start: Position, end: Position, flag: string): Diagnostic {

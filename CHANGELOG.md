@@ -32,6 +32,9 @@ All notable changes to this project will be documented in this file.
   - check that the same flag is not used twice ([#83](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/83))
     - COPY's from
     - HEALTHCHECK's interval, retries, start-period, timeout
+  - check that flags have a value defined ([#91](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/91))
+    - COPY's from
+    - HEALTHCHECK's interval, retries, start-period, timeout
   - HEALTHCHECK
     - warn if arguments follow a HEALTHCHECK NONE ([#84](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/84))
     - warn if the retries flag doesn't specify a number ([#85](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/85))

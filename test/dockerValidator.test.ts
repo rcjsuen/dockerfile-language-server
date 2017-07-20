@@ -77,6 +77,17 @@ function assertFlagDuplicate(diagnostic: Diagnostic, flag: string, startLine: nu
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertFlagMissingValue(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FLAG_MISSING_VALUE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagMissingValue(flag));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertFlagUnknown(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_FLAG);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1164,6 +1175,12 @@ describe("Docker Validator Tests", function() {
 				assertFlagUnknown(diagnostics[0], "FROM", 2, 7, 2, 11);
 			});
 
+			it("flag no value", function() {
+				let diagnostics = validate("FROM alpine\nCOPY --from . .");
+				assert.equal(diagnostics.length, 1);
+				assertFlagMissingValue(diagnostics[0], "from", 1, 7, 1, 11);
+			});
+
 			it("duplicate flag", function() {
 				let diagnostics = validate("FROM alpine\nCOPY --from=x --from=y . .");
 				assert.equal(diagnostics.length, 2);
@@ -1479,6 +1496,24 @@ describe("Docker Validator Tests", function() {
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --TIMEOUT=30s CMD ls");
 					assert.equal(diagnostics.length, 1);
 					assertFlagUnknown(diagnostics[0], "TIMEOUT", 1, 14, 1, 21);
+				});
+
+				it("flag no value", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagMissingValue(diagnostics[0], "interval", 1, 14, 1, 22);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --retries CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagMissingValue(diagnostics[0], "retries", 1, 14, 1, 21);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --start-period CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagMissingValue(diagnostics[0], "start-period", 1, 14, 1, 26);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagMissingValue(diagnostics[0], "timeout", 1, 14, 1, 21);
 				});
 
 				it("duplicate flag", function() {
