@@ -330,19 +330,19 @@ export class Validator {
 						});
 						break;
 					case "COPY":
-						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string, range: Range) {
-							if (index === 0) {
-								// see if the first argument is a --from=buildStage
-								let diagnostic = this.checkFlagName(argument, range, "from");
-								if (diagnostic !== null) {
-									problems.push(diagnostic);
-								}
+						let copyArgs = instruction.getArguments();
+						if (copyArgs.length === 0) {
+							let range = instruction.getInstructionRange();
+							problems.push(Validator.createMissingArgument(range.start, range.end));
+						} else {
+							let flags = (instruction as ModifiableInstruction).getFlags();
+							if (flags.length > 0 && flags[0].getName() !== "from") {
+								let range = flags[0].getNameRange();
+								problems.push(Validator.createFlagUnknown(range.start, range.end, flags[0].getName()));
 							}
-							return null;
-						}.bind(this));
-						let flags = (instruction as ModifiableInstruction).getFlags();
-						this.checkFlagValue(flags, [ "from" ], problems);
-						this.checkDuplicateFlags(flags, [ "from" ], problems);
+							this.checkFlagValue(flags, [ "from" ], problems);
+							this.checkDuplicateFlags(flags, [ "from" ], problems);
+						}
 						break;
 					default:
 						this.checkArguments(instruction, problems, [ -1 ], function() {
@@ -354,19 +354,6 @@ export class Validator {
 		}
 
 		return problems;
-	}
-
-	private checkFlagName(argument: string, range: Range, expectedFlagNames: string[]): Diagnostic {
-		if (argument.indexOf("--") === 0) {
-			let index = argument.indexOf('=');
-			index = index === -1 ? argument.length : index;
-			let actualFlagName = argument.substring(2, index);
-			if (expectedFlagNames.indexOf(actualFlagName) === -1) {
-				let offset = this.document.offsetAt(range.start);
-				return Validator.createFlagUnknown(this.document.positionAt(offset + 2), this.document.positionAt(offset + 2 + actualFlagName.length), actualFlagName);
-			}
-		}
-		return null;
 	}
 
 	private checkFlagValue(flags: Flag[], validFlagNames: string[], problems: Diagnostic[]): void {
