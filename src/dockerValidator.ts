@@ -9,6 +9,7 @@ import { Dockerfile } from './parser/dockerfile';
 import { Flag } from './parser/flag';
 import { Instruction } from './parser/instruction';
 import { Env } from './parser/instructions/env';
+import { Healthcheck } from './parser/instructions/healthcheck';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { DIRECTIVE_ESCAPE } from './docker';
@@ -36,7 +37,8 @@ export enum ValidationCode {
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
 	UNKNOWN_FLAG,
-	DEPRECATED_MAINTAINER
+	DEPRECATED_MAINTAINER,
+	HEALTHCHECK_CMD_ARGUMENT_MISSING
 }
 
 export enum ValidationSeverity {
@@ -275,6 +277,12 @@ export class Validator {
 									}
 									// don't need to validate flags of a NONE
 									break validateInstruction;
+								} else if (uppercase === "CMD") {
+									if (i === args.length - 1) {
+										let range = args[i].getRange();
+										problems.push(Validator.createHealthcheckCmdArgumentMissing(range.start, range.end));
+									}
+									break;
 								}
 							}
 
@@ -413,6 +421,8 @@ export class Validator {
 		"instructionCasing": "Instructions should be written in uppercase letters",
 
 		"deprecatedMaintainer": "MAINTAINER has been deprecated",
+
+		"healthcheckCmdArgumentMissing": "Missing command after HEALTHCHECK CMD",
 	};
 	
 	private static formatMessage(text: string, ...variables: string[]): string {
@@ -510,6 +520,10 @@ export class Validator {
 		return Validator.dockerProblems["deprecatedMaintainer"];
 	}
 
+	public static getDiagnosticMessage_HealthcheckCmdArgumentMissing() {
+		return Validator.dockerProblems["healthcheckCmdArgumentMissing"];
+	}
+
 	static createInvalidEscapeDirective(start: Position, end: Position, value: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	}
@@ -564,6 +578,10 @@ export class Validator {
 
 	static createENVRequiresTwoArguments(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_ENVRequiresTwoArguments(), ValidationCode.ARGUMENT_REQUIRES_TWO);
+	}
+
+	private static createHealthcheckCmdArgumentMissing(start: Position, end: Position): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_HealthcheckCmdArgumentMissing(), ValidationCode.HEALTHCHECK_CMD_ARGUMENT_MISSING);
 	}
 
 	static createRequiresOneOrThreeArguments(start: Position, end: Position): Diagnostic {

@@ -209,6 +209,17 @@ function assertInstructionRequiresOneArgument(diagnostic: Diagnostic, startLine:
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertHealthcheckCmdArgumentMissing(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.HEALTHCHECK_CMD_ARGUMENT_MISSING);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_HealthcheckCmdArgumentMissing());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertENVRequiresTwoArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_TWO);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1550,6 +1561,32 @@ describe("Docker Validator Tests", function() {
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=-1 CMD ls");
 					assert.equal(diagnostics.length, 1);
 					assertFlagAtLeastOne(diagnostics[0], "--retries", "-1", 1, 22, 1, 24);
+				});
+
+				it("CMD no arguments", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK CMD");
+					assert.equal(diagnostics.length, 1);
+					assertHealthcheckCmdArgumentMissing(diagnostics[0], 1, 12, 1, 15);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK CMD ");
+					assert.equal(diagnostics.length, 1);
+					assertHealthcheckCmdArgumentMissing(diagnostics[0], 1, 12, 1, 15);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK CMD \n");
+					assert.equal(diagnostics.length, 1);
+					assertHealthcheckCmdArgumentMissing(diagnostics[0], 1, 12, 1, 15);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK CMD CMD");
+					assert.equal(diagnostics.length, 0);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK CMD cmd");
+					assert.equal(diagnostics.length, 0);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK cmd CMD");
+					assert.equal(diagnostics.length, 0);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK cmd cmd");
+					assert.equal(diagnostics.length, 0);
 				});
 			});
 		});
