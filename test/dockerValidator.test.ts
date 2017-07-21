@@ -610,23 +610,27 @@ describe("Docker Validator Tests", function() {
 		});
 
 		describe("missing argument", function() {
-			function testMissingArgument(instruction: string, prefix: string, middle: string, suffix: string) {
+			function testMissingArgument(instruction: string, prefix: string, middle: string, suffix: string, safe?: boolean) {
 				var length = instruction.length;
 				let diagnostics = validate("FROM node\n" + instruction + prefix + middle + suffix);
-				assert.equal(diagnostics.length, 1);
-				assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+				if (safe) {
+					assert.equal(diagnostics.length, 0);
+				} else {
+					assert.equal(diagnostics.length, 1);
+					assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
+				}
 			}
 
-			function testMissingArgumentLoop(instruction: string) {
+			function testMissingArgumentLoop(instruction: string, safe?: boolean) {
 				let newlines = [ "", "\r", "\n", "\r\n", "\\\r", "\\\n", "\\\r\n" ];
 				for (let newline of newlines) {
-					testMissingArgument(instruction, "", newline, "");
-					testMissingArgument(instruction, "", newline, " ");
-					testMissingArgument(instruction, " ", newline, "");
-					testMissingArgument(instruction, " ", newline, " ");
-					testMissingArgument(instruction, "", newline, "\t");
-					testMissingArgument(instruction, "\t", newline, "");
-					testMissingArgument(instruction, "\t", newline, "\t");
+					testMissingArgument(instruction, "", newline, "", safe);
+					testMissingArgument(instruction, "", newline, " ", safe);
+					testMissingArgument(instruction, " ", newline, "", safe);
+					testMissingArgument(instruction, " ", newline, " ", safe);
+					testMissingArgument(instruction, "", newline, "\t", safe);
+					testMissingArgument(instruction, "\t", newline, "", safe);
+					testMissingArgument(instruction, "\t", newline, "\t", safe);
 				}
 			}
 
@@ -639,7 +643,7 @@ describe("Docker Validator Tests", function() {
 			});
 
 			it("CMD", function() {
-				return testMissingArgumentLoop("CMD");
+				return testMissingArgumentLoop("CMD", true);
 			});
 
 			it("COPY", function() {

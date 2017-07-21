@@ -221,6 +221,9 @@ export class Validator {
 				}
 
 				validateInstruction: switch (keyword) {
+					case "CMD":
+						// don't validate CMD instructions
+						break;
 					case "ARG":
 						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
 							if (index > 0) {
