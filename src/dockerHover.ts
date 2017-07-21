@@ -10,6 +10,7 @@ import {
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Arg } from './parser/instructions/arg';
 import { Env } from './parser/instructions/env';
+import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { Onbuild } from './parser/instructions/onbuild';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
 import { MarkdownDocumentation } from './dockerMarkdown';
@@ -91,18 +92,20 @@ export class DockerHover {
 			}
 
 			if (instruction.getKeyword() === "HEALTHCHECK") {
-				for (let arg of instruction.getArguments()) {
-					if (Util.isInsideRange(textDocumentPosition.position, arg.getRange())) {
-						let value = arg.getValue();
-						if (value.indexOf("--interval") === 0) {
-							return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
-						} else if (value.indexOf("--retries") === 0) {
-							return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
-						} else if (value.indexOf("--start-period") === 0) {
-							return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
-						} else if (value.indexOf("--timeout") === 0) {
-							return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
+				let flags = (instruction as ModifiableInstruction).getFlags();
+				for (let flag of flags) {
+					if (Util.isInsideRange(textDocumentPosition.position, flag.getNameRange())) {
+						switch (flag.getName()) {
+							case "interval":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
+							case "retries":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
+							case "start-period":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
+							case "timeout":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
 						}
+						return null;
 					}
 				}
 			}

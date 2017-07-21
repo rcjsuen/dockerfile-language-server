@@ -767,6 +767,23 @@ describe("Dockerfile hover", function() {
 				let hover = onHover(document, 0, 17);
 				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagTimeout"));
 			});
+
+			function createFlagsAfterTest(subcommand: string) {
+				it("flags after " + subcommand, function() {
+					let document = createDocument("HEALTHCHECK " + subcommand + " \\\n--interval=30s\\\n--retries=3\\\n--start-period=30s\\\n--timeout=30s");
+					let hover = onHover(document, 1, 4);
+					assert.equal(hover,  null);
+					hover = onHover(document, 2, 4);
+					assert.equal(hover,  null);
+					hover = onHover(document, 3, 4);
+					assert.equal(hover,  null);
+					hover = onHover(document, 4, 4);
+					assert.equal(hover,  null);
+				});
+			}
+
+			createFlagsAfterTest("CMD");
+			createFlagsAfterTest("NONE");
 		});
 	});
 
