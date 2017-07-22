@@ -112,6 +112,18 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[2].arguments[0], uri);
 		assertRange(commands[2].arguments[1], lowercase.range);
 	});
+
+	it("diagnostic code as string", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let diagnostic = createLowercase();
+		diagnostic.code = diagnostic.code.toString();
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri, range);
+		assert.equal(commands.length, 1);
+		assert.equal(commands[0].command, CommandIds.UPPERCASE);
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], diagnostic.range);
+	});
 });
 
 describe("Dockerfile execute commands", function () {
