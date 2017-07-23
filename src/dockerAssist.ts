@@ -10,6 +10,7 @@ import {
 } from 'vscode-languageserver';
 import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { Dockerfile } from './parser/dockerfile';
+import { DockerHover } from './dockerHover';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Copy } from './parser/instructions/copy';
 import { Healthcheck } from './parser/instructions/healthcheck';
@@ -71,6 +72,41 @@ export class DockerAssist {
 		}
 
 		let prefix = DockerAssist.calculateTruePrefix(buffer, offset, escapeCharacter);
+		if (prefix !== "") {
+			let index = prefix.lastIndexOf('$');
+			// $ exists so we're at a variable
+			if (index !== -1) {
+				// check that the variable $ wasn't escaped
+				if (prefix.charAt(index - 1) !== '\\') {
+					// get the variable's prefix thus far
+					var variablePrefix = prefix.substring(index + 1).toLowerCase();
+					let prefixLength = variablePrefix.length + 1;
+					if (variablePrefix === "") {
+						// empty prefix, return all variables
+						let items = [];
+						for (let variable of dockerfile.getVariableNames()) {
+							let doc = dockerfile.getVariableValue(variable, position.line);
+							items.push(this.createVariableCompletionItem("${" + variable + '}', prefixLength, offset, true, doc));
+						}
+						return items;
+					} else {
+						let brace = false;
+						if (variablePrefix.charAt(0) === '{') {
+							brace = true;
+							variablePrefix = variablePrefix.substring(1);
+						}
+						let items = [];
+						for (let variable of dockerfile.getVariableNames()) {
+							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
+							let doc = dockerfile.getVariableValue(variable, position.line);
+								items.push(this.createVariableCompletionItem(brace ? "${" + variable + '}' : '$' + variable, prefixLength, offset, brace, doc));
+							}
+						}
+						return items;
+					}
+				}
+			}
+		}
 		let previousWord = "";
 
 		instructionsCheck: for (let instruction of dockerfile.getInstructions()) {
@@ -441,10 +477,27 @@ export class DockerAssist {
 		};
 	}
 
+	private createVariableCompletionItem(text: string, prefixLength: number, offset: number, brace: boolean, documentation: string): CompletionItem {
+		return {
+			textEdit: this.createTextEdit2(prefixLength, offset, text),
+			label: text,
+			kind: CompletionItemKind.Variable,
+			insertTextFormat: InsertTextFormat.PlainText,
+			documentation: documentation
+		};
+	}
+
 	createTextEdit(prefix: string, offset: number, content: string): TextEdit {
 		if (prefix === "") {
 			return TextEdit.insert(this.document.positionAt(offset), content);
 		}
 		return TextEdit.replace(Range.create(this.document.positionAt(offset - prefix.length), this.document.positionAt(offset)), content);
+	}
+
+	createTextEdit2(prefixLength: number, offset: number, text: string): TextEdit {
+		if (prefixLength === 0) {
+			return TextEdit.insert(this.document.positionAt(offset), text);
+		}
+		return TextEdit.replace(Range.create(this.document.positionAt(offset - prefixLength), this.document.positionAt(offset)), text);
 	}
 }

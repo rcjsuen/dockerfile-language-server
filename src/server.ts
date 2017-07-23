@@ -60,7 +60,8 @@ connection.onInitialize((params): InitializeResult => {
 				resolveProvider: true,
 				triggerCharacters: [
 					'=',
-					' '
+					' ',
+					'$'
 				]
 			},
 			executeCommandProvider: {
@@ -156,7 +157,9 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-	item.documentation = documentationResolver.getDocumentation(item.data);
+	if (!item.documentation) {
+		item.documentation = documentationResolver.getDocumentation(item.data);
+	}
 	return item;
 });
 

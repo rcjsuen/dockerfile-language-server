@@ -19,6 +19,9 @@ All notable changes to this project will be documented in this file.
   - add '=' as a trigger character
   - include the --start-period flag in HEALTHCHECK CMD items ([#78](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/78))
   - HEALTHCHECK CMD flags ([#69](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/69))
+  - suggest $ variables ([#93](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/93))
+    - ARG and ENV variables
+    - default Docker ARG variables 
 - textDocument/hover
   - HEALTHCHECK CMD flags ([#82](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/82))
 - textDocument/publishDiagnostics

@@ -438,6 +438,38 @@ function assertDirectiveEscape(item: CompletionItem, line: number, character: nu
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
+function assertVariable(variable: string, item: CompletionItem, line: number, character: number, prefixLength: number, brace: boolean, documentation?: string) {
+	if (brace) {
+		assert.equal(item.label, "${" + variable + '}');
+	} else {
+		assert.equal(item.label, '$' + variable);
+	}
+	assert.equal(item.kind, CompletionItemKind.Variable);
+	assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+	if (brace) {
+		assert.equal(item.textEdit.newText, "${" +variable + '}');
+	} else {
+		assert.equal(item.textEdit.newText, '$' + variable);
+	}
+	assert.equal(item.documentation, documentation);
+	assert.equal(item.textEdit.range.start.line, line);
+	assert.equal(item.textEdit.range.start.character, character);
+	assert.equal(item.textEdit.range.end.line, line);
+	assert.equal(item.textEdit.range.end.character, character + prefixLength);
+}
+
+function assertDockerVariables(items: CompletionItem[], line: number, character: number, prefixLength: number, brace: boolean) {
+	assert.equal(items.length, 8);
+	assertVariable("FTP_PROXY", items[0], line, character, prefixLength, brace);
+	assertVariable("ftp_proxy", items[1], line, character, prefixLength, brace);
+	assertVariable("HTTP_PROXY", items[2], line, character, prefixLength, brace);
+	assertVariable("http_proxy", items[3], line, character, prefixLength, brace);
+	assertVariable("HTTPS_PROXY", items[4], line, character, prefixLength, brace);
+	assertVariable("https_proxy", items[5], line, character, prefixLength, brace);
+	assertVariable("NO_PROXY", items[6], line, character, prefixLength, brace);
+	assertVariable("no_proxy", items[7], line, character, prefixLength, brace);
+}
+
 function assertProposals(proposals: CompletionItem[], offset: number, prefix: number, prefixLength: number, snippetSupport?: boolean) {
 	for (var i = 0; i < proposals.length; i++) {
 		switch (proposals[i].data) {
@@ -1565,6 +1597,191 @@ describe('Docker Content Assist Tests', function() {
 
 				proposals = compute("FROM node\n\" O NBUILD ", 21);
 				assert.equal(proposals.length, 0);
+			});
+		});
+	});
+
+	describe("variables", function() {
+		describe("$", function() {
+			it("defaults only", function() {
+				let items = computePosition("FROM busybox\nRUN echo $", 1, 10);
+				assertDockerVariables(items, 1, 9, 1, true);
+			});
+
+			it("prefix", function() {
+				let items = computePosition("FROM busybox\nRUN echo $f", 1, 11);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 1, 9, 2, false);
+				assertVariable("ftp_proxy", items[1], 1, 9, 2, false);
+
+				items = computePosition("FROM busybox\nRUN echo $F", 1, 11);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 1, 9, 2, false);
+				assertVariable("ftp_proxy", items[1], 1, 9, 2, false);
+			});
+
+			it("ARG variable", function() {
+				let items = computePosition("FROM busybox\nARG foo=bar\nARG FOO=BAR\nRUN echo $", 3, 10);
+				assert.equal(items.length, 10);
+				assertVariable("FOO", items[0], 3, 9, 1, true, "BAR");
+				assertVariable("foo", items[1], 3, 9, 1, true, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 1, true);
+				assertVariable("ftp_proxy", items[3], 3, 9, 1, true);
+				assertVariable("HTTP_PROXY", items[4], 3, 9, 1, true);
+				assertVariable("http_proxy", items[5], 3, 9, 1, true);
+				assertVariable("HTTPS_PROXY", items[6], 3, 9, 1, true);
+				assertVariable("https_proxy", items[7], 3, 9, 1, true);
+				assertVariable("NO_PROXY", items[8], 3, 9, 1, true);
+				assertVariable("no_proxy", items[9], 3, 9, 1, true);
+
+				items = computePosition("FROM busybox\nARG foo=bar\nARG FOO=BAR\nRUN echo $F", 3, 11);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 3, 9, 2, false, "BAR");
+				assertVariable("foo", items[1], 3, 9, 2, false, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 2, false);
+				assertVariable("ftp_proxy", items[3], 3, 9, 2, false);
+
+				items = computePosition("FROM busybox\nARG foo=bar\nARG FOO=BAR\nRUN echo $f", 3, 11);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 3, 9, 2, false, "BAR");
+				assertVariable("foo", items[1], 3, 9, 2, false, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 2, false);
+				assertVariable("ftp_proxy", items[3], 3, 9, 2, false);
+			});
+
+			it("ENV variable", function() {
+				let items = computePosition("FROM busybox\nENV foo=bar\nENV FOO=BAR\nRUN echo $", 3, 10);
+				assert.equal(items.length, 10);
+				assertVariable("FOO", items[0], 3, 9, 1, true, "BAR");
+				assertVariable("foo", items[1], 3, 9, 1, true, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 1, true);
+				assertVariable("ftp_proxy", items[3], 3, 9, 1, true);
+				assertVariable("HTTP_PROXY", items[4], 3, 9, 1, true);
+				assertVariable("http_proxy", items[5], 3, 9, 1, true);
+				assertVariable("HTTPS_PROXY", items[6], 3, 9, 1, true);
+				assertVariable("https_proxy", items[7], 3, 9, 1, true);
+				assertVariable("NO_PROXY", items[8], 3, 9, 1, true);
+				assertVariable("no_proxy", items[9], 3, 9, 1, true);
+
+				items = computePosition("FROM busybox\nENV foo=bar\nENV FOO=BAR\nRUN echo $F", 3, 11);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 3, 9, 2, false, "BAR");
+				assertVariable("foo", items[1], 3, 9, 2, false, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 2, false);
+				assertVariable("ftp_proxy", items[3], 3, 9, 2, false);
+
+				items = computePosition("FROM busybox\nENV foo=bar\nENV FOO=BAR\nRUN echo $f", 3, 11);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 3, 9, 2, false, "BAR");
+				assertVariable("foo", items[1], 3, 9, 2, false, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 2, false);
+				assertVariable("ftp_proxy", items[3], 3, 9, 2, false);
+			});
+
+			it("ARG and ENV variable", function() {
+				let items = computePosition("FROM busybox\nARG foo=arg\nARG FOO=ARG\nENV foo=env FOO=ENV\nRUN echo $", 4, 10);
+				assert.equal(items.length, 10);
+				assertVariable("FOO", items[0], 4, 9, 1, true, "ENV");
+				assertVariable("foo", items[1], 4, 9, 1, true, "env");
+				assertVariable("FTP_PROXY", items[2], 4, 9, 1, true);
+				assertVariable("ftp_proxy", items[3], 4, 9, 1, true);
+				assertVariable("HTTP_PROXY", items[4], 4, 9, 1, true);
+				assertVariable("http_proxy", items[5], 4, 9, 1, true);
+				assertVariable("HTTPS_PROXY", items[6], 4, 9, 1, true);
+				assertVariable("https_proxy", items[7], 4, 9, 1, true);
+				assertVariable("NO_PROXY", items[8], 4, 9, 1, true);
+				assertVariable("no_proxy", items[9], 4, 9, 1, true);
+
+				items = computePosition("FROM busybox\nARG foo=arg\nARG FOO=ARG\nENV foo=env FOO=ENV\nRUN echo $F", 4, 11);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 4, 9, 2, false, "ENV");
+				assertVariable("foo", items[1], 4, 9, 2, false, "env");
+				assertVariable("FTP_PROXY", items[2], 4, 9, 2, false);
+				assertVariable("ftp_proxy", items[3], 4, 9, 2, false);
+
+				items = computePosition("FROM busybox\nARG foo=arg\nARG FOO=ARG\nENV foo=env FOO=ENV\nRUN echo $f", 4, 11);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 4, 9, 2, false, "ENV");
+				assertVariable("foo", items[1], 4, 9, 2, false, "env");
+				assertVariable("FTP_PROXY", items[2], 4, 9, 2, false);
+				assertVariable("ftp_proxy", items[3], 4, 9, 2, false);
+			});
+			
+			it("escaped", function() {
+				let items = computePosition("FROM busybox\nRUN echo \\$", 1, 11);
+				assert.equal(items.length, 0);
+			});
+		});
+
+		describe("${", function() {
+			it("defaults only", function() {
+				let items = computePosition("FROM busybox\nRUN echo ${", 1, 11);
+				assertDockerVariables(items, 1, 9, 2, true);
+			});
+
+			it("prefix", function() {
+				let items = computePosition("FROM busybox\nRUN echo ${f", 1, 12);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 1, 9, 3, true);
+				assertVariable("ftp_proxy", items[1], 1, 9, 3, true);
+
+				items = computePosition("FROM busybox\nRUN echo ${F", 1, 12);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 1, 9, 3, true);
+				assertVariable("ftp_proxy", items[1], 1, 9, 3, true);
+			});
+
+			it("ARG variable", function() {
+				let items = computePosition("FROM busybox\nARG foo=bar\nARG FOO=BAR\nRUN echo ${F", 3, 12);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 3, 9, 3, true, "BAR");
+				assertVariable("foo", items[1], 3, 9, 3, true, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 3, true);
+				assertVariable("ftp_proxy", items[3], 3, 9, 3, true);
+
+				items = computePosition("FROM busybox\nARG foo=bar\nARG FOO=BAR\nRUN echo ${f", 3, 12);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 3, 9, 3, true, "BAR");
+				assertVariable("foo", items[1], 3, 9, 3, true, "bar");
+				assertVariable("FTP_PROXY", items[2], 3, 9, 3, true);
+				assertVariable("ftp_proxy", items[3], 3, 9, 3, true);
+			});
+
+			it("ENV variable", function() {
+				let items = computePosition("FROM busybox\nENV foo=bar FOO=BAR\nRUN echo ${F", 2, 12);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 2, 9, 3, true, "BAR");
+				assertVariable("foo", items[1], 2, 9, 3, true, "bar");
+				assertVariable("FTP_PROXY", items[2], 2, 9, 3, true);
+				assertVariable("ftp_proxy", items[3], 2, 9, 3, true);
+
+				items = computePosition("FROM busybox\nENV foo=bar FOO=BAR\nRUN echo ${f", 2, 12);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 2, 9, 3, true, "BAR");
+				assertVariable("foo", items[1], 2, 9, 3, true, "bar");
+				assertVariable("FTP_PROXY", items[2], 2, 9, 3, true);
+				assertVariable("ftp_proxy", items[3], 2, 9, 3, true);
+			});
+
+			it("ARG and ENV variable", function() {
+				let items = computePosition("FROM busybox\nARG foo=arg\nARG FOO=ARG\nENV foo=env FOO=ENV\nRUN echo ${F", 4, 12);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 4, 9, 3, true, "ENV");
+				assertVariable("foo", items[1], 4, 9, 3, true, "env");
+				assertVariable("FTP_PROXY", items[2], 4, 9, 3, true);
+				assertVariable("ftp_proxy", items[3], 4, 9, 3, true);
+
+				items = computePosition("FROM busybox\nARG foo=arg\nARG FOO=ARG\nENV foo=env FOO=ENV\nRUN echo ${f", 4, 12);
+				assert.equal(items.length, 4);
+				assertVariable("FOO", items[0], 4, 9, 3, true, "ENV");
+				assertVariable("foo", items[1], 4, 9, 3, true, "env");
+				assertVariable("FTP_PROXY", items[2], 4, 9, 3, true);
+				assertVariable("ftp_proxy", items[3], 4, 9, 3, true);
+			});
+			
+			it("escaped", function() {
+				let items = computePosition("FROM busybox\nRUN echo \\${", 1, 12);
+				assert.equal(items.length, 0);
 			});
 		});
 	});

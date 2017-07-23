@@ -25,4 +25,8 @@ export class Line {
 	public isAfter(line: Line): boolean {
 		return this.range.start.line > line.range.start.line;
 	}
+
+	public isBefore(line: number): boolean {
+		return this.range.start.line < line;
+	}
 }
