@@ -77,6 +77,17 @@ function assertFlagDuplicate(diagnostic: Diagnostic, flag: string, startLine: nu
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertFlagInvalidDuration(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FLAG_INVALID_DURATION);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagInvalidDuration(flag));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertFlagMissingValue(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.FLAG_MISSING_VALUE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1531,6 +1542,11 @@ describe("Docker Validator Tests", function() {
 					assertFlagMissingValue(diagnostics[0], "timeout", 1, 14, 1, 21);
 				});
 
+				it("flags empty value", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval= --retries= --start-period= --timeout= CMD ls");
+					assert.equal(diagnostics.length, 0);
+				});
+
 				it("duplicate flag", function() {
 					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s --interval=30s CMD ls");
 					assert.equal(diagnostics.length, 2);
@@ -1591,6 +1607,32 @@ describe("Docker Validator Tests", function() {
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK cmd cmd");
 					assert.equal(diagnostics.length, 0);
+				});
+
+				it("invalid duration", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=a CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagInvalidDuration(diagnostics[0], "a", 1, 23, 1, 24);
+					
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=a1s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagInvalidDuration(diagnostics[0], "a1s", 1, 23, 1, 26);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --start-period=a CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagInvalidDuration(diagnostics[0], "a", 1, 27, 1, 28);
+					
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --start-period=a1s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagInvalidDuration(diagnostics[0], "a1s", 1, 27, 1, 30);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=a CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagInvalidDuration(diagnostics[0], "a", 1, 22, 1, 23);
+					
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=a1s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagInvalidDuration(diagnostics[0], "a1s", 1, 22, 1, 25);
 				});
 			});
 		});
