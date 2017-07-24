@@ -27,6 +27,7 @@ export enum ValidationCode {
 	FLAG_AT_LEAST_ONE,
 	FLAG_DUPLICATE,
 	FLAG_INVALID_DURATION,
+	FLAG_MISSING_DURATION,
 	FLAG_MISSING_VALUE,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
@@ -381,7 +382,7 @@ export class Validator {
 	}
 
 	private checkFlagDuration(flags: Flag[], validFlagNames: string[], problems: Diagnostic[]): void {
-		for (let flag of flags) {
+		flagCheck: for (let flag of flags) {
 			let flagName = flag.getName();
 			// only validate flags with the right name
 			if (validFlagNames.indexOf(flagName) !== -1) {
@@ -403,8 +404,28 @@ export class Validator {
 						default:
 							let range = flag.getValueRange();
 							problems.push(Validator.createFlagInvalidDuration(range.start, range.end, value));
-							break;
+							continue flagCheck;
 					}
+
+					for (let i = 1; i < value.length; i++) {
+						switch (value.charAt(i)) {
+							case '0':
+							case '1':
+							case '2':
+							case '3':
+							case '4':
+							case '5':
+							case '6':
+							case '7':
+							case '8':
+							case '9':
+								continue;
+							default:
+								continue flagCheck;
+						}	
+					}
+					let range = flag.getValueRange();
+					problems.push(Validator.createFlagMissingDuration(range.start, range.end, value));
 				}
 			}
 		}
@@ -444,6 +465,7 @@ export class Validator {
 		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
 		"flagDuplicate": "Duplicate flag specified: ${0}",
 		"flagInvalidDuration": "time: invalid duration ${0}",
+		"flagMissingDuration": "time: missing unit in duration ${0}",
 		"flagMissingValue": "Missing a value on flag: ${0}",
 		"flagUnknown": "Unknown flag: ${0}",
 
@@ -490,6 +512,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_FlagInvalidDuration(flag: string) {
 		return Validator.formatMessage(Validator.dockerProblems["flagInvalidDuration"], flag);
+	}
+
+	public static getDiagnosticMessage_FlagMissingDuration(duration: string) {
+		return Validator.formatMessage(Validator.dockerProblems["flagMissingDuration"], duration);
 	}
 
 	public static getDiagnosticMessage_FlagMissingValue(flag: string) {
@@ -578,6 +604,10 @@ export class Validator {
 
 	private static createFlagInvalidDuration(start: Position, end: Position, flag: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagInvalidDuration(flag), ValidationCode.FLAG_INVALID_DURATION);
+	}
+
+	private static createFlagMissingDuration(start: Position, end: Position, duration: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagMissingDuration(duration), ValidationCode.FLAG_MISSING_DURATION);
 	}
 
 	static createFlagMissingValue(start: Position, end: Position, flag: string): Diagnostic {
