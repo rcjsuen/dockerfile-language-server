@@ -138,7 +138,7 @@ export class DockerAssist {
 								}
 								for (let i = 1; i < onbuildArgs.length; i++) {
 									let arg = onbuildArgs[i].getValue().toUpperCase();
-									if (arg === "CMD" || arg === "NONE") {
+									if ((arg === "CMD" || arg === "NONE") && onbuildArgs[i].isBefore(position)) {
 										return [];
 									}
 								}
