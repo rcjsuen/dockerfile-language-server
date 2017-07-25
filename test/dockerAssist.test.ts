@@ -1578,6 +1578,11 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(proposals.length, 0);
 			});
 
+			it('ONBUILD ADD', function() {
+				let items = computePosition("FROM node\nONBUILD ADD ", 1, 12);
+				assert.equal(items.length, 0);
+			});
+
 			it('false ONBUILD instruction', function() {
 				var proposals = compute("FROM node\nRUN echo \"ONBUILD W", 29);
 				assert.equal(proposals.length, 0);

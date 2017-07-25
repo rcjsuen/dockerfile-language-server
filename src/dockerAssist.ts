@@ -146,20 +146,6 @@ export class DockerAssist {
 								}
 							}
 						}
-						switch (onbuildArgs.length) {
-							case 0:
-								previousWord = "ONBUILD";
-								break instructionsCheck;
-							case 1:
-								previousWord = "ONBUILD";
-								break instructionsCheck;
-							default:
-								break;
-						}
-						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
-							previousWord = "ONBUILD";
-							break instructionsCheck;
-						}
 						return [];
 					default:
 						return [];
