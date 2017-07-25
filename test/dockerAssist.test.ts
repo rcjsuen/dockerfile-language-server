@@ -1427,6 +1427,9 @@ describe('Docker Content Assist Tests', function() {
 						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK CMD ", 1, triggerOffset + 16, snippetSupport);
 						assert.equal(items.length, 0);
 
+						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --timeout=30s CMD ", 1, triggerOffset + 30, snippetSupport);
+						assert.equal(items.length, 0);
+
 						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK cmd ", 1, triggerOffset + 16, snippetSupport);
 						assert.equal(items.length, 0);
 
