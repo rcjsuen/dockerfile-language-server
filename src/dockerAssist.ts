@@ -140,10 +140,9 @@ export class DockerAssist {
 									let arg = onbuildArgs[i].getValue().toUpperCase();
 									if (arg === "CMD" || arg === "NONE") {
 										return [];
-									} else if (Util.isInsideRange(position, onbuildArgs[i].getRange())) {
-										return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
 									}
 								}
+								return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
 							}
 						}
 						return [];
