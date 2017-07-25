@@ -53,7 +53,7 @@ All notable changes to this project will be documented in this file.
 - fixed a typo in completion items for WORKDIR ([#76](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/76))
 - fixed a parsing problem with ENV variables and escaped characters ([#94](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/94))
 - fixed CMD validation to not warn even if there are no arguments ([#98](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/98s))
-- fixed code actions to return something if a diagnostic's code is a string and not a number  ([#99](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/999))
+- fixed code actions to return something if a diagnostic's code is a string and not a number  ([#99](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/99))
 - fixed hovers not working for ONBUILD triggers that are not written in uppercase ([#103](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/103))
 
 ## 0.0.1 - 2017-07-16
