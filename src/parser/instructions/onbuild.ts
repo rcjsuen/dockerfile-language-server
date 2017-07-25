@@ -11,6 +11,11 @@ export class Onbuild extends Instruction {
 		super(document, range, escapeChar, instruction, instructionRange);
 	}
 
+	public getTriggerInstruction(): string | null {
+		let trigger = this.getTrigger();
+		return trigger === null ? null : trigger.toUpperCase();
+	}
+
 	public getTrigger(): string | null {
 		return this.getRangeContent(this.getTriggerRange());
 	}

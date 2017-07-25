@@ -14,6 +14,7 @@ import { DockerHover } from './dockerHover';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Copy } from './parser/instructions/copy';
 import { Healthcheck } from './parser/instructions/healthcheck';
+import { Onbuild } from './parser/instructions/onbuild';
 import { Instruction } from './parser/instruction';
 
 export class DockerAssist {
@@ -117,9 +118,44 @@ export class DockerAssist {
 					case "COPY":
 						return this.createBuildStageProposals(dockerfile, instruction as Copy, position, offset);
 					case "HEALTHCHECK":
-						return this.createHealthcheckProposals(dockerfile, instruction as Healthcheck, position, offset, prefix);
+						let subcommand = (instruction as Healthcheck).getSubcommand();
+						if (subcommand && subcommand.isBefore(position)) {
+							return [];
+						}
+						return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
 					case "ONBUILD":
 						let onbuildArgs = instruction.getArguments();
+						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
+							// no trigger instructions or the cursor is in the trigger instruction
+							previousWord = "ONBUILD";
+							break instructionsCheck;
+						} else {
+							let trigger = (instruction as Onbuild).getTriggerInstruction();
+							if (trigger === "HEALTHCHECK") {
+								if (onbuildArgs.length === 1) {
+									// suggest HEALTHCHECK flags
+									return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
+								}
+								for (let i = 1; i < onbuildArgs.length; i++) {
+									let arg = onbuildArgs[i].getValue().toUpperCase();
+									if (arg === "CMD" || arg === "NONE") {
+										return [];
+									} else if (Util.isInsideRange(position, onbuildArgs[i].getRange())) {
+										return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
+									}
+								}
+							}
+						}
+						switch (onbuildArgs.length) {
+							case 0:
+								previousWord = "ONBUILD";
+								break instructionsCheck;
+							case 1:
+								previousWord = "ONBUILD";
+								break instructionsCheck;
+							default:
+								break;
+						}
 						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
 							previousWord = "ONBUILD";
 							break instructionsCheck;
@@ -207,12 +243,7 @@ export class DockerAssist {
 		return [];
 	}
 
-	private createHealthcheckProposals(dockerfile: Dockerfile, healthcheck: Healthcheck, position: Position, offset: number, prefix: string) {
-		let subcommand = healthcheck.getSubcommand();
-		if (subcommand && subcommand.isBefore(position)) {
-			return [];
-		}
-
+	private createHealthcheckProposals(dockerfile: Dockerfile, position: Position, offset: number, prefix: string) {
 		let items: CompletionItem[] = [];
 		if ("--interval".indexOf(prefix) === 0) {
 			items.push(this.createHEALTHCHECK_FlagInterval(prefix, offset));

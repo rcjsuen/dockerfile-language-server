@@ -1382,99 +1382,104 @@ describe('Docker Content Assist Tests', function() {
 		});
 	});
 
-	describe("HEALTHCHECK", function() {
-		function testHealthcheck(snippetSupport: boolean) {
-			describe("arguments", function() {
-				it("full", function() {
-					var items = computePosition("FROM busybox\nHEALTHCHECK ", 1, 12, snippetSupport);
-					assertHealthcheckItems(items, 1, 12, 1, 12, snippetSupport);
+	function testHealthcheck(trigger: boolean) {
+		describe("HEALTHCHECK", function() {
+			let onbuild = trigger ? "ONBUILD " : "";
+			let triggerOffset = onbuild.length;
+			function testFlags(snippetSupport: boolean) {
+				describe("arguments", function() {
+					it("full", function() {
+						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK ", 1, triggerOffset + 12, snippetSupport);
+						assertHealthcheckItems(items, 1, triggerOffset + 12, 1, triggerOffset + 12, snippetSupport);
+					});
+
+					it("prefix", function() {
+						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK -", 1, triggerOffset + 13, snippetSupport);
+						assertHealthcheckItems(items, 1, triggerOffset + 12, 1, triggerOffset + 13, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --", 1, triggerOffset + 14, snippetSupport);
+						assertHealthcheckItems(items, 1, triggerOffset + 12, 1, triggerOffset + 14, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --inter", 1, triggerOffset + 19, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_FlagInterval(items[0], 1, triggerOffset + 12, 1, triggerOffset + 19, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --ret", 1, triggerOffset + 17, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_FlagRetries(items[0], 1, triggerOffset + 12, 1, triggerOffset + 17, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --start", 1, triggerOffset + 19, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_FlagStartPeriod(items[0], 1, triggerOffset + 12, 1, triggerOffset + 19, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --time", 1, triggerOffset + 18, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_FlagTimeout(items[0], 1, triggerOffset + 12, 1, triggerOffset + 18, snippetSupport);
+					});
+
+					it("after command", function() {
+						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK CMD", 1, triggerOffset + 15, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK cmd", 1, triggerOffset + 15, snippetSupport);
+						assert.equal(items.length, 0);
+
+						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK CMD ", 1, triggerOffset + 16, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK cmd ", 1, triggerOffset + 16, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK CMD\\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK cmd\\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK CMD \\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK cmd \\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK NONE", 1, triggerOffset + 16, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK none", 1, triggerOffset + 16, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK NONE ", 1, triggerOffset + 17, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK none ", 1, triggerOffset + 17, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK NONE \\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK none \\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK NONE\\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK none\\\n", 2, 0, snippetSupport);
+						assert.equal(items.length, 0);
+					});
 				});
+			}
 
-				it("prefix", function() {
-					var items = computePosition("FROM busybox\nHEALTHCHECK -", 1, 13, snippetSupport);
-					assertHealthcheckItems(items, 1, 12, 1, 13, snippetSupport);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK --", 1, 14, snippetSupport);
-					assertHealthcheckItems(items, 1, 12, 1, 14, snippetSupport);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK --inter", 1, 19, snippetSupport);
-					assert.equal(items.length, 1);
-					assertHEALTHCHECK_FlagInterval(items[0], 1, 12, 1, 19, snippetSupport);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK --ret", 1, 17, snippetSupport);
-					assert.equal(items.length, 1);
-					assertHEALTHCHECK_FlagRetries(items[0], 1, 12, 1, 17, snippetSupport);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK --start", 1, 19, snippetSupport);
-					assert.equal(items.length, 1);
-					assertHEALTHCHECK_FlagStartPeriod(items[0], 1, 12, 1, 19, snippetSupport);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK --time", 1, 18, snippetSupport);
-					assert.equal(items.length, 1);
-					assertHEALTHCHECK_FlagTimeout(items[0], 1, 12, 1, 18, snippetSupport);
-				});
-
-				it("after command", function() {
-					var items = computePosition("FROM busybox\nHEALTHCHECK CMD", 1, 15, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK cmd", 1, 15, snippetSupport);
-					assert.equal(items.length, 0);
-
-					var items = computePosition("FROM busybox\nHEALTHCHECK CMD ", 1, 16, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK cmd ", 1, 16, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK CMD\\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK cmd\\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK CMD \\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK cmd \\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK NONE", 1, 16, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK none", 1, 16, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK NONE ", 1, 17, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK none ", 1, 17, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK NONE \\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK none \\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK NONE\\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-
-					items = computePosition("FROM busybox\nHEALTHCHECK none\\\n", 2, 0, snippetSupport);
-					assert.equal(items.length, 0);
-				});
+			describe("snippets", function() {
+				testFlags(true);
 			});
-		}
+			
 
-		describe("snippets", function() {
-			testHealthcheck(true);
+			describe("plain text", function() {
+				testFlags(true);
+			});
 		});
-		
-
-		describe("plain text", function() {
-			testHealthcheck(false);
-		});
-	});
+	}
+	testHealthcheck(false);
 
 	describe('ONBUILD nesting', function() {
 		it('all', function() {
@@ -1599,6 +1604,8 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(proposals.length, 0);
 			});
 		});
+
+		testHealthcheck(true);
 	});
 
 	describe("variables", function() {
