@@ -54,15 +54,4 @@ export abstract class ModifiableInstruction extends Instruction {
 		}
 		return this.flags;
 	}
-
-	public getSubcommand(): Argument {
-		let args = this.getArguments();
-		for (let arg of args) {
-			let value = arg.getValue().toUpperCase();
-			if (value === "CMD" || value === "NONE") {
-				return arg;
-			}
-		}
-		return null;
-	}
 }

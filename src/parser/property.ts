@@ -11,24 +11,23 @@ export class Property {
 
 	private readonly nameRange: Range;
 	private readonly name: string = null;
-	private readonly valueRange: Range;
 	private readonly value: string = null;
 
 	constructor(document: TextDocument, escapeChar: string, arg: Argument, arg2?: Argument) {
 		if (arg2) {
 			this.nameRange = arg.getRange();
 			this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
-			this.valueRange = arg2.getRange();
-			let value = document.getText().substring(document.offsetAt(this.valueRange.start), document.offsetAt(this.valueRange.end));
+			let valueRange = arg2.getRange();
+			let value = document.getText().substring(document.offsetAt(valueRange.start), document.offsetAt(valueRange.end));
 			this.value = Property.getValue(value, escapeChar);
 		} else {
 			this.nameRange = Property.getNameRange(document, arg);
 			if (this.nameRange) {
 				this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
 			}
-			this.valueRange = Property.getValueRange(document, escapeChar, arg);
-			if (this.valueRange) {
-				let value = document.getText().substring(document.offsetAt(this.valueRange.start), document.offsetAt(this.valueRange.end));
+			let valueRange = Property.getValueRange(document, escapeChar, arg);
+			if (valueRange) {
+				let value = document.getText().substring(document.offsetAt(valueRange.start), document.offsetAt(valueRange.end));
 				this.value = Property.getValue(value, escapeChar);
 			}
 		}
@@ -44,10 +43,6 @@ export class Property {
 
 	public getValue(): string | null {
 		return this.value;
-	}
-
-	public getValueRange(): Range {
-		return this.valueRange;
 	}
 
 	private static getNameRange(document: TextDocument, arg: Argument): Range | null{
