@@ -91,23 +91,54 @@ export class DockerHover {
 				}
 			}
 
-			if (instruction.getKeyword() === "HEALTHCHECK") {
-				let flags = (instruction as ModifiableInstruction).getFlags();
-				for (let flag of flags) {
-					if (Util.isInsideRange(textDocumentPosition.position, flag.getNameRange())) {
-						switch (flag.getName()) {
-							case "interval":
-								return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
-							case "retries":
-								return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
-							case "start-period":
-								return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
-							case "timeout":
-								return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
+			switch (instruction.getKeyword()) {
+				case "HEALTHCHECK":
+					let flags = (instruction as ModifiableInstruction).getFlags();
+					for (let flag of flags) {
+						if (Util.isInsideRange(textDocumentPosition.position, flag.getNameRange())) {
+							switch (flag.getName()) {
+								case "interval":
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
+								case "retries":
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
+								case "start-period":
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
+								case "timeout":
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
+							}
+							return null;
 						}
-						return null;
 					}
-				}
+					break;
+				case "ONBUILD":
+					if ((instruction as Onbuild).getTriggerInstruction() === "HEALTHCHECK") {
+						for (let arg of instruction.getArguments()) {
+							let value = arg.getValue().toUpperCase();
+							if ((value === "CMD" || value === "NONE") && arg.isBefore(textDocumentPosition.position)) {
+								return null;
+							}
+						}
+
+						for (let arg of instruction.getArguments()) {
+							if (Util.isInsideRange(textDocumentPosition.position, arg.getRange())) {
+								let value = arg.getValue();
+								if (value.indexOf("--interval") === 0) {
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
+								}
+								if (value.indexOf("--retries") === 0) {
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
+								}
+								if (value.indexOf("--start-period") === 0) {
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
+								}
+								if (value.indexOf("--timeout") === 0) {
+									return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
+								}
+							}
+						}
+					}
+					break;
+
 			}
 		}
 

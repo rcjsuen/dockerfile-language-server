@@ -24,7 +24,7 @@ All notable changes to this project will be documented in this file.
     - default Docker ARG variables 
     - add '$' as a trigger character 
 - textDocument/hover
-  - HEALTHCHECK CMD flags ([#82](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/82))
+  - HEALTHCHECK CMD flags ([#82](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/82), [#104](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/104))
 - textDocument/publishDiagnostics
   - check the spelling of instruction flags ([#75](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/75))
     - COPY's from

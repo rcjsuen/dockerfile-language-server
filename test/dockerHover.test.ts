@@ -731,59 +731,70 @@ describe("Dockerfile hover", function() {
 			});
 		});
 
-		describe("HEALTHCHECK", function() {
-			it("--interval", function() {
-				let document = createDocument("HEALTHCHECK --interval");
-				let hover = onHover(document, 0, 17);
-				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
-			});
+		function createHealthcheckTest(trigger: boolean) {
+			let onbuild = trigger ? "ONBUILD " : "";
+			let triggerOffset = onbuild.length;
 
-			it("--interval=\\$x", function() {
-				let document = createDocument("HEALTHCHECK --interval=\\$x");
-				let hover = onHover(document, 0, 17);
-				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
-			});
-
-			it("--interval=\\a", function() {
-				let document = createDocument("HEALTHCHECK --interval=\\a");
-				let hover = onHover(document, 0, 17);
-				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
-			});
-
-			it("--retries", function() {
-				let document = createDocument("HEALTHCHECK --retries");
-				let hover = onHover(document, 0, 17);
-				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagRetries"));
-			});
-
-			it("--start-period", function() {
-				let document = createDocument("HEALTHCHECK --start-period");
-				let hover = onHover(document, 0, 17);
-				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagStartPeriod"));
-			});
-
-			it("--timeout", function() {
-				let document = createDocument("HEALTHCHECK --timeout");
-				let hover = onHover(document, 0, 17);
-				assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagTimeout"));
-			});
-
-			function createFlagsAfterTest(subcommand: string) {
-				it("flags after " + subcommand, function() {
-					let document = createDocument("HEALTHCHECK " + subcommand + " \\\n--interval=30s\\\n--retries=3\\\n--start-period=30s\\\n--timeout=30s");
-					let hover = onHover(document, 1, 4);
-					assert.equal(hover,  null);
-					hover = onHover(document, 2, 4);
-					assert.equal(hover,  null);
-					hover = onHover(document, 3, 4);
-					assert.equal(hover,  null);
-					hover = onHover(document, 4, 4);
-					assert.equal(hover,  null);
+			describe("HEALTHCHECK", function() {
+				it("--interval", function() {
+					let document = createDocument(onbuild + "HEALTHCHECK --interval");
+					let hover = onHover(document, 0, triggerOffset + 17);
+					assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
 				});
-			}
 
-			createFlagsAfterTest("CMD");
-			createFlagsAfterTest("NONE");
+				it("--interval=\\$x", function() {
+					let document = createDocument(onbuild + "HEALTHCHECK --interval=\\$x");
+					let hover = onHover(document, 0, triggerOffset + 17);
+					assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
+				});
+
+				it("--interval=\\a", function() {
+					let document = createDocument(onbuild + "HEALTHCHECK --interval=\\a");
+					let hover = onHover(document, 0, triggerOffset + 17);
+					assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagInterval"));
+				});
+
+				it("--retries", function() {
+					let document = createDocument(onbuild + "HEALTHCHECK --retries");
+					let hover = onHover(document, 0, triggerOffset + 17);
+					assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagRetries"));
+				});
+
+				it("--start-period", function() {
+					let document = createDocument(onbuild + "HEALTHCHECK --start-period");
+					let hover = onHover(document, 0, triggerOffset + 17);
+					assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagStartPeriod"));
+				});
+
+				it("--timeout", function() {
+					let document = createDocument(onbuild + "HEALTHCHECK --timeout");
+					let hover = onHover(document, 0, triggerOffset + 17);
+					assert.equal(hover,  markdownDocumentation.getMarkdown("HEALTHCHECK_FlagTimeout"));
+				});
+
+				function createFlagsAfterTest(subcommand: string) {
+					it("flags after " + subcommand, function() {
+						let document = createDocument(onbuild + "HEALTHCHECK " + subcommand + " \\\n--interval=30s\\\n--retries=3\\\n--start-period=30s\\\n--timeout=30s");
+						let hover = onHover(document, 1, 4);
+						assert.equal(hover,  null);
+						hover = onHover(document, 2, 4);
+						assert.equal(hover,  null);
+						hover = onHover(document, 3, 4);
+						assert.equal(hover,  null);
+						hover = onHover(document, 4, 4);
+						assert.equal(hover,  null);
+					});
+				}
+
+				createFlagsAfterTest("CMD");
+				createFlagsAfterTest("NONE");
+			});
+		}
+
+		createHealthcheckTest(false);
+
+		describe("ONBUILD", function() {
+			createHealthcheckTest(true);
 		});
 	});
 
