@@ -177,11 +177,11 @@ function assertFROM(item: CompletionItem, line: number, character: number, prefi
 }
 
 function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "HEALTHCHECK --interval=30s --timeout=30s --start-period=0s --retries=3 CMD [ \"executable\" ]");
+	assert.equal(item.label, "HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ \"executable\" ]");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-		assert.equal(item.textEdit.newText, "HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --start-period=${3:0s} --retries=${4:3} CMD [ \"${5:executable}\" ]");
+		assert.equal(item.textEdit.newText, "HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --start-period=${3:5s} --retries=${4:3} CMD [ \"${5:executable}\" ]");
 	} else {
 		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
 		assert.equal(item.textEdit.newText, "HEALTHCHECK");
@@ -225,11 +225,11 @@ function assertHEALTHCHECK_FlagTimeout(item: CompletionItem, startLine: number, 
 }
 
 function assertHEALTHCHECK_FlagStartPeriod(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "--start-period=0s");
+	assert.equal(item.label, "--start-period=5s");
 	assert.equal(item.kind, CompletionItemKind.Field);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-		assert.equal(item.textEdit.newText, "--start-period=${1:0s}");
+		assert.equal(item.textEdit.newText, "--start-period=${1:5s}");
 	} else {
 		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
 		assert.equal(item.textEdit.newText, "--start-period=");
