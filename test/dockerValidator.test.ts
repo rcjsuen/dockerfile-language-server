@@ -1646,7 +1646,7 @@ describe("Docker Validator Tests", function() {
 					assertFlagInvalidDuration(diagnostics[0], "a1s", 1, 22, 1, 25);
 				});
 
-				it("invalid duration", function() {
+				it("missing duration", function() {
 					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=10 CMD ls");
 					assert.equal(diagnostics.length, 1);
 					assertFlagMissingDuration(diagnostics[0], "10", 1, 23, 1, 25);
