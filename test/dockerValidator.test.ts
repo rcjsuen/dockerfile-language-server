@@ -88,6 +88,17 @@ function assertFlagInvalidDuration(diagnostic: Diagnostic, flag: string, startLi
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertFlagLessThan1ms(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FLAG_LESS_THAN_1MS);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagLessThan1ms(flag));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertFlagMissingDuration(diagnostic: Diagnostic, duration: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.FLAG_MISSING_DURATION);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1486,7 +1497,7 @@ describe("Docker Validator Tests", function() {
 		describe("CMD", function() {
 			describe("flags", function() {
 				it("ok", function() {
-					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s --retries=3 --start-period=0s --timeout=30s CMD ls");
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s --retries=3 --start-period=5s --timeout=30s CMD ls");
 					assert.equal(diagnostics.length, 0);
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=30s CMD ls");
@@ -1495,7 +1506,7 @@ describe("Docker Validator Tests", function() {
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --retries=3 CMD ls");
 					assert.equal(diagnostics.length, 0);
 
-					diagnostics = validate("FROM alpine\nHEALTHCHECK --start-period=0s CMD ls");
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --start-period=5s CMD ls");
 					assert.equal(diagnostics.length, 0);
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=30s CMD ls");
@@ -1671,6 +1682,63 @@ describe("Docker Validator Tests", function() {
 					assert.equal(diagnostics.length, 1);
 					assertFlagMissingDuration(diagnostics[0], "-10", 1, 22, 1, 25);
 				});
+
+				function createDurationTooShortTests(flag: string) {
+					it(flag + " too short", function() {
+						let diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=900ms CMD ls");
+						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=1s CMD ls");
+						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=1m CMD ls");
+						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=1h CMD ls");
+						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=500us600us CMD ls");
+						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=500ns600s CMD ls");
+						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=0s10s CMD ls");
+						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=-1s CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=100us CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=100µs CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=100ns CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=-500ns600s CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=-0s CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=-0s10s CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
+					});
+				}
+
+				createDurationTooShortTests("interval");
+				createDurationTooShortTests("start-period");
+				createDurationTooShortTests("timeout");
 			});
 		});
 

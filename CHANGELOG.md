@@ -46,6 +46,7 @@ All notable changes to this project will be documented in this file.
     - warn if no arguments follow a HEALTHCHECK CMD ([#96](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/96))
     - warn if duration flags are invalid ([#87](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/87))
     - warn if duration flags do not specify a duration ([#86](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/86))
+    - warn if duration flags are too short ([#97](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/97))
 - created a CHANGELOG.md file to document the project's changes ([#77](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/77))
 
 ### Fixed

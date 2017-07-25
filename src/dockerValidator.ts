@@ -27,6 +27,7 @@ export enum ValidationCode {
 	FLAG_AT_LEAST_ONE,
 	FLAG_DUPLICATE,
 	FLAG_INVALID_DURATION,
+	FLAG_LESS_THAN_1MS,
 	FLAG_MISSING_DURATION,
 	FLAG_MISSING_VALUE,
 	NO_SOURCE_IMAGE,
@@ -407,8 +408,11 @@ export class Validator {
 							continue flagCheck;
 					}
 
-					for (let i = 1; i < value.length; i++) {
+					let start = 0;
+					let duration = 0;
+					durationParse: for (let i = 0; i < value.length; i++) {
 						switch (value.charAt(i)) {
+							case '-':
 							case '0':
 							case '1':
 							case '2':
@@ -421,14 +425,122 @@ export class Validator {
 							case '9':
 								continue;
 							default:
+								let time = parseInt(value.substring(start, i));
+								for (let j = i + 1; j < value.length; j++) {
+									if (Validator.isNumberRelated(value.charAt(j))) {
+										let unit = value.substring(i, j);
+										if (time < 0 || (value.charAt(start) === '-' && time === 0)) {
+											let nameRange = flag.getNameRange();
+											problems.push(Validator.createFlagLessThan1ms(nameRange.start, nameRange.end, flagName));
+											continue flagCheck;
+										}
+										switch (unit) {
+											case 'h':
+												// hours
+												duration += time * 1000 * 60 * 60;
+												i = j;
+												start = i;
+												continue durationParse;
+											case 'm':
+												// minutes
+												duration += time * 1000 * 60;
+												i = j;
+												start = i;
+												continue durationParse;
+											case 's':
+												// seconds
+												duration += time * 1000;
+												i = j;
+												start = i;
+												continue durationParse;
+											case "ms":
+												// milliseconds
+												duration += time;
+												i = j;
+												start = i;
+												continue durationParse;
+											case "us":
+											case "µs":
+												// microseconds
+												duration += time / 1000;
+												i = j;
+												start = i;
+												continue durationParse;
+											case "ns":
+												// nanoseconds
+												duration += time / 1000000;
+												i = j;
+												start = i;
+												continue durationParse;
+										}
+									}
+								}
+								if (time < 0 || (value.charAt(start) === '-' && time === 0)) {
+									let nameRange = flag.getNameRange();
+									problems.push(Validator.createFlagLessThan1ms(nameRange.start, nameRange.end, flagName));
+									continue flagCheck;
+								}
+								let unit = value.substring(i, value.length);
+								switch (unit) {
+									case 'h':
+										// hours
+										duration += time * 1000 * 60 * 60;
+										break durationParse;
+									case 'm':
+										// minutes
+										duration += time * 1000 * 60;
+										break durationParse;
+									case 's':
+										// seconds
+										duration += time * 1000;
+										break durationParse;
+									case "ms":
+										// minutes
+										duration += time;
+										break durationParse;
+									case "us":
+									case "µs":
+										// microseconds
+										duration += time / 1000;
+										break durationParse;
+									case "ns":
+										// nanoseconds
+										duration += time / 1000000;
+										break durationParse;
+								}
 								continue flagCheck;
 						}	
 					}
-					let range = flag.getValueRange();
-					problems.push(Validator.createFlagMissingDuration(range.start, range.end, value));
+
+					if (duration === 0) {
+						let range = flag.getValueRange();
+						problems.push(Validator.createFlagMissingDuration(range.start, range.end, value));
+					} else if (duration < 1) {
+						let range = flag.getNameRange();
+						problems.push(Validator.createFlagLessThan1ms(range.start, range.end, flagName));
+					}
 				}
 			}
 		}
+	}
+
+	private static isNumberRelated(character: string) {
+		switch (character) {
+			case '-':
+			case '.':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				return true;
+		}
+		return false;
 	}
 
 	private checkDuplicateFlags(flags: Flag[], validFlags: string[], problems: Diagnostic[]): void {
@@ -465,6 +577,7 @@ export class Validator {
 		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
 		"flagDuplicate": "Duplicate flag specified: ${0}",
 		"flagInvalidDuration": "time: invalid duration ${0}",
+		"flagLessThan1ms": "Interval \"${0}\" cannot be less than 1ms",
 		"flagMissingDuration": "time: missing unit in duration ${0}",
 		"flagMissingValue": "Missing a value on flag: ${0}",
 		"flagUnknown": "Unknown flag: ${0}",
@@ -512,6 +625,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_FlagInvalidDuration(flag: string) {
 		return Validator.formatMessage(Validator.dockerProblems["flagInvalidDuration"], flag);
+	}
+
+	public static getDiagnosticMessage_FlagLessThan1ms(flag: string) {
+		return Validator.formatMessage(Validator.dockerProblems["flagLessThan1ms"], flag);
 	}
 
 	public static getDiagnosticMessage_FlagMissingDuration(duration: string) {
@@ -604,6 +721,10 @@ export class Validator {
 
 	private static createFlagInvalidDuration(start: Position, end: Position, flag: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagInvalidDuration(flag), ValidationCode.FLAG_INVALID_DURATION);
+	}
+
+	private static createFlagLessThan1ms(start: Position, end: Position, flag: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagLessThan1ms(flag), ValidationCode.FLAG_LESS_THAN_1MS);
 	}
 
 	private static createFlagMissingDuration(start: Position, end: Position, duration: string): Diagnostic {
