@@ -13,6 +13,10 @@ node_js:
   - "8"
   - "6"
 
+cache:
+  directories:
+    - node_modules
+
 matrix:
   fast_finish: true
 
