@@ -408,9 +408,11 @@ export class Validator {
 							continue flagCheck;
 					}
 
+					let durationSpecified = false;
 					let start = 0;
 					let duration = 0;
 					durationParse: for (let i = 0; i < value.length; i++) {
+						durationSpecified = false;
 						switch (value.charAt(i)) {
 							case '-':
 							case '0':
@@ -438,39 +440,45 @@ export class Validator {
 											case 'h':
 												// hours
 												duration += time * 1000 * 60 * 60;
-												i = j;
+												i = j - 1;
 												start = i;
+												durationSpecified = true;
 												continue durationParse;
 											case 'm':
 												// minutes
 												duration += time * 1000 * 60;
-												i = j;
+												i = j - 1;
 												start = i;
+												durationSpecified = true;
 												continue durationParse;
 											case 's':
 												// seconds
 												duration += time * 1000;
-												i = j;
+												i = j - 1;
 												start = i;
+												durationSpecified = true;
 												continue durationParse;
 											case "ms":
 												// milliseconds
 												duration += time;
-												i = j;
+												i = j - 1;
 												start = i;
+												durationSpecified = true;
 												continue durationParse;
 											case "us":
 											case "µs":
 												// microseconds
 												duration += time / 1000;
-												i = j;
+												i = j - 1;
 												start = i;
+												durationSpecified = true;
 												continue durationParse;
 											case "ns":
 												// nanoseconds
 												duration += time / 1000000;
-												i = j;
+												i = j - 1;
 												start = i;
+												durationSpecified = true;
 												continue durationParse;
 										}
 									}
@@ -485,34 +493,40 @@ export class Validator {
 									case 'h':
 										// hours
 										duration += time * 1000 * 60 * 60;
+										durationSpecified = true;
 										break durationParse;
 									case 'm':
 										// minutes
 										duration += time * 1000 * 60;
+										durationSpecified = true;
 										break durationParse;
 									case 's':
 										// seconds
 										duration += time * 1000;
+										durationSpecified = true;
 										break durationParse;
 									case "ms":
 										// minutes
 										duration += time;
+										durationSpecified = true;
 										break durationParse;
 									case "us":
 									case "µs":
 										// microseconds
 										duration += time / 1000;
+										durationSpecified = true;
 										break durationParse;
 									case "ns":
 										// nanoseconds
 										duration += time / 1000000;
+										durationSpecified = true;
 										break durationParse;
 								}
 								continue flagCheck;
 						}	
 					}
 
-					if (duration === 0) {
+					if (!durationSpecified) {
 						let range = flag.getValueRange();
 						problems.push(Validator.createFlagMissingDuration(range.start, range.end, value));
 					} else if (duration < 1) {

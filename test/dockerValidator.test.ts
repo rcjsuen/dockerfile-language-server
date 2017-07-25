@@ -1681,6 +1681,10 @@ describe("Docker Validator Tests", function() {
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=-10 CMD ls");
 					assert.equal(diagnostics.length, 1);
 					assertFlagMissingDuration(diagnostics[0], "-10", 1, 22, 1, 25);
+					
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=5s5 CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagMissingDuration(diagnostics[0], "5s5", 1, 22, 1, 25);
 				});
 
 				function createDurationTooShortTests(flag: string) {
@@ -1705,6 +1709,10 @@ describe("Docker Validator Tests", function() {
 
 						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=0s10s CMD ls");
 						assert.equal(diagnostics.length, 0);
+
+						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=0s CMD ls");
+						assert.equal(diagnostics.length, 1);
+						assertFlagLessThan1ms(diagnostics[0], flag, 1, 14, 1, 14 + flag.length);
 
 						diagnostics = validate("FROM alpine\nHEALTHCHECK --" + flag + "=-1s CMD ls");
 						assert.equal(diagnostics.length, 1);
