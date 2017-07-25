@@ -16,7 +16,7 @@ export class Onbuild extends Instruction {
 		return trigger === null ? null : trigger.toUpperCase();
 	}
 
-	public getTrigger(): string | null {
+	private getTrigger(): string | null {
 		return this.getRangeContent(this.getTriggerRange());
 	}
 

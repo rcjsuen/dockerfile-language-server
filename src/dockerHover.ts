@@ -66,7 +66,7 @@ export class DockerHover {
 				// hovering over a trigger instruction of an ONBUILD
 				let range = instruction.getTriggerRange();
 				if (Util.isInsideRange(textDocumentPosition.position, range)) {
-					return this.markdown.getMarkdown(instruction.getTrigger());
+					return this.markdown.getMarkdown(instruction.getTriggerInstruction());
 				}
 			}
 

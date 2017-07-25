@@ -821,6 +821,14 @@ describe("Dockerfile hover", function() {
 			let document = createDocument("ONBUILD EXPOSE 8080");
 			let hover = onHover(document, 0, 11);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("ONBUILD expose 8080");
+			hover = onHover(document, 0, 11);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
+
+			document = createDocument("ONBUILD ExposE 8080");
+			hover = onHover(document, 0, 11);
+			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 		});
 
 		it("ONBUILD EXPOSE escaped on newline", function() {
