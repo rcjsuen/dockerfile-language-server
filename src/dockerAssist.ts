@@ -45,7 +45,7 @@ export class DockerAssist {
 						let range = comments[0].getContentRange();
 						if (range === null || position.character <= range.start.character) {
 							// in whitespace
-							return [ this.createEscape("", offset, DIRECTIVE_ESCAPE) ];
+							return [ this.createEscape(0, offset, DIRECTIVE_ESCAPE) ];
 						}
 						let comment = comments[0].getContent();
 						if (position.character <= range.end.character) {
@@ -53,7 +53,7 @@ export class DockerAssist {
 							let prefix = comment.substring(0, position.character - range.start.character);
 							// substring check
 							if (DIRECTIVE_ESCAPE.indexOf(prefix.toLowerCase()) === 0) {
-								return [ this.createEscape(prefix, offset, DIRECTIVE_ESCAPE) ];
+								return [ this.createEscape(prefix.length, offset, DIRECTIVE_ESCAPE) ];
 							}
 						}
 						return [];
@@ -155,10 +155,10 @@ export class DockerAssist {
 		if (prefix === "") {
 			if (dockerfile.getInstructions().length === 0) {
 				// if we don't have any instructions, only suggest FROM
-				return [ this.createFROM(prefix, offset, "FROM") ];
+				return [ this.createFROM(0, offset, "FROM") ];
 			}
 			// no prefix, return all the proposals
-			return this.createProposals(KEYWORDS, previousWord, "", offset);
+			return this.createProposals(KEYWORDS, previousWord, 0, offset);
 		}
 
 		var suggestions = [];
@@ -177,20 +177,20 @@ export class DockerAssist {
 			return [];
 		}
 
-		return this.createProposals(suggestions, previousWord, prefix, offset);
+		return this.createProposals(suggestions, previousWord, prefix.length, offset);
 	}
 
-	createProposals(keywords: string[], previousWord: string, prefix: string, offset: number): CompletionItem[] {
+	createProposals(keywords: string[], previousWord: string, prefixLength: number, offset: number): CompletionItem[] {
 		let proposals: CompletionItem[] = [];
 		for (var i = 0; i < keywords.length; i++) {
 			switch (keywords[i]) {
 				case "ARG":
-					proposals.push(this.createARG_NameOnly(prefix, offset));
-					proposals.push(this.createARG_DefaultValue(prefix, offset));
+					proposals.push(this.createARG_NameOnly(prefixLength, offset));
+					proposals.push(this.createARG_DefaultValue(prefixLength, offset));
 					break;
 				case "HEALTHCHECK":
-					proposals.push(this.createHEALTHCHECK_CMD(prefix, offset));
-					proposals.push(this.createHEALTHCHECK_NONE(prefix, offset));
+					proposals.push(this.createHEALTHCHECK_CMD(prefixLength, offset));
+					proposals.push(this.createHEALTHCHECK_NONE(prefixLength, offset));
 					break;
 				case "FROM":
 				case "MAINTAINER":
@@ -200,7 +200,7 @@ export class DockerAssist {
 						break;
 					}
 				default:
-					proposals.push(this.createSingleProposals(keywords[i], prefix, offset));
+					proposals.push(this.createSingleProposals(keywords[i], prefixLength, offset));
 					break;
 			}
 		}
@@ -217,7 +217,7 @@ export class DockerAssist {
 			for (let from of dockerfile.getFROMs()) {
 				let stage = from.getBuildStage();
 				if (stage && stage.indexOf(prefix) === 0) {
-					items.push(this.createSourceImageCompletionItem(stage, prefix, offset));
+					items.push(this.createSourceImageCompletionItem(stage, prefix.length, offset));
 				}
 			}
 			items.sort((item: CompletionItem, item2: CompletionItem) => {
@@ -231,16 +231,16 @@ export class DockerAssist {
 	private createHealthcheckProposals(dockerfile: Dockerfile, position: Position, offset: number, prefix: string) {
 		let items: CompletionItem[] = [];
 		if ("--interval".indexOf(prefix) === 0) {
-			items.push(this.createHEALTHCHECK_FlagInterval(prefix, offset));
+			items.push(this.createHEALTHCHECK_FlagInterval(prefix.length, offset));
 		}
 		if ("--retries".indexOf(prefix) === 0) {
-			items.push(this.createHEALTHCHECK_FlagRetries(prefix, offset));
+			items.push(this.createHEALTHCHECK_FlagRetries(prefix.length, offset));
 		}
 		if ("--start-period".indexOf(prefix) === 0) {
-			items.push(this.createHEALTHCHECK_FlagStartPeriod(prefix, offset));
+			items.push(this.createHEALTHCHECK_FlagStartPeriod(prefix.length, offset));
 		}
 		if ("--timeout".indexOf(prefix) === 0) {
-			items.push(this.createHEALTHCHECK_FlagTimeout(prefix, offset));
+			items.push(this.createHEALTHCHECK_FlagTimeout(prefix.length, offset));
 		}
 		return items;
 	}
@@ -299,160 +299,160 @@ export class DockerAssist {
 		return "";
 	}
 
-	createSingleProposals(keyword: string, prefix: string, offset: number): CompletionItem {
+	createSingleProposals(keyword: string, prefixLength: number, offset: number): CompletionItem {
 		switch (keyword) {
 			case "ADD":
-				return this.createADD(prefix, offset, keyword);
+				return this.createADD(prefixLength, offset, keyword);
 			case "CMD":
-				return this.createCMD(prefix, offset, keyword);
+				return this.createCMD(prefixLength, offset, keyword);
 			case "COPY":
-				return this.createCOPY(prefix, offset, keyword);
+				return this.createCOPY(prefixLength, offset, keyword);
 			case "ENTRYPOINT":
-				return this.createENTRYPOINT(prefix, offset, keyword);
+				return this.createENTRYPOINT(prefixLength, offset, keyword);
 			case "ENV":
-				return this.createENV(prefix, offset, keyword);
+				return this.createENV(prefixLength, offset, keyword);
 			case "EXPOSE":
-				return this.createEXPOSE(prefix, offset, keyword);
+				return this.createEXPOSE(prefixLength, offset, keyword);
 			case "FROM":
-				return this.createFROM(prefix, offset, keyword);
+				return this.createFROM(prefixLength, offset, keyword);
 			case "LABEL":
-				return this.createLABEL(prefix, offset, keyword);
+				return this.createLABEL(prefixLength, offset, keyword);
 			case "MAINTAINER":
-				return this.createMAINTAINER(prefix, offset, keyword);
+				return this.createMAINTAINER(prefixLength, offset, keyword);
 			case "ONBUILD":
-				return this.createONBUILD(prefix, offset, keyword);
+				return this.createONBUILD(prefixLength, offset, keyword);
 			case "RUN":
-				return this.createRUN(prefix, offset, keyword);
+				return this.createRUN(prefixLength, offset, keyword);
 			case "SHELL":
-				return this.createSHELL(prefix, offset, keyword);
+				return this.createSHELL(prefixLength, offset, keyword);
 			case "STOPSIGNAL":
-				return this.createSTOPSIGNAL(prefix, offset, keyword);
+				return this.createSTOPSIGNAL(prefixLength, offset, keyword);
 			case "WORKDIR":
-				return this.createWORKDIR(prefix, offset, keyword);
+				return this.createWORKDIR(prefixLength, offset, keyword);
 			case "VOLUME":
-				return this.createVOLUME(prefix, offset, keyword);
+				return this.createVOLUME(prefixLength, offset, keyword);
 			case "USER":
-				return this.createUSER(prefix, offset, keyword);
+				return this.createUSER(prefixLength, offset, keyword);
 		}
 		throw new Error("Unknown keyword found: " + keyword);
 	}
 
-	createADD(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("ADD", "ADD source dest", prefix, offset, "ADD ${1:source} ${2:dest}", markdown);
+	createADD(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("ADD", "ADD source dest", prefixLength, offset, "ADD ${1:source} ${2:dest}", markdown);
 	}
 
-	createARG_NameOnly(prefix: string, offset: number): CompletionItem {
-		return this.createKeywordCompletionItem("ARG", "ARG name", prefix, offset, "ARG ${1:name}", "ARG_NameOnly");
+	createARG_NameOnly(prefixLength: number, offset: number): CompletionItem {
+		return this.createKeywordCompletionItem("ARG", "ARG name", prefixLength, offset, "ARG ${1:name}", "ARG_NameOnly");
 	}
 
-	createARG_DefaultValue(prefix: string, offset: number): CompletionItem {
-		return this.createKeywordCompletionItem("ARG", "ARG name=defaultValue", prefix, offset, "ARG ${1:name}=${2:defaultValue}", "ARG_DefaultValue");
+	createARG_DefaultValue(prefixLength: number, offset: number): CompletionItem {
+		return this.createKeywordCompletionItem("ARG", "ARG name=defaultValue", prefixLength, offset, "ARG ${1:name}=${2:defaultValue}", "ARG_DefaultValue");
 	}
 
-	createCMD(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("CMD", "CMD [ \"executable\" ]", prefix, offset, "CMD [ \"${1:executable}\" ]", markdown);
+	createCMD(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("CMD", "CMD [ \"executable\" ]", prefixLength, offset, "CMD [ \"${1:executable}\" ]", markdown);
 	}
 
-	createCOPY(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("COPY", "COPY source dest", prefix, offset, "COPY ${1:source} ${2:dest}", markdown);
+	createCOPY(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("COPY", "COPY source dest", prefixLength, offset, "COPY ${1:source} ${2:dest}", markdown);
 	}
 
-	createENTRYPOINT(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("ENTRYPOINT", "ENTRYPOINT [ \"executable\" ]", prefix, offset, "ENTRYPOINT [ \"${1:executable}\" ]", markdown);
+	createENTRYPOINT(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("ENTRYPOINT", "ENTRYPOINT [ \"executable\" ]", prefixLength, offset, "ENTRYPOINT [ \"${1:executable}\" ]", markdown);
 	}
 
-	createENV(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("ENV", "ENV key=value", prefix, offset, "ENV ${1:key}=${2:value}", markdown);
+	createENV(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("ENV", "ENV key=value", prefixLength, offset, "ENV ${1:key}=${2:value}", markdown);
 	}
 
-	createEXPOSE(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("EXPOSE", "EXPOSE port", prefix, offset, "EXPOSE ${1:port}", markdown);
+	createEXPOSE(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("EXPOSE", "EXPOSE port", prefixLength, offset, "EXPOSE ${1:port}", markdown);
 	}
 
-	createFROM(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("FROM", "FROM baseImage", prefix, offset, "FROM ${1:baseImage}", markdown);
+	createFROM(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("FROM", "FROM baseImage", prefixLength, offset, "FROM ${1:baseImage}", markdown);
 	}
 
-	createHEALTHCHECK_CMD(prefix: string, offset: number): CompletionItem {
+	createHEALTHCHECK_CMD(prefixLength: number, offset: number): CompletionItem {
 		return this.createKeywordCompletionItem("HEALTHCHECK",
 			"HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ \"executable\" ]",
-			prefix,
+			prefixLength,
 			offset,
 			"HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --start-period=${3:5s} --retries=${4:3} CMD [ \"${5:executable}\" ]",
 			"HEALTHCHECK_CMD");
 	}
 
-	private createHEALTHCHECK_FlagInterval(prefix: string, offset: number): CompletionItem {
+	private createHEALTHCHECK_FlagInterval(prefixLength: number, offset: number): CompletionItem {
 		let insertText = this.snippetSupport ? "--interval=${1:30s}" : "--interval=";
-		return this.createFlagCompletionItem("--interval=30s", prefix, offset, insertText, "HEALTHCHECK_FlagInterval");
+		return this.createFlagCompletionItem("--interval=30s", prefixLength, offset, insertText, "HEALTHCHECK_FlagInterval");
 	}
 
-	private createHEALTHCHECK_FlagRetries(prefix: string, offset: number): CompletionItem {
+	private createHEALTHCHECK_FlagRetries(prefixLength: number, offset: number): CompletionItem {
 		let insertText = this.snippetSupport ? "--retries=${1:3}" : "--retries=";
-		return this.createFlagCompletionItem("--retries=3", prefix, offset, insertText, "HEALTHCHECK_FlagRetries");
+		return this.createFlagCompletionItem("--retries=3", prefixLength, offset, insertText, "HEALTHCHECK_FlagRetries");
 	}
 
-	private createHEALTHCHECK_FlagStartPeriod(prefix: string, offset: number): CompletionItem {
+	private createHEALTHCHECK_FlagStartPeriod(prefixLength: number, offset: number): CompletionItem {
 		let insertText = this.snippetSupport ? "--start-period=${1:5s}" : "--start-period=";
-		return this.createFlagCompletionItem("--start-period=5s", prefix, offset, insertText, "HEALTHCHECK_FlagStartPeriod");
+		return this.createFlagCompletionItem("--start-period=5s", prefixLength, offset, insertText, "HEALTHCHECK_FlagStartPeriod");
 	}
 
-	private createHEALTHCHECK_FlagTimeout(prefix: string, offset: number): CompletionItem {
+	private createHEALTHCHECK_FlagTimeout(prefixLength: number, offset: number): CompletionItem {
 		let insertText = this.snippetSupport ? "--timeout=${1:30s}" : "--timeout=";
-		return this.createFlagCompletionItem("--timeout=30s", prefix, offset, insertText, "HEALTHCHECK_FlagTimeout");
+		return this.createFlagCompletionItem("--timeout=30s", prefixLength, offset, insertText, "HEALTHCHECK_FlagTimeout");
 	}
 
-	createHEALTHCHECK_NONE(prefix: string, offset: number): CompletionItem {
-		return this.createPlainTextCompletionItem("HEALTHCHECK NONE", prefix, offset, "HEALTHCHECK NONE", "HEALTHCHECK_NONE");
+	createHEALTHCHECK_NONE(prefixLength: number, offset: number): CompletionItem {
+		return this.createPlainTextCompletionItem("HEALTHCHECK NONE", prefixLength, offset, "HEALTHCHECK NONE", "HEALTHCHECK_NONE");
 	}
 
-	createLABEL(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("LABEL", "LABEL key=\"value\"", prefix, offset, "LABEL ${1:key}=\"${2:value}\"", markdown);
+	createLABEL(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("LABEL", "LABEL key=\"value\"", prefixLength, offset, "LABEL ${1:key}=\"${2:value}\"", markdown);
 	}
 
-	createMAINTAINER(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("MAINTAINER", "MAINTAINER name", prefix, offset, "MAINTAINER ${1:name}", markdown);
+	createMAINTAINER(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("MAINTAINER", "MAINTAINER name", prefixLength, offset, "MAINTAINER ${1:name}", markdown);
 	}
 
-	createONBUILD(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("ONBUILD", "ONBUILD INSTRUCTION", prefix, offset, "ONBUILD ${1:INSTRUCTION}", markdown);
+	createONBUILD(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("ONBUILD", "ONBUILD INSTRUCTION", prefixLength, offset, "ONBUILD ${1:INSTRUCTION}", markdown);
 	}
 
-	createRUN(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("RUN", "RUN command", prefix, offset, "RUN ${1:command}", markdown);
+	createRUN(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("RUN", "RUN command", prefixLength, offset, "RUN ${1:command}", markdown);
 	}
 
-	createSHELL(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("SHELL", "SHELL [ \"executable\" ]", prefix, offset, "SHELL [ \"${1:executable}\" ]", markdown);
+	createSHELL(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("SHELL", "SHELL [ \"executable\" ]", prefixLength, offset, "SHELL [ \"${1:executable}\" ]", markdown);
 	}
 
-	createSTOPSIGNAL(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("STOPSIGNAL", "STOPSIGNAL signal", prefix, offset, "STOPSIGNAL ${1:signal}", markdown);
+	createSTOPSIGNAL(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("STOPSIGNAL", "STOPSIGNAL signal", prefixLength, offset, "STOPSIGNAL ${1:signal}", markdown);
 	}
 
-	createUSER(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("USER", "USER daemon", prefix, offset, "USER ${1:daemon}", markdown);
+	createUSER(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("USER", "USER daemon", prefixLength, offset, "USER ${1:daemon}", markdown);
 	}
 
-	createVOLUME(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("VOLUME", "VOLUME [ \"/data\" ]", prefix, offset, "VOLUME [ \"${1:/data}\" ]", markdown);
+	createVOLUME(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("VOLUME", "VOLUME [ \"/data\" ]", prefixLength, offset, "VOLUME [ \"${1:/data}\" ]", markdown);
 	}
 
-	createWORKDIR(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("WORKDIR", "WORKDIR /path", prefix, offset, "WORKDIR ${1:/path}", markdown);
+	createWORKDIR(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem("WORKDIR", "WORKDIR /path", prefixLength, offset, "WORKDIR ${1:/path}", markdown);
 	}
 
-	createEscape(prefix: string, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem(DIRECTIVE_ESCAPE, "escape=`", prefix, offset, "escape=${1:`}", markdown);
+	createEscape(prefixLength: number, offset: number, markdown: string): CompletionItem {
+		return this.createKeywordCompletionItem(DIRECTIVE_ESCAPE, "escape=`", prefixLength, offset, "escape=${1:`}", markdown);
 	}
 
-	createKeywordCompletionItem(keyword: string, label: string, prefix: string, offset: number, insertText: string, markdown: string): CompletionItem {
+	createKeywordCompletionItem(keyword: string, label: string, prefixLength: number, offset: number, insertText: string, markdown: string): CompletionItem {
 		if (!this.snippetSupport) {
 			// just insert the keyword if snippets are not supported by the client
 			insertText = keyword;
 		}
 
-		let textEdit = this.createTextEdit(prefix, offset, insertText);
+		let textEdit = this.createTextEdit(prefixLength, offset, insertText);
 		return {
 			data: markdown,
 			textEdit: textEdit,
@@ -462,8 +462,8 @@ export class DockerAssist {
 		};
 	}
 
-	private createPlainTextCompletionItem(label: string, prefix: string, offset: number, insertText: string, markdown: string): CompletionItem {
-		let textEdit = this.createTextEdit(prefix, offset, insertText);
+	private createPlainTextCompletionItem(label: string, prefixLength: number, offset: number, insertText: string, markdown: string): CompletionItem {
+		let textEdit = this.createTextEdit(prefixLength, offset, insertText);
 		return {
 			data: markdown,
 			textEdit: textEdit,
@@ -473,8 +473,8 @@ export class DockerAssist {
 		};
 	}
 
-	private createFlagCompletionItem(label: string, prefix: string, offset: number, insertText: string, markdown: string): CompletionItem {
-		let textEdit = this.createTextEdit(prefix, offset, insertText);
+	private createFlagCompletionItem(label: string, prefixLength: number, offset: number, insertText: string, markdown: string): CompletionItem {
+		let textEdit = this.createTextEdit(prefixLength, offset, insertText);
 		return {
 			data: markdown,
 			textEdit: textEdit,
@@ -484,9 +484,9 @@ export class DockerAssist {
 		};
 	}
 
-	private createSourceImageCompletionItem(label: string, prefix: string, offset: number): CompletionItem {
+	private createSourceImageCompletionItem(label: string, prefixLength: number, offset: number): CompletionItem {
 		return {
-			textEdit: this.createTextEdit(prefix, offset, label),
+			textEdit: this.createTextEdit(prefixLength, offset, label),
 			label: label,
 			kind: CompletionItemKind.Reference,
 			insertTextFormat: InsertTextFormat.PlainText,
@@ -495,7 +495,7 @@ export class DockerAssist {
 
 	private createVariableCompletionItem(text: string, prefixLength: number, offset: number, brace: boolean, documentation: string): CompletionItem {
 		return {
-			textEdit: this.createTextEdit2(prefixLength, offset, text),
+			textEdit: this.createTextEdit(prefixLength, offset, text),
 			label: text,
 			kind: CompletionItemKind.Variable,
 			insertTextFormat: InsertTextFormat.PlainText,
@@ -503,17 +503,10 @@ export class DockerAssist {
 		};
 	}
 
-	createTextEdit(prefix: string, offset: number, content: string): TextEdit {
-		if (prefix === "") {
+	private createTextEdit(prefixLength: number, offset: number, content: string): TextEdit {
+		if (prefixLength === 0) {
 			return TextEdit.insert(this.document.positionAt(offset), content);
 		}
-		return TextEdit.replace(Range.create(this.document.positionAt(offset - prefix.length), this.document.positionAt(offset)), content);
-	}
-
-	createTextEdit2(prefixLength: number, offset: number, text: string): TextEdit {
-		if (prefixLength === 0) {
-			return TextEdit.insert(this.document.positionAt(offset), text);
-		}
-		return TextEdit.replace(Range.create(this.document.positionAt(offset - prefixLength), this.document.positionAt(offset)), text);
+		return TextEdit.replace(Range.create(this.document.positionAt(offset - prefixLength), this.document.positionAt(offset)), content);
 	}
 }
