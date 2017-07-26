@@ -10,6 +10,7 @@ import { Flag } from './parser/flag';
 import { Instruction } from './parser/instruction';
 import { Env } from './parser/instructions/env';
 import { Healthcheck } from './parser/instructions/healthcheck';
+import { Onbuild } from './parser/instructions/onbuild';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { DIRECTIVE_ESCAPE } from './docker';
@@ -317,6 +318,20 @@ export class Validator {
 							this.checkFlagValue(flags, validFlags, problems);
 							this.checkFlagDuration(flags, [ "interval", "start-period", "timeout" ], problems);
 							this.checkDuplicateFlags(flags, validFlags, problems);
+						}
+						break;
+					case "ONBUILD":
+						this.checkArguments(instruction, problems, [ -1 ], function() {
+							return null;
+						});
+						let onbuild = (instruction as Onbuild);
+						// check the casing of the instruction and the actual trigger
+						if (onbuild.getTriggerInstruction() !== onbuild.getTrigger()) {
+							let range = onbuild.getTriggerRange();
+							let diagnostic = this.createUppercaseInstruction(range.start, range.end);
+							if (diagnostic) {
+								problems.push(diagnostic);
+							}
 						}
 						break;
 					case "STOPSIGNAL":

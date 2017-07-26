@@ -481,22 +481,24 @@ describe("Docker Validator Tests", function() {
 		});
 	});
 
-	describe("instruction", function() {
+	function createUppercaseStyleTest(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerLength = onbuild.length;
 		describe("uppercase style check", function() {
 			function testCasingStyle(mixed: string, argument: string) {
 				var length = mixed.length;
-				let diagnostics = validate("FROM node\n" + mixed.toUpperCase() + " " + argument);
+				let diagnostics = validate("FROM node\n" + onbuild + mixed.toUpperCase() + " " + argument);
 				assert.equal(diagnostics.length, 0);
 
-				diagnostics = validate("FROM node\n" + mixed.toLowerCase() + " " + argument);
+				diagnostics = validate("FROM node\n" + onbuild + mixed.toLowerCase() + " " + argument);
 				assert.equal(diagnostics.length, 1);
-				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, length);
+				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
 
-				diagnostics = validate("FROM node\n" + mixed + " " + argument);
+				diagnostics = validate("FROM node\n" + onbuild + mixed + " " + argument);
 				assert.equal(diagnostics.length, 1);
-				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, length);
+				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
 
-				diagnostics = validate("FROM node\n#" + mixed.toLowerCase() + " " + argument);
+				diagnostics = validate("FROM node\n#" + onbuild + mixed.toLowerCase() + " " + argument);
 				assert.equal(diagnostics.length, 0);
 			}
 
@@ -596,6 +598,10 @@ describe("Docker Validator Tests", function() {
 				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Error, 0, 0, 0, 4);
 			});
 		});
+	}
+
+	describe("instruction", function() {
+		createUppercaseStyleTest(false);
 
 		describe("extra argument", function() {
 			function testExtraArgument(prefix: string, assertDiagnostic: Function) {
@@ -1835,7 +1841,11 @@ describe("Docker Validator Tests", function() {
 			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Error, 1, 0, 1, 10);
 		});
 	});
-	
+
+	describe("ONBUILD", function() {
+		createUppercaseStyleTest(true);
+	});
+
 	describe("RUN", function() {
 		it("empty newline escape", function() {
 			let diagnostics = validate("FROM busybox\nRUN ls && \\\n\nls");
