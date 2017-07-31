@@ -27,32 +27,32 @@ export class DockerfileParser {
 
 	private escapeChar: string;
 
-	private createInstruction(document: TextDocument, lineRange: Range, instruction: string, instructionRange: Range) {
+	public static createInstruction(document: TextDocument, escapeChar, lineRange: Range, instruction: string, instructionRange: Range) {
 		switch (instruction.toUpperCase()) {
 			case "ARG":
-				return new Arg(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Arg(document, lineRange, escapeChar, instruction, instructionRange);
 			case "CMD":
-				return new Cmd(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Cmd(document, lineRange, escapeChar, instruction, instructionRange);
 			case "COPY":
-				return new Copy(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Copy(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ENTRYPOINT":
-				return new Entrypoint(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Entrypoint(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ENV":
-				return new Env(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Env(document, lineRange, escapeChar, instruction, instructionRange);
 			case "FROM":
-				return new From(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new From(document, lineRange, escapeChar, instruction, instructionRange);
 			case "HEALTHCHECK":
-				return new Healthcheck(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Healthcheck(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ONBUILD":
-				return new Onbuild(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Onbuild(document, lineRange, escapeChar, instruction, instructionRange);
 			case "STOPSIGNAL":
-				return new StopSignal(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new StopSignal(document, lineRange, escapeChar, instruction, instructionRange);
 			case "WORKDIR":
-				return new Workdir(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new Workdir(document, lineRange, escapeChar, instruction, instructionRange);
 			case "USER":
-				return new User(document, lineRange, this.escapeChar, instruction, instructionRange);
+				return new User(document, lineRange, escapeChar, instruction, instructionRange);
 		}
-		return new Instruction(document, lineRange, this.escapeChar, instruction, instructionRange);
+		return new Instruction(document, lineRange, escapeChar, instruction, instructionRange);
 	}
 
 	private getDirectiveSymbol(document: TextDocument, buffer: string): Line | null {
@@ -250,7 +250,7 @@ export class DockerfileParser {
 											i = k;
 											lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(k));
 											instructionRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-											dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, instructionRange));
+											dockerfile.addInstruction(DockerfileParser.createInstruction(document, this.escapeChar, lineRange, instruction, instructionRange));
 											continue lineCheck;
 										case this.escapeChar:
 											let next = buffer.charAt(k + 1);
@@ -316,7 +316,7 @@ export class DockerfileParser {
 								// reached EOF
 								lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(buffer.length));
 								instructionRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-								dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, instructionRange));
+								dockerfile.addInstruction(DockerfileParser.createInstruction(document, this.escapeChar, lineRange, instruction, instructionRange));
 								break lineCheck;
 							case '\r':
 								if (instructionEnd === -1) {
@@ -330,7 +330,7 @@ export class DockerfileParser {
 									instructionEnd = j;
 								}
 								lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-								dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, lineRange));
+								dockerfile.addInstruction(DockerfileParser.createInstruction(document, this.escapeChar, lineRange, instruction, lineRange));
 								i = j;
 								continue lineCheck;
 							default:
@@ -344,7 +344,7 @@ export class DockerfileParser {
 						instructionEnd = buffer.length;
 					}
 					lineRange = Range.create(document.positionAt(instructionStart), document.positionAt(instructionEnd));
-					dockerfile.addInstruction(this.createInstruction(document, lineRange, instruction, lineRange));
+					dockerfile.addInstruction(DockerfileParser.createInstruction(document, this.escapeChar, lineRange, instruction, lineRange));
 					break lineCheck;
 			}
 		}

@@ -49,6 +49,7 @@ All notable changes to this project will be documented in this file.
     - warn if duration flags are too short ([#97](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/97))
   - ONBUILD
     - trigger instruction not written in uppercase ([#102](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/102))
+    - create diagnostics for validating trigger instructions' content ([#112](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/112))
 - created a CHANGELOG.md file to document the project's changes ([#77](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/77))
 
 ### Fixed

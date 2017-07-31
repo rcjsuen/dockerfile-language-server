@@ -131,16 +131,10 @@ export class DockerAssist {
 							break instructionsCheck;
 						} else {
 							let trigger = (instruction as Onbuild).getTriggerInstruction();
-							if (trigger === "HEALTHCHECK") {
-								if (onbuildArgs.length === 1) {
-									// suggest HEALTHCHECK flags
-									return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
-								}
-								for (let i = 1; i < onbuildArgs.length; i++) {
-									let arg = onbuildArgs[i].getValue().toUpperCase();
-									if ((arg === "CMD" || arg === "NONE") && onbuildArgs[i].isBefore(position)) {
-										return [];
-									}
+							if (trigger !== null && trigger.getKeyword() === "HEALTHCHECK") {
+								let subcommand = (trigger as Healthcheck).getSubcommand();
+								if (subcommand && subcommand.isBefore(position)) {
+									return [];
 								}
 								return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
 							}

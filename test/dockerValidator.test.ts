@@ -1816,34 +1816,42 @@ describe("Docker Validator Tests", function() {
 		});
 	});
 
-	describe("MAINTAINER", function() {
-		it("default", function() {
-			let validator = new Validator();
-			let diagnostics = validator.validate(KEYWORDS, createDocument("FROM node\nMAINTAINER author"));
-			assert.equal(diagnostics.length, 1);
-			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, 10);
-		});
+	function createMaintainerTests(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let onbuildOffset = onbuild.length;
 
-		it("ignore", function() {
-			let diagnostics = validate("FROM node\nMAINTAINER author", { deprecatedMaintainer: ValidationSeverity.IGNORE });
-			assert.equal(diagnostics.length, 0);
-		});
+		describe("MAINTAINER", function() {
+			it("default", function() {
+				let validator = new Validator();
+				let diagnostics = validator.validate(KEYWORDS, createDocument("FROM node\n" + onbuild + "MAINTAINER author"));
+				assert.equal(diagnostics.length, 1);
+				assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10);
+			});
 
-		it("warning", function() {
-			let diagnostics = validate("FROM node\nMAINTAINER author", { deprecatedMaintainer: ValidationSeverity.WARNING });
-			assert.equal(diagnostics.length, 1);
-			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, 0, 1, 10);
-		});
+			it("ignore", function() {
+				let diagnostics = validate("FROM node\n" + onbuild + "MAINTAINER author", { deprecatedMaintainer: ValidationSeverity.IGNORE });
+				assert.equal(diagnostics.length, 0);
+			});
 
-		it("error", function() {
-			let diagnostics = validate("FROM node\nMAINTAINER author", { deprecatedMaintainer: ValidationSeverity.ERROR });
-			assert.equal(diagnostics.length, 1);
-			assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Error, 1, 0, 1, 10);
+			it("warning", function() {
+				let diagnostics = validate("FROM node\n" + onbuild + "MAINTAINER author", { deprecatedMaintainer: ValidationSeverity.WARNING });
+				assert.equal(diagnostics.length, 1);
+				assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10);
+			});
+
+			it("error", function() {
+				let diagnostics = validate("FROM node\n" + onbuild + "MAINTAINER author", { deprecatedMaintainer: ValidationSeverity.ERROR });
+				assert.equal(diagnostics.length, 1);
+				assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Error, 1, onbuildOffset, 1, onbuildOffset + 10);
+			});
 		});
-	});
+	}
+
+	createMaintainerTests(false);
 
 	describe("ONBUILD", function() {
 		createUppercaseStyleTest(true);
+		createMaintainerTests(true);
 	});
 
 	describe("RUN", function() {

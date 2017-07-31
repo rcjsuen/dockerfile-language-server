@@ -14,6 +14,7 @@ import { Env } from './instructions/env';
 import { Entrypoint } from './instructions/entrypoint';
 import { From } from './instructions/from';
 import { Healthcheck } from './instructions/healthcheck';
+import { Onbuild } from './instructions/onbuild';
 import { StopSignal } from './instructions/stopSignal';
 import { Workdir } from './instructions/workdir';
 import { User } from './instructions/user';
@@ -140,6 +141,19 @@ export class Dockerfile {
 			}
 		}
 		return froms;
+	}
+
+	public getOnbuildTriggers(): Instruction[] {
+		let triggers = [];
+		for (let instruction of this.instructions) {
+			if (instruction instanceof Onbuild) {
+				let trigger = instruction.getTriggerInstruction();
+				if (trigger) {
+					triggers.push(trigger);
+				}
+			}
+		}
+		return triggers;
 	}
 
 	public setDirective(directive: Directive): void {

@@ -10,10 +10,9 @@ import { Flag } from './parser/flag';
 import { Instruction } from './parser/instruction';
 import { Env } from './parser/instructions/env';
 import { Healthcheck } from './parser/instructions/healthcheck';
-import { Onbuild } from './parser/instructions/onbuild';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { DockerfileParser } from './parser/dockerfileParser';
-import { DIRECTIVE_ESCAPE } from './docker';
+import { DIRECTIVE_ESCAPE, KEYWORDS } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
@@ -202,188 +201,186 @@ export class Validator {
 				problems.push(Validator.createNoSourceImage(range.start, range.end));
 				hasFrom = true;
 			}
-			if (keywords.indexOf(keyword) === -1) {
-				let range = instruction.getInstructionRange();
-				// invalid instruction found
-				problems.push(Validator.createUnknownInstruction(range.start, range.end, keyword));
-			} else  {
-				if (keyword !== instruction.getInstruction()) {
-					let range = instruction.getInstructionRange();
-					// warn about uppercase convention if the keyword doesn't match the actual instruction
-					let diagnostic = this.createUppercaseInstruction(range.start, range.end);
-					if (diagnostic) {
-						problems.push(diagnostic);
-					}
-				}
-
-				if (keyword === "MAINTAINER") {
-					let range = instruction.getInstructionRange();
-					let diagnostic = this.createMaintainerDeprecated(range.start, range.end);
-					if (diagnostic) {
-						problems.push(diagnostic);
-					}
-				}
-
-				validateInstruction: switch (keyword) {
-					case "CMD":
-						// don't validate CMD instructions
-						break;
-					case "ARG":
-						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
-							if (index > 0) {
-								return  Validator.createARGRequiresOneArgument;
-							}
-							return null;
-						}, Validator.createARGRequiresOneArgument);
-						break;
-					case "ENV":
-						this.checkArguments(instruction, problems, [ -1 ], function() {
-							return null;
-						});
-						let env = instruction as Env;
-						let properties = env.getProperties();
-						if (properties.length === 1 && properties[0].getValue() === null) {
-							let range = properties[0].getNameRange();
-							problems.push(Validator.createENVRequiresTwoArguments(range.start, range.end));
-						} else if (properties.length !== 0) {
-							for (let property of properties) {
-								if (property.getValue() === null) {
-									let range = property.getNameRange();
-									problems.push(Validator.createSyntaxMissingEquals(range.start, range.end, property.getName()));
-								}
-							}
-						}
-						break;
-					case "FROM":
-						this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string) {
-							if (index === 1) {
-								return argument.toUpperCase() === "AS" ? null : Validator.createInvalidAs;
-							}
-							return null;
-						}, Validator.createRequiresOneOrThreeArguments);
-						break;
-					case "HEALTHCHECK":
-						let args = instruction.getArguments();
-						if (args.length === 0) {
-							// all instructions are expected to have at least one argument
-							let range = instruction.getInstructionRange();
-							problems.push(Validator.createMissingArgument(range.start, range.end));
-						} else {
-							// check all the args
-							for (let i = 0; i < args.length; i++) {
-								let value = args[i].getValue();
-								let uppercase = value.toUpperCase();
-								if (uppercase === "NONE") {
-									if (i + 1 <= args.length - 1) {
-										// get the next argument
-										let start = args[i + 1].getRange().start;
-										// get the last argument
-										let end = args[args.length - 1].getRange().end;
-										// highlight everything after the NONE and warn the user
-										problems.push(Validator.createHealthcheckNoneUnnecessaryArgument(start, end));
-									}
-									// don't need to validate flags of a NONE
-									break validateInstruction;
-								} else if (uppercase === "CMD") {
-									if (i === args.length - 1) {
-										let range = args[i].getRange();
-										problems.push(Validator.createHealthcheckCmdArgumentMissing(range.start, range.end));
-									}
-									break;
-								}
-							}
-
-							let validFlags = [ "interval", "retries", "start-period", "timeout" ];
-							let flags = (instruction as ModifiableInstruction).getFlags();
-							for (let flag of flags) {
-								let flagName = flag.getName();
-								if (validFlags.indexOf(flagName) === -1) {
-									let nameRange = flag.getNameRange();
-									problems.push(Validator.createFlagUnknown(nameRange.start, nameRange.end, flag.getName()));
-								} else if (flagName === "retries") {
-									let value = flag.getValue();
-									if (value) {
-										let valueRange = flag.getValueRange();
-										let integer = parseInt(value);
-										// test for NaN or numbers with decimals
-										if (isNaN(integer) || value.indexOf('.') !== -1) {
-											problems.push(Validator.createInvalidSyntax(valueRange.start, valueRange.end, value));
-										} else if (integer < 1) {
-											problems.push(Validator.createFlagAtLeastOne(valueRange.start, valueRange.end, "--retries", integer.toString()));
-										}
-									}
-								}
-							}
-
-							this.checkFlagValue(flags, validFlags, problems);
-							this.checkFlagDuration(flags, [ "interval", "start-period", "timeout" ], problems);
-							this.checkDuplicateFlags(flags, validFlags, problems);
-						}
-						break;
-					case "ONBUILD":
-						this.checkArguments(instruction, problems, [ -1 ], function() {
-							return null;
-						});
-						let onbuild = (instruction as Onbuild);
-						// check the casing of the instruction and the actual trigger
-						if (onbuild.getTriggerInstruction() !== onbuild.getTrigger()) {
-							let range = onbuild.getTriggerRange();
-							let diagnostic = this.createUppercaseInstruction(range.start, range.end);
-							if (diagnostic) {
-								problems.push(diagnostic);
-							}
-						}
-						break;
-					case "STOPSIGNAL":
-						this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
-							if (argument.indexOf("SIG") === 0 || argument.indexOf('$') != -1) {
-								return null;
-							}
-							
-							for (var i = 0; i < argument.length; i++) {
-								if ('0' > argument.charAt(i) || '9' < argument.charAt(i)) {
-									return Validator.createInvalidStopSignal;
-								}
-							}
-							return null;
-						});
-						break;
-					case "EXPOSE":
-						this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
-							for (var i = 0; i < argument.length; i++) {
-								if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
-									return Validator.createInvalidPort;
-								}
-							}
-
-							return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-' ? null : Validator.createInvalidPort;
-						});
-						break;
-					case "COPY":
-						let copyArgs = instruction.getArguments();
-						if (copyArgs.length === 0) {
-							let range = instruction.getInstructionRange();
-							problems.push(Validator.createMissingArgument(range.start, range.end));
-						} else {
-							let flags = (instruction as ModifiableInstruction).getFlags();
-							if (flags.length > 0 && flags[0].getName() !== "from") {
-								let range = flags[0].getNameRange();
-								problems.push(Validator.createFlagUnknown(range.start, range.end, flags[0].getName()));
-							}
-							this.checkFlagValue(flags, [ "from" ], problems);
-							this.checkDuplicateFlags(flags, [ "from" ], problems);
-						}
-						break;
-					default:
-						this.checkArguments(instruction, problems, [ -1 ], function() {
-							return null;
-						});
-						break;
-				}
-			}
+			this.validateInstruction(keywords, instruction, keyword, problems);
 		}
 
+		for (let instruction of dockerfile.getOnbuildTriggers()) {
+			this.validateInstruction(keywords, instruction, instruction.getKeyword(), problems);
+		}
 		return problems;
+	}
+
+	private validateInstruction(keywords: string[], instruction: Instruction, keyword: string, problems: Diagnostic[]): void {
+		if (keywords.indexOf(keyword) === -1) {
+			let range = instruction.getInstructionRange();
+			// invalid instruction found
+			problems.push(Validator.createUnknownInstruction(range.start, range.end, keyword));
+		} else  {
+			if (keyword !== instruction.getInstruction()) {
+				let range = instruction.getInstructionRange();
+				// warn about uppercase convention if the keyword doesn't match the actual instruction
+				let diagnostic = this.createUppercaseInstruction(range.start, range.end);
+				if (diagnostic) {
+					problems.push(diagnostic);
+				}
+			}
+
+			if (keyword === "MAINTAINER") {
+				let range = instruction.getInstructionRange();
+				let diagnostic = this.createMaintainerDeprecated(range.start, range.end);
+				if (diagnostic) {
+					problems.push(diagnostic);
+				}
+			}
+
+			validateInstruction: switch (keyword) {
+				case "CMD":
+					// don't validate CMD instructions
+					break;
+				case "ARG":
+					this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
+						if (index > 0) {
+							return  Validator.createARGRequiresOneArgument;
+						}
+						return null;
+					}, Validator.createARGRequiresOneArgument);
+					break;
+				case "ENV":
+					this.checkArguments(instruction, problems, [ -1 ], function() {
+						return null;
+					});
+					let env = instruction as Env;
+					let properties = env.getProperties();
+					if (properties.length === 1 && properties[0].getValue() === null) {
+						let range = properties[0].getNameRange();
+						problems.push(Validator.createENVRequiresTwoArguments(range.start, range.end));
+					} else if (properties.length !== 0) {
+						for (let property of properties) {
+							if (property.getValue() === null) {
+								let range = property.getNameRange();
+								problems.push(Validator.createSyntaxMissingEquals(range.start, range.end, property.getName()));
+							}
+						}
+					}
+					break;
+				case "FROM":
+					this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string) {
+						if (index === 1) {
+							return argument.toUpperCase() === "AS" ? null : Validator.createInvalidAs;
+						}
+						return null;
+					}, Validator.createRequiresOneOrThreeArguments);
+					break;
+				case "HEALTHCHECK":
+					let args = instruction.getArguments();
+					if (args.length === 0) {
+						// all instructions are expected to have at least one argument
+						let range = instruction.getInstructionRange();
+						problems.push(Validator.createMissingArgument(range.start, range.end));
+					} else {
+						// check all the args
+						for (let i = 0; i < args.length; i++) {
+							let value = args[i].getValue();
+							let uppercase = value.toUpperCase();
+							if (uppercase === "NONE") {
+								if (i + 1 <= args.length - 1) {
+									// get the next argument
+									let start = args[i + 1].getRange().start;
+									// get the last argument
+									let end = args[args.length - 1].getRange().end;
+									// highlight everything after the NONE and warn the user
+									problems.push(Validator.createHealthcheckNoneUnnecessaryArgument(start, end));
+								}
+								// don't need to validate flags of a NONE
+								break validateInstruction;
+							} else if (uppercase === "CMD") {
+								if (i === args.length - 1) {
+									let range = args[i].getRange();
+									problems.push(Validator.createHealthcheckCmdArgumentMissing(range.start, range.end));
+								}
+								break;
+							}
+						}
+
+						let validFlags = [ "interval", "retries", "start-period", "timeout" ];
+						let flags = (instruction as ModifiableInstruction).getFlags();
+						for (let flag of flags) {
+							let flagName = flag.getName();
+							if (validFlags.indexOf(flagName) === -1) {
+								let nameRange = flag.getNameRange();
+								problems.push(Validator.createFlagUnknown(nameRange.start, nameRange.end, flag.getName()));
+							} else if (flagName === "retries") {
+								let value = flag.getValue();
+								if (value) {
+									let valueRange = flag.getValueRange();
+									let integer = parseInt(value);
+									// test for NaN or numbers with decimals
+									if (isNaN(integer) || value.indexOf('.') !== -1) {
+										problems.push(Validator.createInvalidSyntax(valueRange.start, valueRange.end, value));
+									} else if (integer < 1) {
+										problems.push(Validator.createFlagAtLeastOne(valueRange.start, valueRange.end, "--retries", integer.toString()));
+									}
+								}
+							}
+						}
+
+						this.checkFlagValue(flags, validFlags, problems);
+						this.checkFlagDuration(flags, [ "interval", "start-period", "timeout" ], problems);
+						this.checkDuplicateFlags(flags, validFlags, problems);
+					}
+					break;
+				case "ONBUILD":
+					this.checkArguments(instruction, problems, [ -1 ], function() {
+						return null;
+					});
+					break;
+				case "STOPSIGNAL":
+					this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
+						if (argument.indexOf("SIG") === 0 || argument.indexOf('$') != -1) {
+							return null;
+						}
+						
+						for (var i = 0; i < argument.length; i++) {
+							if ('0' > argument.charAt(i) || '9' < argument.charAt(i)) {
+								return Validator.createInvalidStopSignal;
+							}
+						}
+						return null;
+					});
+					break;
+				case "EXPOSE":
+					this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
+						for (var i = 0; i < argument.length; i++) {
+							if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
+								return Validator.createInvalidPort;
+							}
+						}
+
+						return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-' ? null : Validator.createInvalidPort;
+					});
+					break;
+				case "COPY":
+					let copyArgs = instruction.getArguments();
+					if (copyArgs.length === 0) {
+						let range = instruction.getInstructionRange();
+						problems.push(Validator.createMissingArgument(range.start, range.end));
+					} else {
+						let flags = (instruction as ModifiableInstruction).getFlags();
+						if (flags.length > 0 && flags[0].getName() !== "from") {
+							let range = flags[0].getNameRange();
+							problems.push(Validator.createFlagUnknown(range.start, range.end, flags[0].getName()));
+						}
+						this.checkFlagValue(flags, [ "from" ], problems);
+						this.checkDuplicateFlags(flags, [ "from" ], problems);
+					}
+					break;
+				default:
+					this.checkArguments(instruction, problems, [ -1 ], function() {
+						return null;
+					});
+					break;
+			}
+		}
 	}
 
 	private checkFlagValue(flags: Flag[], validFlagNames: string[], problems: Diagnostic[]): void {
