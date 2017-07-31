@@ -9,6 +9,7 @@ import { Dockerfile } from './parser/dockerfile';
 import { Flag } from './parser/flag';
 import { Instruction } from './parser/instruction';
 import { Env } from './parser/instructions/env';
+import { Label } from './parser/instructions/label';
 import { Healthcheck } from './parser/instructions/healthcheck';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { DockerfileParser } from './parser/dockerfileParser';
@@ -246,11 +247,11 @@ export class Validator {
 					}, Validator.createARGRequiresOneArgument);
 					break;
 				case "ENV":
+				case "LABEL":
 					this.checkArguments(instruction, problems, [ -1 ], function() {
 						return null;
 					});
-					let env = instruction as Env;
-					let properties = env.getProperties();
+					let properties = instruction instanceof Env ? (instruction as Env).getProperties() : (instruction as Label).getProperties();
 					if (properties.length === 1 && properties[0].getValue() === null) {
 						let range = properties[0].getNameRange();
 						problems.push(Validator.createENVRequiresTwoArguments(range.start, range.end));

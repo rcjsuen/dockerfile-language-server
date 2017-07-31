@@ -1244,34 +1244,38 @@ describe("Docker Validator Tests", function() {
 		});
 	});
 
-	describe("ENV", function() {
-		describe("source image", function() {
+	function createNameValuePairTests(instruction: string) {
+		let instructionLength = instruction.length;
+
+		describe(instruction, function() {
 			it("ok", function() {
 				// valid as the variable is equal to the empty string in this case
-				testValidArgument("ENV", "a=");
-				testValidArgument("ENV", "a=b");
+				testValidArgument(instruction, "a=");
+				testValidArgument(instruction, "a=b");
 
-				let diagnostics = validate("FROM node\nENV a b");
+				let diagnostics = validate("FROM node\n" + instruction + " a b");
 				assert.equal(diagnostics.length, 0);
 			});
 
 			it("requires two", function() {
-				let diagnostics = validate("FROM node\nENV a");
+				let diagnostics = validate("FROM node\n" + instruction + " a");
 				assert.equal(diagnostics.length, 1);
-				assertENVRequiresTwoArguments(diagnostics[0], 1, 4, 1, 5);
+				assertENVRequiresTwoArguments(diagnostics[0], 1, instructionLength + 1, 1, instructionLength + 2);
 			});
 
 			it("syntax missing equals", function() {
-				let diagnostics = validate("FROM node\nENV a=b c");
+				let diagnostics = validate("FROM node\n" + instruction + " a=b c");
 				assert.equal(diagnostics.length, 1);
-				assertSyntaxMissingEquals(diagnostics[0], "c", 1, 8, 1, 9);
+				assertSyntaxMissingEquals(diagnostics[0], "c", 1, instructionLength + 5, 1, instructionLength + 6);
 				
-				diagnostics = validate("FROM node\nENV a=b c d=e");
+				diagnostics = validate("FROM node\n" + instruction + " a=b c d=e");
 				assert.equal(diagnostics.length, 1);
-				assertSyntaxMissingEquals(diagnostics[0], "c", 1, 8, 1, 9);
+				assertSyntaxMissingEquals(diagnostics[0], "c", 1, instructionLength + 5, 1, instructionLength + 6);
 			});
 		});
-	});
+	}
+
+	createNameValuePairTests("ENV");
 
 	describe("EXPOSE", function() {
 		it("ok", function() {
@@ -1815,6 +1819,8 @@ describe("Docker Validator Tests", function() {
 			});
 		});
 	});
+
+	createNameValuePairTests("LABEL");
 
 	function createMaintainerTests(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";

@@ -16,6 +16,7 @@ import { Env } from './instructions/env';
 import { Entrypoint } from './instructions/entrypoint';
 import { From } from './instructions/from';
 import { Healthcheck } from './instructions/healthcheck';
+import { Label } from './instructions/label';
 import { Onbuild } from './instructions/onbuild';
 import { StopSignal } from './instructions/stopSignal';
 import { Workdir } from './instructions/workdir';
@@ -43,6 +44,8 @@ export class DockerfileParser {
 				return new From(document, lineRange, escapeChar, instruction, instructionRange);
 			case "HEALTHCHECK":
 				return new Healthcheck(document, lineRange, escapeChar, instruction, instructionRange);
+			case "LABEL":
+				return new Label(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ONBUILD":
 				return new Onbuild(document, lineRange, escapeChar, instruction, instructionRange);
 			case "STOPSIGNAL":

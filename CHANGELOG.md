@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - validate the syntax of LABEL instructions ([#100](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/100))
 
 ## [0.0.2] - 2017-07-31
 ### Added
