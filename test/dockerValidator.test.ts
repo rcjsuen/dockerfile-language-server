@@ -297,6 +297,28 @@ function assertInstructionUnknown(diagnostic: Diagnostic, instruction: string, s
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertOnbuildChainingDisallowed(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ONBUILD_CHAINING_DISALLOWED);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_OnbuildChainingDisallowed());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
+function assertOnbuildTriggerDisallowed(diagnostic: Diagnostic, trigger: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ONBUILD_TRIGGER_DISALLOWED);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_OnbuildTriggerDisallowed(trigger));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertDirectiveEscapeInvalid(diagnostic: Diagnostic, value: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -488,15 +510,84 @@ describe("Docker Validator Tests", function() {
 			function testCasingStyle(mixed: string, argument: string) {
 				var length = mixed.length;
 				let diagnostics = validate("FROM node\n" + onbuild + mixed.toUpperCase() + " " + argument);
-				assert.equal(diagnostics.length, 0);
+				if (trigger) {
+					switch (mixed.toUpperCase()) {
+						case "FROM":
+						case "MAINTAINER":
+							assert.equal(diagnostics.length, 1);
+							assertOnbuildTriggerDisallowed(diagnostics[0], mixed.toUpperCase(), 1, triggerLength, 1, triggerLength + length);
+							break;
+						case "ONBUILD":
+							assert.equal(diagnostics.length, 1);
+							assertOnbuildChainingDisallowed(diagnostics[0], 1, triggerLength, 1, triggerLength + length);
+							break;
+						default:
+							assert.equal(diagnostics.length, 0);
+							break;
+					}
+				} else {
+					assert.equal(diagnostics.length, 0);
+				}
 
 				diagnostics = validate("FROM node\n" + onbuild + mixed.toLowerCase() + " " + argument);
-				assert.equal(diagnostics.length, 1);
-				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
+				if (trigger) {
+					switch (mixed.toUpperCase()) {
+						case "FROM":
+						case "MAINTAINER":
+							assert.equal(diagnostics.length, 2);
+							assertDiagnostics(diagnostics,
+								[ ValidationCode.ONBUILD_TRIGGER_DISALLOWED, ValidationCode.CASING_INSTRUCTION ],
+								[ assertOnbuildTriggerDisallowed, assertInstructionCasing ],
+								[ [ mixed.toUpperCase(), 1, triggerLength, 1, triggerLength + length ],
+									[ DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length ] ]);
+							break;
+						case "ONBUILD":
+							assert.equal(diagnostics.length, 2);
+							assertDiagnostics(diagnostics,
+								[ ValidationCode.ONBUILD_CHAINING_DISALLOWED, ValidationCode.CASING_INSTRUCTION ],
+								[ assertOnbuildChainingDisallowed, assertInstructionCasing ],
+								[ [ 1, triggerLength, 1, triggerLength + length ],
+									[ DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length ] ]);
+							break;
+						default:
+							assert.equal(diagnostics.length, 1);
+							assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
+							break;
+					}
+				} else {
+					assert.equal(diagnostics.length, 1);
+					assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
+				}
 
 				diagnostics = validate("FROM node\n" + onbuild + mixed + " " + argument);
-				assert.equal(diagnostics.length, 1);
-				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
+				if (trigger) {
+					switch (mixed.toUpperCase()) {
+						case "FROM":
+						case "MAINTAINER":
+							assert.equal(diagnostics.length, 2);
+							assertDiagnostics(diagnostics,
+								[ ValidationCode.ONBUILD_TRIGGER_DISALLOWED, ValidationCode.CASING_INSTRUCTION ],
+								[ assertOnbuildTriggerDisallowed, assertInstructionCasing ],
+								[ [ mixed.toUpperCase(), 1, triggerLength, 1, triggerLength + length ],
+									[ DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length ] ]);
+							break;
+						case "ONBUILD":
+							assert.equal(diagnostics.length, 2);
+							assertDiagnostics(diagnostics,
+								[ ValidationCode.ONBUILD_CHAINING_DISALLOWED, ValidationCode.CASING_INSTRUCTION ],
+								[ assertOnbuildChainingDisallowed, assertInstructionCasing ],
+								[ [ 1, triggerLength, 1, triggerLength + length ],
+									[ DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length ] ]);
+							break;
+						default:
+							assert.equal(diagnostics.length, 1);
+							assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
+							break;
+					}
+				} else {
+					assert.equal(diagnostics.length, 1);
+					assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 1, triggerLength, 1, triggerLength + length);
+				}
 
 				diagnostics = validate("FROM node\n#" + onbuild + mixed.toLowerCase() + " " + argument);
 				assert.equal(diagnostics.length, 0);
@@ -1830,25 +1921,57 @@ describe("Docker Validator Tests", function() {
 			it("default", function() {
 				let validator = new Validator();
 				let diagnostics = validator.validate(KEYWORDS, createDocument("FROM node\n" + onbuild + "MAINTAINER author"));
-				assert.equal(diagnostics.length, 1);
-				assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10);
+				if (onbuild) {
+					assert.equal(diagnostics.length, 2);
+					assertDiagnostics(diagnostics,
+						[ ValidationCode.ONBUILD_TRIGGER_DISALLOWED, ValidationCode.DEPRECATED_MAINTAINER ],
+						[ assertOnbuildTriggerDisallowed, assertDeprecatedMaintainer ],
+						[ [ "MAINTAINER", 1, onbuildOffset, 1, onbuildOffset + 10 ],
+							[ DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10 ] ]);
+				} else {
+					assert.equal(diagnostics.length, 1);
+					assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10);
+				}
 			});
 
 			it("ignore", function() {
 				let diagnostics = validate("FROM node\n" + onbuild + "MAINTAINER author", { deprecatedMaintainer: ValidationSeverity.IGNORE });
-				assert.equal(diagnostics.length, 0);
+				if (onbuild) {
+					assert.equal(diagnostics.length, 1);
+					assertOnbuildTriggerDisallowed(diagnostics[0], "MAINTAINER", 1, onbuildOffset, 1, onbuildOffset + 10);
+				} else {
+					assert.equal(diagnostics.length, 0);
+				}
 			});
 
 			it("warning", function() {
 				let diagnostics = validate("FROM node\n" + onbuild + "MAINTAINER author", { deprecatedMaintainer: ValidationSeverity.WARNING });
-				assert.equal(diagnostics.length, 1);
-				assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10);
+				if (onbuild) {
+					assert.equal(diagnostics.length, 2);
+					assertDiagnostics(diagnostics,
+						[ ValidationCode.ONBUILD_TRIGGER_DISALLOWED, ValidationCode.DEPRECATED_MAINTAINER ],
+						[ assertOnbuildTriggerDisallowed, assertDeprecatedMaintainer ],
+						[ [ "MAINTAINER", 1, onbuildOffset, 1, onbuildOffset + 10 ],
+							[ DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10 ] ]);
+				} else {
+					assert.equal(diagnostics.length, 1);
+					assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Warning, 1, onbuildOffset, 1, onbuildOffset + 10);
+				}
 			});
 
 			it("error", function() {
 				let diagnostics = validate("FROM node\n" + onbuild + "MAINTAINER author", { deprecatedMaintainer: ValidationSeverity.ERROR });
-				assert.equal(diagnostics.length, 1);
-				assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Error, 1, onbuildOffset, 1, onbuildOffset + 10);
+				if (onbuild) {
+					assert.equal(diagnostics.length, 2);
+					assertDiagnostics(diagnostics,
+						[ ValidationCode.ONBUILD_TRIGGER_DISALLOWED, ValidationCode.DEPRECATED_MAINTAINER ],
+						[ assertOnbuildTriggerDisallowed, assertDeprecatedMaintainer ],
+						[ [ "MAINTAINER", 1, onbuildOffset, 1, onbuildOffset + 10 ],
+							[ DiagnosticSeverity.Error, 1, onbuildOffset, 1, onbuildOffset + 10 ] ]);
+				} else {
+					assert.equal(diagnostics.length, 1);
+					assertDeprecatedMaintainer(diagnostics[0], DiagnosticSeverity.Error, 1, onbuildOffset, 1, onbuildOffset + 10);
+				}
 			});
 		});
 	}
@@ -1858,6 +1981,38 @@ describe("Docker Validator Tests", function() {
 	describe("ONBUILD", function() {
 		createUppercaseStyleTest(true);
 		createMaintainerTests(true);
+
+		describe("invalid triggers", function() {
+			it("ONBUILD FROM", function() {
+				let diagnostics = validate("FROM alpine\nONBUILD FROM alpine");
+				assert.equal(diagnostics.length, 1);
+				assertOnbuildTriggerDisallowed(diagnostics[0], "FROM", 1, 8, 1, 12);
+
+				diagnostics = validate("FROM alpine\nONBUILD from alpine", { instructionCasing: ValidationSeverity.IGNORE });
+				assert.equal(diagnostics.length, 1);
+				assertOnbuildTriggerDisallowed(diagnostics[0], "FROM", 1, 8, 1, 12);
+			});
+
+			it("ONBUILD MAINTAINER", function() {
+				let diagnostics = validate("FROM alpine\nONBUILD MAINTAINER user");
+				assert.equal(diagnostics.length, 1);
+				assertOnbuildTriggerDisallowed(diagnostics[0], "MAINTAINER", 1, 8, 1, 18);
+
+				diagnostics = validate("FROM alpine\nONBUILD maintainer user", { instructionCasing: ValidationSeverity.IGNORE });
+				assert.equal(diagnostics.length, 1);
+				assertOnbuildTriggerDisallowed(diagnostics[0], "MAINTAINER", 1, 8, 1, 18);
+			});
+
+			it("ONBUILD ONBUILD", function() {
+				let diagnostics = validate("FROM alpine\nONBUILD ONBUILD ENV x=y");
+				assert.equal(diagnostics.length, 1);
+				assertOnbuildChainingDisallowed(diagnostics[0], 1, 8, 1, 15);
+
+				diagnostics = validate("FROM alpine\nONBUILD onbuild ENV x=y", { instructionCasing: ValidationSeverity.IGNORE });
+				assert.equal(diagnostics.length, 1);
+				assertOnbuildChainingDisallowed(diagnostics[0], 1, 8, 1, 15);
+			});
+		});
 	});
 
 	describe("RUN", function() {

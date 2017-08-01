@@ -11,6 +11,7 @@ import { Instruction } from './parser/instruction';
 import { Env } from './parser/instructions/env';
 import { Label } from './parser/instructions/label';
 import { Healthcheck } from './parser/instructions/healthcheck';
+import { Onbuild } from './parser/instructions/onbuild';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { DIRECTIVE_ESCAPE, KEYWORDS } from './docker';
@@ -37,6 +38,8 @@ export enum ValidationCode {
 	INVALID_PORT,
 	INVALID_SIGNAL,
 	INVALID_SYNTAX,
+	ONBUILD_CHAINING_DISALLOWED,
+	ONBUILD_TRIGGER_DISALLOWED,
 	SYNTAX_MISSING_EQUALS,
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
@@ -334,6 +337,17 @@ export class Validator {
 					this.checkArguments(instruction, problems, [ -1 ], function() {
 						return null;
 					});
+					let onbuild = instruction as Onbuild;
+					let trigger = onbuild.getTrigger();
+					switch (trigger) {
+						case "FROM":
+						case "MAINTAINER":
+							problems.push(Validator.createOnbuildTriggerDisallowed(onbuild.getTriggerRange(), trigger));
+							break;
+						case "ONBUILD":
+							problems.push(Validator.createOnbuildChainingDisallowed(onbuild.getTriggerRange()));
+							break;
+					}
 					break;
 				case "STOPSIGNAL":
 					this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
@@ -618,6 +632,9 @@ export class Validator {
 		"instructionUnknown": "Unknown instruction: ${0}",
 		"instructionCasing": "Instructions should be written in uppercase letters",
 
+		"onbuildChainingDisallowed": "Chaining ONBUILD via `ONBUILD ONBUILD` isn't allowed",
+		"onbuildTriggerDisallowed": "${0} isn't allowed as an ONBUILD trigger",
+
 		"deprecatedMaintainer": "MAINTAINER has been deprecated",
 
 		"healthcheckCmdArgumentMissing": "Missing command after HEALTHCHECK CMD",
@@ -726,6 +743,14 @@ export class Validator {
 		return Validator.dockerProblems["instructionCasing"];
 	}
 
+	public static getDiagnosticMessage_OnbuildChainingDisallowed() {
+		return Validator.dockerProblems["onbuildChainingDisallowed"];
+	}
+
+	public static getDiagnosticMessage_OnbuildTriggerDisallowed(trigger: string) {
+		return Validator.formatMessage(Validator.dockerProblems["onbuildTriggerDisallowed"], trigger);
+	}
+
 	public static getDiagnosticMessage_DeprecatedMaintainer() {
 		return Validator.dockerProblems["deprecatedMaintainer"];
 	}
@@ -804,6 +829,14 @@ export class Validator {
 
 	private static createHealthcheckCmdArgumentMissing(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_HealthcheckCmdArgumentMissing(), ValidationCode.HEALTHCHECK_CMD_ARGUMENT_MISSING);
+	}
+
+	private static createOnbuildChainingDisallowed(range: Range): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_OnbuildChainingDisallowed(), ValidationCode.ONBUILD_CHAINING_DISALLOWED);
+	}
+
+	private static createOnbuildTriggerDisallowed(range: Range, trigger: string): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_OnbuildTriggerDisallowed(trigger), ValidationCode.ONBUILD_TRIGGER_DISALLOWED);
 	}
 
 	static createRequiresOneOrThreeArguments(start: Position, end: Position): Diagnostic {

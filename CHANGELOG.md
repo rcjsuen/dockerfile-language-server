@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/publishDiagnostics
   - validate the syntax of LABEL instructions ([#100](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/100))
+  - warn if invalid ONBUILD trigger instructions are used ([#117](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/117))
 
 ### Fixed
 - fixed parsing of escaped whitespace values in ENV instructions ([#115](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/115))
