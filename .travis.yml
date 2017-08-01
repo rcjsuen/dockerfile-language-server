@@ -31,7 +31,7 @@ before_script:
   - npm run build;
 
 script:
-  - npm run nyc
+  - npm run nyc-ci
 
 after_success:
   - npm run coverage
