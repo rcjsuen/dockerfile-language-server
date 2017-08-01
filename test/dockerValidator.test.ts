@@ -308,6 +308,17 @@ function assertOnbuildChainingDisallowed(diagnostic: Diagnostic, startLine: numb
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertShellJsonForm(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.SHELL_JSON_FORM);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_ShellJsonForm());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertOnbuildTriggerDisallowed(diagnostic: Diagnostic, trigger: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ONBUILD_TRIGGER_DISALLOWED);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -2069,6 +2080,88 @@ describe("Docker Validator Tests", function() {
 
 			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n \t# comment");
 			assert.equal(diagnostics.length, 0);
+		});
+	});
+
+	describe("SHELL", function() {
+		it("ok", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \"-c\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [\"a,b\"]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a,b\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \\\n \"-c\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\"\" ]");
+			assert.equal(diagnostics.length, 0);
+		});
+
+		it("missing starting [", function() {
+			let diagnostics = validate("FROM busybox\nSHELL \"/bin/sh\" ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 17);
+		});
+
+		it("double starting [", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ [ \"/bin/sh\" ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 21);
+		});
+
+		it("missing starting \"", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ /bin/sh\" ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 18);
+		});
+
+		it("missing ending \"", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 18);
+		});
+
+		it("missing ending ]", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\"");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 17);
+		});
+
+		it("double ending ]", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\" ] ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 21);
+		});
+
+		it("comma with EOF", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\",");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 18);
+		});
+
+		it("comma with EOL", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\",\n");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 18);
+		});
+
+		it("comma without second argument", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 20);
+		});
+
+		it("backtick escape directive ignored", function() {
+			let diagnostics = validate("#escape=`\nFROM busybox\nSHELL [ \"a`\"\" ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 2, 6, 2, 15);
 		});
 	});
 

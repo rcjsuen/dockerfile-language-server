@@ -40,6 +40,7 @@ export enum ValidationCode {
 	INVALID_SYNTAX,
 	ONBUILD_CHAINING_DISALLOWED,
 	ONBUILD_TRIGGER_DISALLOWED,
+	SHELL_JSON_FORM,
 	SYNTAX_MISSING_EQUALS,
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
@@ -349,6 +350,12 @@ export class Validator {
 							break;
 					}
 					break;
+				case "SHELL":
+					this.checkArguments(instruction, problems, [ -1 ], function() {
+						return null;
+					});
+					this.checkJSON(instruction, problems);
+					break;
 				case "STOPSIGNAL":
 					this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
 						if (argument.indexOf("SIG") === 0 || argument.indexOf('$') != -1) {
@@ -600,6 +607,100 @@ export class Validator {
 		}
 	}
 
+	private checkJSON(instruction: Instruction, problems: Diagnostic[]) {
+		let argsContent = instruction.getArgumentsContent();
+		if (argsContent === null) {
+			return;
+		}
+
+		let argsRange = instruction.getArgumentsRange();
+		let last = "";
+		let quoted = false;
+		argsCheck: for (let i = 0; i < argsContent.length; i++) {
+			switch (argsContent.charAt(i)) {
+				case '[':
+					if (last === "") {
+						last = '[';
+					} else if (!quoted) {
+						break argsCheck;
+					}
+					break;
+				case '"':
+					if (last === '[' || last === ',') {
+						quoted = true;
+						last = '"';
+						continue;
+					} else if (last === '"') {
+						if (quoted) {
+							// quoted string done
+							quoted = false;
+						} else {
+							// should be a , or a ]
+							break argsCheck;
+						}
+					} else {
+						break argsCheck;
+					}
+					break;
+				case ',':
+					if (!quoted) {
+						if (last === '"') {
+							last = ','
+						} else {
+							break argsCheck;
+						}
+					}
+					break;
+				case ']':
+					if (!quoted) {
+						if (last === null) {
+							last = ']';
+							break argsCheck;
+						} else if (last !== ',') {
+							last = null;
+						}
+					}
+					break;
+				case ' ':
+				case '\t':
+					break;
+				case '\\':
+					if (quoted) {
+						if (argsContent.charAt(i + 1) === '"' || argsContent.charAt(i + 1) === '\\') {
+							i = i + 1;
+						}
+					} else {
+						for (let j = i + 1; i < argsContent.length; i++) {
+							switch (argsContent.charAt(j)) {
+								case '\r':
+									if (argsContent.charAt(j + 1) === '\n') {
+										j++;
+									}
+								case '\n':
+									i = j;
+									continue argsCheck;
+								case ' ':
+								case '\t':
+									break;
+								default:
+									break argsCheck;
+							}
+						}
+					}
+					break;
+				default:
+					if (!quoted) {
+						break argsCheck;
+					}
+					break;
+			}
+		}
+
+		if (last !== null) {
+			problems.push(Validator.createShellJsonForm(argsRange));
+		}
+	}
+
 	private static dockerProblems = {
 		"directiveCasing": "Parser directives should be written in lowercase letters",
 		"directiveEscapeInvalid": "invalid ESCAPE '${0}'. Must be ` or \\",
@@ -634,6 +735,8 @@ export class Validator {
 
 		"onbuildChainingDisallowed": "Chaining ONBUILD via `ONBUILD ONBUILD` isn't allowed",
 		"onbuildTriggerDisallowed": "${0} isn't allowed as an ONBUILD trigger",
+
+		"shellJsonForm": "SHELL requires the arguments to be in JSON form",
 
 		"deprecatedMaintainer": "MAINTAINER has been deprecated",
 
@@ -751,6 +854,10 @@ export class Validator {
 		return Validator.formatMessage(Validator.dockerProblems["onbuildTriggerDisallowed"], trigger);
 	}
 
+	public static getDiagnosticMessage_ShellJsonForm() {
+		return Validator.dockerProblems["shellJsonForm"];
+	}
+
 	public static getDiagnosticMessage_DeprecatedMaintainer() {
 		return Validator.dockerProblems["deprecatedMaintainer"];
 	}
@@ -837,6 +944,10 @@ export class Validator {
 
 	private static createOnbuildTriggerDisallowed(range: Range, trigger: string): Diagnostic {
 		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_OnbuildTriggerDisallowed(trigger), ValidationCode.ONBUILD_TRIGGER_DISALLOWED);
+	}
+
+	private static createShellJsonForm(range: Range): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_ShellJsonForm(), ValidationCode.SHELL_JSON_FORM);
 	}
 
 	static createRequiresOneOrThreeArguments(start: Position, end: Position): Diagnostic {

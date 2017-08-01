@@ -42,6 +42,22 @@ export class Instruction extends Line {
 		return this.getInstruction().toUpperCase();
 	}
 
+	public getArgumentsRange(): Range | null {
+		let args = this.getArguments();
+		if (args.length === 0) {
+			return null;
+		}
+		return Range.create(args[0].getRange().start, args[args.length - 1].getRange().end);
+	}
+
+	public getArgumentsContent(): string | null {
+		let args = this.getArguments();
+		if (args.length === 0) {
+			return null;
+		}
+		return this.getRangeContent(Range.create(args[0].getRange().start, args[args.length - 1].getRange().end));
+	}
+
 	public getArguments(): Argument[] {
 		let args = [];
 		let range = this.getInstructionRange();
