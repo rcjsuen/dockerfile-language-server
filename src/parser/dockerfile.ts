@@ -164,7 +164,7 @@ export class Dockerfile {
 		return this.directive;
 	}
 
-	public getVariableNames(): string[] {
+	public getVariableNames(currentLine: number): string[] {
 		let variables = [
 			"FTP_PROXY", "ftp_proxy",
 			"HTTP_PROXY", "http_proxy",
@@ -173,17 +173,21 @@ export class Dockerfile {
 		];
 
 		for (let arg of this.getARGs()) {
-			let variable = arg.getProperty().getName();
-			if (variables.indexOf(variable) === -1) {
-				variables.push(variable);
+			if (arg.isBefore(currentLine)) {
+				let variable = arg.getProperty().getName();
+				if (variables.indexOf(variable) === -1) {
+					variables.push(variable);
+				}
 			}
 		}
 
 		for (let env of this.getENVs()) {
-			for (let property of env.getProperties()) {
-				let variable = property.getName();
-				if (variables.indexOf(variable) === -1) {
-					variables.push(variable);
+			if (env.isBefore(currentLine)) {
+				for (let property of env.getProperties()) {
+					let variable = property.getName();
+					if (variables.indexOf(variable) === -1) {
+						variables.push(variable);
+					}
 				}
 			}
 		}

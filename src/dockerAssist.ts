@@ -85,7 +85,7 @@ export class DockerAssist {
 					if (variablePrefix === "") {
 						// empty prefix, return all variables
 						let items = [];
-						for (let variable of dockerfile.getVariableNames()) {
+						for (let variable of dockerfile.getVariableNames(position.line)) {
 							let doc = dockerfile.getVariableValue(variable, position.line);
 							items.push(this.createVariableCompletionItem("${" + variable + '}', prefixLength, offset, true, doc));
 						}
@@ -97,7 +97,7 @@ export class DockerAssist {
 							variablePrefix = variablePrefix.substring(1);
 						}
 						let items = [];
-						for (let variable of dockerfile.getVariableNames()) {
+						for (let variable of dockerfile.getVariableNames(position.line)) {
 							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
 							let doc = dockerfile.getVariableValue(variable, position.line);
 								items.push(this.createVariableCompletionItem(brace ? "${" + variable + '}' : '$' + variable, prefixLength, offset, brace, doc));
