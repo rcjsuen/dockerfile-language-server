@@ -729,6 +729,70 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "value3");
 				});
 			});
+
+			describe("escaped whitespace value", function() {
+				it("ENV var=\\", function() {
+					let document = createDocument("ENV var=\\");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "");
+
+					document = createDocument("ENV var=\\ ");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "");
+
+					document = createDocument("ENV var=\\  ");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "");
+				});
+
+				it("ENV var=\\  var2=\\", function() {
+					let document = createDocument("ENV var=\\  var2=\\");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, " ");
+					hover = onHover(document, 0, 13);
+					assert.equal(hover.contents, "");
+
+					document = createDocument("ENV var=\\  var2=\\ ");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, " ");
+					hover = onHover(document, 0, 13);
+					assert.equal(hover.contents, "");
+
+					document = createDocument("ENV var=\\  var2=\\  ");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, " ");
+					hover = onHover(document, 0, 13);
+					assert.equal(hover.contents, "");
+				});
+
+				it("ENV var=\\   var2=\\", function() {
+					let document = createDocument("ENV var=\\   var2=\\");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, " ");
+					hover = onHover(document, 0, 14);
+					assert.equal(hover.contents, "");
+
+					document = createDocument("ENV var=\\   var2=\\ ");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, " ");
+					hover = onHover(document, 0, 14);
+					assert.equal(hover.contents, "");
+
+					document = createDocument("ENV var=\\   var2=\\  ");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, " ");
+					hover = onHover(document, 0, 14);
+					assert.equal(hover.contents, "");
+				});
+
+				it("ENV var=\\ \\  var2=\\", function() {
+					let document = createDocument("ENV var=\\ \\  var2=\\");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "  ");
+					hover = onHover(document, 0, 13);
+					assert.equal(hover.contents, "");
+				});
+			});
 		});
 
 		function createHealthcheckTest(trigger: boolean) {

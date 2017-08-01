@@ -119,7 +119,7 @@ export abstract class PropertyInstruction extends Instruction {
 						case '\t':
 							if (!Util.isWhitespace(content.charAt(i + 2))) {
 								// space was escaped, continue as normal
-								i = i + 2;
+								i = i + 1;
 								continue argumentLoop;
 							}
 							// whitespace encountered, need to figure out if it extends to EOL
@@ -137,7 +137,7 @@ export abstract class PropertyInstruction extends Instruction {
 									default:
 										// whitespace doesn't extend to EOL, create an argument
 										args.push(new Argument(content.substring(argStart, i),
-											Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i + 1))
+											Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i + 2))
 										));
 										// loop and process the encountered non-whitespace character
 										i = j - 1;
