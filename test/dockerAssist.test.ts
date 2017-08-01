@@ -1484,7 +1484,7 @@ describe('Docker Content Assist Tests', function() {
 			
 
 			describe("plain text", function() {
-				testFlags(true);
+				testFlags(false);
 			});
 		});
 	}
