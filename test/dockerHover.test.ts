@@ -206,6 +206,10 @@ describe("Dockerfile hover", function() {
 					let hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "y");
 
+					document = createDocument(instruction + " z" + delimiter + "#");
+					hover = onHover(document, 0, 5);
+					assert.equal(hover.contents, "#");
+
 					document = createDocument(instruction + " e" + delimiter + "'f g=h'");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "f g=h");
