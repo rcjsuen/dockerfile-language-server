@@ -22,9 +22,7 @@ export class Property {
 			this.value = Property.getValue(value, escapeChar);
 		} else {
 			this.nameRange = Property.getNameRange(document, arg);
-			if (this.nameRange) {
-				this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
-			}
+			this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
 			let valueRange = Property.getValueRange(document, escapeChar, arg);
 			if (valueRange) {
 				let value = document.getText().substring(document.offsetAt(valueRange.start), document.offsetAt(valueRange.end));
