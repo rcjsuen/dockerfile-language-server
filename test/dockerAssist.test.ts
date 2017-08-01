@@ -1669,6 +1669,12 @@ describe('Docker Content Assist Tests', function() {
 				assertVariable("FTP_PROXY", items[2], 3, 9, 2, false);
 				assertVariable("ftp_proxy", items[3], 3, 9, 2, false);
 
+				items = computePosition("FROM busybox\nARG foo=bar\nARG foo=bar2\nRUN echo $f", 3, 11);
+				assert.equal(items.length, 3);
+				assertVariable("foo", items[0], 3, 9, 2, false, "bar2");
+				assertVariable("FTP_PROXY", items[1], 3, 9, 2, false);
+				assertVariable("ftp_proxy", items[2], 3, 9, 2, false);
+
 				items = computePosition("FROM busybox\nRUN echo $f\nARG foo=bar\nARG FOO=BAR", 1, 11);
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 2, false);
@@ -1702,6 +1708,12 @@ describe('Docker Content Assist Tests', function() {
 				assertVariable("foo", items[1], 3, 9, 2, false, "bar");
 				assertVariable("FTP_PROXY", items[2], 3, 9, 2, false);
 				assertVariable("ftp_proxy", items[3], 3, 9, 2, false);
+
+				items = computePosition("FROM busybox\nENV foo=bar\nENV foo=bar2\nRUN echo $f", 3, 11);
+				assert.equal(items.length, 3);
+				assertVariable("foo", items[0], 3, 9, 2, false, "bar2");
+				assertVariable("FTP_PROXY", items[1], 3, 9, 2, false);
+				assertVariable("ftp_proxy", items[2], 3, 9, 2, false);
 
 				items = computePosition("FROM busybox\nRUN echo $f\nENV foo=bar\nENV FOO=BAR", 1, 11);
 				assert.equal(items.length, 2);
@@ -1782,6 +1794,12 @@ describe('Docker Content Assist Tests', function() {
 				assertVariable("FTP_PROXY", items[2], 3, 9, 3, true);
 				assertVariable("ftp_proxy", items[3], 3, 9, 3, true);
 
+				items = computePosition("FROM busybox\nARG foo=bar\nARG foo=bar2\nRUN echo ${f", 3, 12);
+				assert.equal(items.length, 3);
+				assertVariable("foo", items[0], 3, 9, 3, true, "bar2");
+				assertVariable("FTP_PROXY", items[1], 3, 9, 3, true);
+				assertVariable("ftp_proxy", items[2], 3, 9, 3, true);
+
 				items = computePosition("FROM busybox\nRUN echo ${f\nARG foo=bar\nARG FOO=BAR", 1, 12);
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 3, true);
@@ -1802,6 +1820,12 @@ describe('Docker Content Assist Tests', function() {
 				assertVariable("foo", items[1], 2, 9, 3, true, "bar");
 				assertVariable("FTP_PROXY", items[2], 2, 9, 3, true);
 				assertVariable("ftp_proxy", items[3], 2, 9, 3, true);
+
+				items = computePosition("FROM busybox\nENV foo=bar\nENV foo=bar2\nRUN echo ${f", 3, 12);
+				assert.equal(items.length, 3);
+				assertVariable("foo", items[0], 3, 9, 3, true, "bar2");
+				assertVariable("FTP_PROXY", items[1], 3, 9, 3, true);
+				assertVariable("ftp_proxy", items[2], 3, 9, 3, true);
 
 				items = computePosition("FROM busybox\nRUN echo ${f\nENV foo=bar\nENV FOO=BAR", 1, 12);
 				assert.equal(items.length, 2);
