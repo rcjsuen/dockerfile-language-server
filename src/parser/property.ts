@@ -31,7 +31,7 @@ export class Property {
 		}
 	}
 
-	public getName(): string | null {
+	public getName(): string {
 		return this.name;
 	}
 
@@ -43,7 +43,7 @@ export class Property {
 		return this.value;
 	}
 
-	private static getNameRange(document: TextDocument, arg: Argument): Range | null{
+	private static getNameRange(document: TextDocument, arg: Argument): Range {
 		let index = arg.getValue().indexOf('=');
 		if (index !== -1) {
 			return Range.create(arg.getRange().start, document.positionAt(document.offsetAt(arg.getRange().start) + index));
@@ -78,7 +78,7 @@ export class Property {
 	 *         defined, may be the empty string if the value only
 	 *         consists of whitespace
 	 */
-	private static getValue(value: string, escapeChar: string): string | null {
+	private static getValue(value: string, escapeChar: string): string {
 		let literal = false;
 		let first = value.charAt(0);
 		let last = value.charAt(value.length - 1);
