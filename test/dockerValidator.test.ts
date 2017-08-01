@@ -836,7 +836,6 @@ describe("Docker Validator Tests", function() {
 		describe("escaped instruction", function() {
 			function testEscapedInstruction(instructionPrefix: string, middle: string, instructionSuffix: string, args: string) {
 				let diagnostics = validate("FROM node\n" + instructionPrefix + middle + instructionSuffix + " " + args);
-				if (diagnostics.length !== 0) console.log(diagnostics[0]);
 				assert.equal(diagnostics.length, 0);
 			}
 
