@@ -423,7 +423,7 @@ function assertSourceImage(item: CompletionItem, sourceImage: string, startLine:
 }
 
 function assertOnlyDirectiveEscape(items: CompletionItem[], line: number, character: number, prefixLength: number) {
-	assert.equal(1, items.length);
+	assert.equal(items.length, 1);
 	assertDirectiveEscape(items[0], line, character, prefixLength);
 }
 
