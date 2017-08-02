@@ -363,6 +363,17 @@ function assertSyntaxMissingEquals(diagnostic: Diagnostic, argument: string, sta
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertSyntaxMissingNames(diagnostic: Diagnostic, instrument: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.SYNTAX_MISSING_NAMES);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_SyntaxMissingNames(instrument));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function testValidArgument(instruction: string, argument: string) {
 	let gaps = [ " ", "\t", " \\\n", " \\\r", " \\\r\n" ];
 	for (let gap of gaps) {
@@ -1372,6 +1383,24 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node\n" + instruction + " a=b c d=e");
 				assert.equal(diagnostics.length, 1);
 				assertSyntaxMissingEquals(diagnostics[0], "c", 1, instructionLength + 5, 1, instructionLength + 6);
+			});
+
+			it("missing name", function() {
+				let diagnostics = validate("FROM node\n" + instruction + " =value");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingNames(diagnostics[0], instruction, 1, instructionLength + 1, 1, instructionLength + 7);
+
+				diagnostics = validate("FROM node\n" + instruction + " =");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingNames(diagnostics[0], instruction, 1, instructionLength + 1, 1, instructionLength + 2);
+
+				diagnostics = validate("FROM node\n" + instruction + " x=y =z a=b");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingNames(diagnostics[0], instruction, 1, instructionLength + 5, 1, instructionLength + 7);
+
+				diagnostics = validate("FROM node\n" + instruction + " x=y = a=b");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingNames(diagnostics[0], instruction, 1, instructionLength + 5, 1, instructionLength + 6);
 			});
 		});
 	}

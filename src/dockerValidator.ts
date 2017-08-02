@@ -42,6 +42,7 @@ export enum ValidationCode {
 	ONBUILD_TRIGGER_DISALLOWED,
 	SHELL_JSON_FORM,
 	SYNTAX_MISSING_EQUALS,
+	SYNTAX_MISSING_NAMES,
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
 	UNKNOWN_FLAG,
@@ -261,6 +262,10 @@ export class Validator {
 						problems.push(Validator.createENVRequiresTwoArguments(range.start, range.end));
 					} else if (properties.length !== 0) {
 						for (let property of properties) {
+							if (property.getName() === "") {
+								let range = property.getRange();
+								problems.push(Validator.createSyntaxMissingNames(range.start, range.end, keyword));
+							}
 							if (property.getValue() === null) {
 								let range = property.getNameRange();
 								problems.push(Validator.createSyntaxMissingEquals(range.start, range.end, property.getName()));
@@ -715,6 +720,7 @@ export class Validator {
 		"invalidSyntax": "parsing \"${0}\": invalid syntax",
 
 		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
+		"syntaxMissingNames": "${0} names can not be blank",
 
 		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
 		"flagDuplicate": "Duplicate flag specified: ${0}",
@@ -842,6 +848,10 @@ export class Validator {
 		return Validator.formatMessage(Validator.dockerProblems["syntaxMissingEquals"], argument);
 	}
 
+	public static getDiagnosticMessage_SyntaxMissingNames(instruction: string) {
+		return Validator.formatMessage(Validator.dockerProblems["syntaxMissingNames"], instruction);
+	}
+
 	public static getDiagnosticMessage_InstructionCasing() {
 		return Validator.dockerProblems["instructionCasing"];
 	}
@@ -960,6 +970,10 @@ export class Validator {
 
 	static createSyntaxMissingEquals(start: Position, end: Position, argument: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_SyntaxMissingEquals(argument), ValidationCode.SYNTAX_MISSING_EQUALS);
+	}
+
+	private static createSyntaxMissingNames(start: Position, end: Position, instruction: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_SyntaxMissingNames(instruction), ValidationCode.SYNTAX_MISSING_NAMES);
 	}
 
 	static createUnknownInstruction(start: Position, end: Position, instruction: string): Diagnostic {

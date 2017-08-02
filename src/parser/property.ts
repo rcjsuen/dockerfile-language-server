@@ -9,6 +9,7 @@ import { Util } from '../docker';
 
 export class Property {
 
+	private readonly range: Range;
 	private readonly nameRange: Range;
 	private readonly name: string = null;
 	private readonly value: string = null;
@@ -20,6 +21,7 @@ export class Property {
 			let valueRange = arg2.getRange();
 			let value = document.getText().substring(document.offsetAt(valueRange.start), document.offsetAt(valueRange.end));
 			this.value = Property.getValue(value, escapeChar);
+			this.range = Range.create(this.nameRange.start, valueRange.end);
 		} else {
 			this.nameRange = Property.getNameRange(document, arg);
 			this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
@@ -28,7 +30,12 @@ export class Property {
 				let value = document.getText().substring(document.offsetAt(valueRange.start), document.offsetAt(valueRange.end));
 				this.value = Property.getValue(value, escapeChar);
 			}
+			this.range = arg.getRange();
 		}
+	}
+
+	public getRange(): Range {
+		return this.range;
 	}
 
 	public getName(): string {
