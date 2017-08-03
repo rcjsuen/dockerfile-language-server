@@ -2140,7 +2140,19 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \\\n \"-c\" ]");
 			assert.equal(diagnostics.length, 0);
 
+			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \\\r \"-c\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \\\r\n \"-c\" ]");
+			assert.equal(diagnostics.length, 0);
+
 			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\"\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"[\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"\\\\[\" ]");
 			assert.equal(diagnostics.length, 0);
 		});
 
@@ -2190,6 +2202,12 @@ describe("Docker Validator Tests", function() {
 			let diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\",\n");
 			assert.equal(diagnostics.length, 1);
 			assertShellJsonForm(diagnostics[0], 1, 6, 1, 18);
+		});
+
+		it("comma without first argument", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ ,\"/bin/sh\" ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 20);
 		});
 
 		it("comma without second argument", function() {
