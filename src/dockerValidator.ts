@@ -41,6 +41,7 @@ export enum ValidationCode {
 	ONBUILD_CHAINING_DISALLOWED,
 	ONBUILD_TRIGGER_DISALLOWED,
 	SHELL_JSON_FORM,
+	SHELL_REQUIRES_ONE,
 	SYNTAX_MISSING_EQUALS,
 	SYNTAX_MISSING_NAMES,
 	MULTIPLE_INSTRUCTIONS,
@@ -619,6 +620,13 @@ export class Validator {
 		}
 
 		let argsRange = instruction.getArgumentsRange();
+		let args = instruction.getArguments();
+		if ((args.length === 1 && args[0].getValue() === "[]") ||
+				(args.length === 2 && args[0].getValue() === '[' && args[1].getValue() === ']')) {
+			problems.push(Validator.createShellRequiresOne(argsRange));
+			return;
+		}
+
 		let last = "";
 		let quoted = false;
 		argsCheck: for (let i = 0; i < argsContent.length; i++) {
@@ -743,6 +751,7 @@ export class Validator {
 		"onbuildTriggerDisallowed": "${0} isn't allowed as an ONBUILD trigger",
 
 		"shellJsonForm": "SHELL requires the arguments to be in JSON form",
+		"shellRequiresOne": "SHELL requires at least one argument",
 
 		"deprecatedMaintainer": "MAINTAINER has been deprecated",
 
@@ -868,6 +877,10 @@ export class Validator {
 		return Validator.dockerProblems["shellJsonForm"];
 	}
 
+	public static getDiagnosticMessage_ShellRequiresOne() {
+		return Validator.dockerProblems["shellRequiresOne"];
+	}
+
 	public static getDiagnosticMessage_DeprecatedMaintainer() {
 		return Validator.dockerProblems["deprecatedMaintainer"];
 	}
@@ -958,6 +971,10 @@ export class Validator {
 
 	private static createShellJsonForm(range: Range): Diagnostic {
 		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_ShellJsonForm(), ValidationCode.SHELL_JSON_FORM);
+	}
+
+	private static createShellRequiresOne(range: Range): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_ShellRequiresOne(), ValidationCode.SHELL_REQUIRES_ONE);
 	}
 
 	static createRequiresOneOrThreeArguments(start: Position, end: Position): Diagnostic {

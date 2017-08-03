@@ -319,6 +319,17 @@ function assertShellJsonForm(diagnostic: Diagnostic, startLine: number, startCha
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertShellRequiresOne(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.SHELL_REQUIRES_ONE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_ShellRequiresOne());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertOnbuildTriggerDisallowed(diagnostic: Diagnostic, trigger: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ONBUILD_TRIGGER_DISALLOWED);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -2191,6 +2202,20 @@ describe("Docker Validator Tests", function() {
 			let diagnostics = validate("#escape=`\nFROM busybox\nSHELL [ \"a`\"\" ]");
 			assert.equal(diagnostics.length, 1);
 			assertShellJsonForm(diagnostics[0], 2, 6, 2, 15);
+		});
+
+		it("requires at least one argument", function() {
+			let diagnostics = validate("FROM busybox\nSHELL []");
+			assert.equal(diagnostics.length, 1);
+			assertShellRequiresOne(diagnostics[0], 1, 6, 1, 8);
+
+			diagnostics = validate("FROM busybox\nSHELL [ ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellRequiresOne(diagnostics[0], 1, 6, 1, 9);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \\\n ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellRequiresOne(diagnostics[0], 1, 6, 2, 2);
 		});
 	});
 
