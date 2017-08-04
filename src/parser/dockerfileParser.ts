@@ -65,9 +65,11 @@ export class DockerfileParser {
 			switch (buffer.charAt(i)) {
 				case ' ':
 				case '\t':
+					break;
 				case '\r':
 				case '\n':
-					break;
+					// parser directives must be at the top of the Dockerfile
+					break directiveCheck;
 				case '#':
 					let commentStart = i;
 					let directiveStart = -1;

@@ -1219,6 +1219,11 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 1);
 				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
 			});
+
+			it("ignored on second line", function() {
+				let diagnostics = validate("\n# escape=a\nFROM node");
+				assert.equal(diagnostics.length, 0);
+			});
 		});
 
 		describe("escape casing", function() {
@@ -1261,6 +1266,11 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("# esCAPe=`\nFROM node", { directiveCasing: ValidationSeverity.ERROR });
 				assert.equal(diagnostics.length, 1);
 				assertDirectiveCasing(diagnostics[0], DiagnosticSeverity.Error, 0, 2, 0, 8);
+			});
+
+			it("ignored on second line", function() {
+				let diagnostics = validate("\n# esCAPe=a\nFROM node");
+				assert.equal(diagnostics.length, 0);
 			});
 		});
 	});
