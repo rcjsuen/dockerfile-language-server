@@ -683,7 +683,7 @@ export class Validator {
 							i = i + 1;
 						}
 					} else {
-						for (let j = i + 1; i < argsContent.length; i++) {
+						for (let j = i + 1; j < argsContent.length; j++) {
 							switch (argsContent.charAt(j)) {
 								case '\r':
 									if (argsContent.charAt(j + 1) === '\n') {

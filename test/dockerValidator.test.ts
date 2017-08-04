@@ -2146,6 +2146,9 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \\\r\n \"-c\" ]");
 			assert.equal(diagnostics.length, 0);
 
+			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \\ \t\n \"-c\" ]");
+			assert.equal(diagnostics.length, 0);
+
 			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\"\" ]");
 			assert.equal(diagnostics.length, 0);
 
