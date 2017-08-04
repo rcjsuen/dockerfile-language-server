@@ -78,11 +78,18 @@ export class Util {
 	 * @param range the range to see if the position is inside of
 	 */
 	public static isInsideRange(position: Position, range: Range): boolean {
-		return range != null &&
-				range.start.line <= position.line &&
-				position.line <= range.end.line &&
-				range.start.character <= position.character &&
-				position.character <= range.end.character;
+		if (range === null) {
+			return false;
+		} else if (range.start.line === range.end.line) {
+			return range.start.line === position.line
+				&& range.start.character <= position.character
+				&& position.character <= range.end.character;
+		} else if (range.start.line === position.line) {
+			return range.start.character <= position.character;
+		} else if (range.end.line === position.line) {
+			return position.character <= range.end.character;
+		}
+		return range.start.line < position.line && position.line < range.end.line;
 	}
 
 	public static rangeEquals(range: Range, range2: Range) {

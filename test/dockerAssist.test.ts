@@ -722,6 +722,15 @@ describe('Docker Content Assist Tests', function() {
 			content = "\\";
 			proposals = compute(content, content.length);
 			assert.equal(proposals.length, 0);
+
+			proposals = computePosition("FROM busybox\nEXPOSE 8080 \\ \n", 1, 14, true);
+			assert.equal(proposals.length, 0);
+
+			proposals = computePosition("FROM busybox\nEXPOSE 8080 \\ \n 8081", 1, 14, true);
+			assert.equal(proposals.length, 0);
+
+			proposals = computePosition("FROM busybox\nEXPOSE 8080 \\ \n\\ \n 8081", 2, 1, true);
+			assert.equal(proposals.length, 0);
 		});
 
 		function testEscape(header: string, instruction: string, escapeChar: string) {

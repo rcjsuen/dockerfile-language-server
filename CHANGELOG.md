@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - fixed parsing of escaped whitespace values in ENV instructions ([#115](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/115))
 - prevent undeclared variables from being suggested as completion items ([#118](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/118))
+- prevent completion items from being suggested in multiline instructions ([#125](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/125))
 
 ## [0.0.2] - 2017-07-31
 ### Added
