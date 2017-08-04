@@ -378,13 +378,8 @@ export class Validator {
 					break;
 				case "EXPOSE":
 					this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
-						for (var i = 0; i < argument.length; i++) {
-							if (argument.charAt(i) !== '-' && ('0' > argument.charAt(i) || '9' < argument.charAt(i))) {
-								return Validator.createInvalidPort;
-							}
-						}
-
-						return argument.charAt(0) !== '-' && argument.charAt(argument.length - 1) !== '-' ? null : Validator.createInvalidPort;
+						const regex = /^(([0-9])+(-[0-9]+)?(:([0-9])+(-[0-9]*)?)?(\/[A-Za-z]*)?)$/g;
+						return regex.exec(argument) !== null ? null : Validator.createInvalidPort;
 					});
 					break;
 				case "COPY":

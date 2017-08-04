@@ -1423,6 +1423,13 @@ describe("Docker Validator Tests", function() {
 			testValidArgument("EXPOSE", "8080");
 			testValidArgument("EXPOSE", "80\\80");
 			testValidArgument("EXPOSE", "7000-8000");
+			testValidArgument("EXPOSE", "8080/tcp");
+			testValidArgument("EXPOSE", "8080/TcP");
+			testValidArgument("EXPOSE", "8080/udp");
+			testValidArgument("EXPOSE", "8080/uDp");
+			testValidArgument("EXPOSE", "8080:8080");
+			testValidArgument("EXPOSE", "8080:8080/tcp");
+			testValidArgument("EXPOSE", "8080-8081:8082-8083/tcp");
 		});
 
 		it("escape", function() {
@@ -1575,6 +1582,14 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM node\nEXPOSE \\a");
 			assert.equal(diagnostics.length, 1);
 			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 9);
+
+			diagnostics = validate("FROM node\nEXPOSE 8080::8089");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8080::8089", 1, 7, 1, 17);
+
+			diagnostics = validate("FROM node\nEXPOSE 8080--8089");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidPort(diagnostics[0], "8080--8089", 1, 7, 1, 17);
 		});
 	});
 
