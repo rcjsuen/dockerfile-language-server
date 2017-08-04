@@ -36,6 +36,7 @@ export enum ValidationCode {
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_AS,
 	INVALID_PORT,
+	INVALID_PROTO,
 	INVALID_SIGNAL,
 	INVALID_SYNTAX,
 	ONBUILD_CHAINING_DISALLOWED,
@@ -377,10 +378,34 @@ export class Validator {
 					});
 					break;
 				case "EXPOSE":
-					this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
-						const regex = /^(([0-9])+(-[0-9]+)?(:([0-9])+(-[0-9]*)?)?(\/[A-Za-z]*)?)$/g;
-						return regex.exec(argument) !== null ? null : Validator.createInvalidPort;
-					});
+					let exposeArgs = instruction.getArguments();
+					if (exposeArgs.length === 0) {
+						let range = instruction.getInstructionRange();
+						problems.push(Validator.createMissingArgument(range.start, range.end));
+					} else {
+						const regex = /^([0-9])+(-[0-9]+)?(:([0-9])+(-[0-9]*)?)?(\/(\w*))?(\/\w*)*$/;
+						for (let i = 0; i < exposeArgs.length; i++) {
+							const value = exposeArgs[i].getValue()
+							const match = regex.exec(value);
+							if (match) {
+								if (match[7]) {
+									const protocol = match[7].toLowerCase();
+									if (protocol !== "" && protocol !== "tcp" && protocol !== "udp") {
+										const range = exposeArgs[i].getRange();
+										const rangeStart = this.document.offsetAt(range.start);
+										const rawArg = this.document.getText().substring(
+											rangeStart, this.document.offsetAt(range.end)
+										);
+										const start = rangeStart + rawArg.indexOf(match[7].substring(0, 1));
+										const end = protocol.length === 1 ? rangeStart + start + 1 : rangeStart + rawArg.length;
+										problems.push(Validator.createInvalidProto(this.document.positionAt(start), this.document.positionAt(end), match[7]));
+									}
+								}
+							} else {
+								problems.push(Validator.createInvalidPort(exposeArgs[i].getRange(), value));
+							}
+						}
+					}
 					break;
 				case "COPY":
 					let copyArgs = instruction.getArguments();
@@ -719,6 +744,7 @@ export class Validator {
 
 		"invalidAs": "Second argument should be AS",
 		"invalidPort": "Invalid containerPort: ${0}",
+		"invalidProtocol": "Invalid proto: ${0}",
 		"invalidStopSignal": "Invalid signal: ${0}",
 		"invalidSyntax": "parsing \"${0}\": invalid syntax",
 
@@ -806,6 +832,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_InvalidPort(port: string) {
 		return Validator.formatMessage(Validator.dockerProblems["invalidPort"], port);
+	}
+
+	public static getDiagnosticMessage_InvalidProto(protocol: string) {
+		return Validator.formatMessage(Validator.dockerProblems["invalidProtocol"], protocol);
 	}
 
 	public static getDiagnosticMessage_InvalidSignal(signal: string) {
@@ -920,8 +950,12 @@ export class Validator {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidAs(), ValidationCode.INVALID_AS);
 	}
 
-	static createInvalidPort(start: Position, end: Position, port: string): Diagnostic {
-		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_PORT);
+	static createInvalidPort(range: Range, port: string): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_InvalidPort(port), ValidationCode.INVALID_PORT);
+	}
+
+	private static createInvalidProto(start: Position, end: Position, protocol: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_InvalidProto(protocol), ValidationCode.INVALID_PROTO);
 	}
 
 	static createInvalidStopSignal(start: Position, end: Position, signal: string): Diagnostic {

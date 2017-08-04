@@ -154,6 +154,17 @@ function assertInvalidPort(diagnostic: Diagnostic, port: string, startLine: numb
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertInvalidProto(diagnostic: Diagnostic, protocol: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.INVALID_PROTO);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidProto(protocol));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInvalidStopSignal(diagnostic: Diagnostic, signal: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_SIGNAL);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1439,7 +1450,11 @@ describe("Docker Validator Tests", function() {
 			testValidArgument("EXPOSE", "8080/uDp");
 			testValidArgument("EXPOSE", "8080:8080");
 			testValidArgument("EXPOSE", "8080:8080/tcp");
-			testValidArgument("EXPOSE", "8080-8081:8082-8083/tcp");
+			// unspecified protocol is assumed to be TCP
+			testValidArgument("EXPOSE", "8080/");
+			// Docker engine does not flag such arguments as errors
+			testValidArgument("EXPOSE", "8080/tcp/tcpx/tcptx/sdfsdfasdf/asdf/asdf/adf");
+			testValidArgument("EXPOSE", "8080:888/tcp/123");
 		});
 
 		it("escape", function() {
@@ -1600,6 +1615,24 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM node\nEXPOSE 8080--8089");
 			assert.equal(diagnostics.length, 1);
 			assertInvalidPort(diagnostics[0], "8080--8089", 1, 7, 1, 17);
+		});
+
+		it("invalid proto", function() {
+			let diagnostics = validate("FROM node\nEXPOSE 8080/tcpx");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidProto(diagnostics[0], "tcpx", 1, 12, 1, 16);
+
+			diagnostics = validate("FROM node\nEXPOSE 8080/TCPs");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidProto(diagnostics[0], "TCPs", 1, 12, 1, 16);
+
+			diagnostics = validate("FROM node\nEXPOSE 8080-8081:8082-8083/udpy");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidProto(diagnostics[0], "udpy", 1, 27, 1, 31);
+
+			diagnostics = validate("FROM node\nEXPOSE 8080/x");
+			assert.equal(diagnostics.length, 1);
+			assertInvalidProto(diagnostics[0], "x", 1, 12, 1, 13);
 		});
 	});
 
