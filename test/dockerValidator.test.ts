@@ -1662,6 +1662,9 @@ describe("Docker Validator Tests", function() {
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=30s CMD ls");
 					assert.equal(diagnostics.length, 0);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=1ms01h1m1s1ms CMD ls");
+					assert.equal(diagnostics.length, 0);
 				});
 
 				it("unknown flag", function() {
