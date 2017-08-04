@@ -11,6 +11,7 @@ import {
 import { ValidationCode } from './dockerValidator';
 
 export class CommandIds {
+	static readonly LOWERCASE = "docker.command.convertToLowercase";
 	static readonly UPPERCASE = "docker.command.convertToUppercase";
 	static readonly EXTRA_ARGUMENT = "docker.command.removeExtraArgument";
 	static readonly DIRECTIVE_TO_BACKTICK = "docker.command.directiveToBacktick";
@@ -28,6 +29,13 @@ export class DockerCommands {
 				diagnostics[i].code = parseInt(diagnostics[i].code as string);
 			}
 			switch (diagnostics[i].code) {
+				case ValidationCode.CASING_DIRECTIVE:
+					commands.push({
+						title: "Convert directive to lowercase",
+						command: CommandIds.LOWERCASE,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
 				case ValidationCode.CASING_INSTRUCTION:
 					commands.push({
 						title: "Convert instruction to uppercase",
@@ -70,6 +78,18 @@ export class DockerCommands {
 		let uri: string = params.arguments[0];
 		let range: Range = params.arguments[1];
 		switch (params.command) {
+			case CommandIds.LOWERCASE:
+				const directive = document.getText().substring(document.offsetAt(range.start), document.offsetAt(range.end));
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, directive.toLowerCase())
+						]
+					}
+				};
 			case CommandIds.UPPERCASE:
 				let instruction = document.getText().substring(document.offsetAt(range.start), document.offsetAt(range.end));
 				return {

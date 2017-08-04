@@ -25,6 +25,10 @@ function createInvalidEscapeDirective(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 }
 
+function createDirectiveUppercase(): Diagnostic {
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.CASING_DIRECTIVE);
+}
+
 function createLowercase(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.CASING_INSTRUCTION);
 }
@@ -79,6 +83,17 @@ describe("Dockerfile code actions", function () {
 		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri, range);
 		assert.equal(commands.length, 1);
 		assert.equal(commands[0].command, CommandIds.UPPERCASE);
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], diagnostic.range);
+	});
+
+	it("convert to lowercase", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let diagnostic = createDirectiveUppercase();
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri, range);
+		assert.equal(commands.length, 1);
+		assert.equal(commands[0].command, CommandIds.LOWERCASE);
 		assert.equal(commands[0].arguments.length, 2);
 		assert.equal(commands[0].arguments[0], uri);
 		assertRange(commands[0].arguments[1], diagnostic.range);
@@ -180,6 +195,20 @@ describe("Dockerfile execute commands", function () {
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
 		assert.equal(edits[0].newText, "FROM");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("convert to lowercase", function () {
+		let range = Range.create(Position.create(0, 1), Position.create(0, 7));
+		let document = createDocument("#ESCAPE=`");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.LOWERCASE,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "escape");
 		assert.equal(edits[0].range, range);
 	});
 
