@@ -230,7 +230,9 @@ export class DockerfileParser {
 												j = k;
 												break escapeCheck;
 											default:
-												j = k;
+												instructionEnd = j + 1;
+												instruction = instruction + this.escapeChar;
+												j = k - 2;
 												break escapeCheck;
 										}
 									}

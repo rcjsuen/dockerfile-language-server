@@ -1076,6 +1076,18 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
 
+				diagnostics = validate("FROM alpine\nEXPOS\\8080");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "EXPOS\\8080", 1, 0, 1, 10);
+
+				diagnostics = validate("FROM alpine\nEXPOS\\ 8080");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "EXPOS\\", 1, 0, 1, 6);
+
+				diagnostics = validate("FROM alpine\nEXPOS\\  8080");
+				assert.equal(diagnostics.length, 1);
+				assertInstructionUnknown(diagnostics[0], "EXPOS\\", 1, 0, 1, 6);
+
 				diagnostics = validate("\\FROM node");
 				assert.equal(diagnostics.length, 2);
 				assertDiagnostics(diagnostics,
