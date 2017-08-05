@@ -788,6 +788,10 @@ describe("Dockerfile formatter", function() {
 				let edits = formatOnType(document, Position.create(0, 13), '\\');
 				assert.equal(edits.length, 0);
 
+				document = createDocument("FROM node AS  \t\r\n");
+				edits = formatOnType(document, Position.create(0, 13), '\\');
+				assert.equal(edits.length, 0);
+
 				document = createDocument("FROM node AS \nsetup");
 				edits = formatOnType(document, Position.create(0, 13), '\\');
 				assert.equal(edits.length, 1);
@@ -838,6 +842,15 @@ describe("Dockerfile formatter", function() {
 				let document = createDocument("# comment\nFROM node");
 				let edits = formatOnType(document, Position.create(0, 9), '\\');
 				assert.equal(edits.length, 0);
+
+				document = createDocument("FROM node\n# comment");
+				edits = formatOnType(document, Position.create(0, 9), '\\');
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
 			});
 
 			it("directive", function() {
