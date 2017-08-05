@@ -35,6 +35,16 @@ function formatRange(document: TextDocument, range: Range, options?: FormattingO
 	return formatter.formatRange(document, range, options);
 }
 
+function formatOnType(document: TextDocument, position: Position, ch: string, options?: FormattingOptions): TextEdit[] {
+	if (!options) {
+		options = {
+			insertSpaces: false,
+			tabSize: 4
+		};
+	}
+	return formatter.formatOnType(document, position, ch, options);
+}
+
 describe("Dockerfile formatter", function() {
 	describe("document", function() {
 		describe("whitespace", function() {
@@ -761,6 +771,98 @@ describe("Dockerfile formatter", function() {
 				assert.equal(edits[0].range.start.character, 0);
 				assert.equal(edits[0].range.end.line, 1);
 				assert.equal(edits[0].range.end.character, 1);
+			});
+		});
+	});
+
+	describe("on type", function() {
+		describe("backslash", function() {
+			it("one line", function() {
+				let document = createDocument("FROM node AS ");
+				let edits = formatOnType(document, Position.create(0, 13), '\\');
+				assert.equal(edits.length, 0);
+			});
+
+			it("two lines", function() {
+				let document = createDocument("FROM node AS \n");
+				let edits = formatOnType(document, Position.create(0, 13), '\\');
+				assert.equal(edits.length, 0);
+
+				document = createDocument("FROM node AS \nsetup");
+				edits = formatOnType(document, Position.create(0, 13), '\\');
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+			});
+
+			it("three lines", function() {
+				let document = createDocument("FROM node AS \n\n");
+				let edits = formatOnType(document, Position.create(0, 13), '\\');
+				assert.equal(edits.length, 0);
+
+				document = createDocument("FROM node AS \nsetup\n");
+				edits = formatOnType(document, Position.create(0, 13), '\\');
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+
+				document = createDocument("FROM node \nAS \nsetup\n");
+				edits = formatOnType(document, Position.create(0, 10), '\\');
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 1);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 1);
+				assert.equal(edits[0].range.end.character, 0);
+			});
+
+			it("directive defined as backtick", function() {
+				let document = createDocument("#escape=`\nFROM node AS \nsetup");
+				let edits = formatOnType(document, Position.create(1, 13), '\\');
+				assert.equal(edits.length, 0);
+			});
+
+			it("nested", function() {
+				let document = createDocument("SHELL [ \"\", \n \"\" ]");
+				let edits = formatOnType(document, Position.create(0, 9), '\\');
+				assert.equal(edits.length, 0);
+			});
+
+			it("comment", function() {
+				let document = createDocument("# comment\nFROM node");
+				let edits = formatOnType(document, Position.create(0, 9), '\\');
+				assert.equal(edits.length, 0);
+			});
+
+			it("directive", function() {
+				let document = createDocument("#escape=\nFROM node");
+				let edits = formatOnType(document, Position.create(0, 8), '\\');
+				assert.equal(edits.length, 0);
+			});
+		});
+
+		describe("backtick", function() {
+			it("ignored", function() {
+				let document = createDocument("FROM node AS \nsetup");
+				let edits = formatOnType(document, Position.create(0, 13), '`');
+				assert.equal(edits.length, 0);
+			});
+
+			it("directive defined as backtick", function() {
+				let document = createDocument("#escape=`\nFROM node AS \nsetup");
+				let edits = formatOnType(document, Position.create(1, 13), '`');
+				assert.equal(edits.length, 1);
+				assert.equal(edits[0].newText, "\t");
+				assert.equal(edits[0].range.start.line, 2);
+				assert.equal(edits[0].range.start.character, 0);
+				assert.equal(edits[0].range.end.line, 2);
+				assert.equal(edits[0].range.end.character, 0);
 			});
 		});
 	});

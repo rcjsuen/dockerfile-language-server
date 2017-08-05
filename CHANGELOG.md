@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/codeAction
   - created docker.command.convertToLowercase for directives not written in lowercase ([#128](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/128))
+- textDocument/onTypeFormatting
+  - format the next line if an escape character is inserted ([#130](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/130))
 - textDocument/publishDiagnostics
   - validate the syntax of LABEL instructions ([#100](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/100))
   - warn if invalid ONBUILD trigger instructions are used ([#117](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/117))

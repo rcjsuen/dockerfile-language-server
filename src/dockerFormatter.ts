@@ -47,6 +47,47 @@ export class DockerFormatter {
 		}
 	}
 
+	public formatOnType(document: TextDocument, position: Position, ch: string, options: FormattingOptions): TextEdit[] {
+		const parser = new DockerfileParser();
+		const dockerfile = parser.parse(document);
+		// check that the inserted character is the escape character
+		if (dockerfile.getEscapeCharacter() === ch) {
+			for (let comment of dockerfile.getComments()) {
+				// ignore if we're in a comment
+				if (comment.getRange().start.line === position.line) {
+					return [];
+				}
+			}
+
+			const directive = dockerfile.getDirective();
+			// ignore if we're in the parser directive
+			if (directive && position.line === 0) {
+				return [];
+			}
+
+			const content = document.getText();
+			validityCheck: for (let i = document.offsetAt(position); i < content.length; i++) {
+				switch (content.charAt(i)) {
+					case ' ':
+					case '\t':
+						break;
+					case '\r':
+					case '\n':
+						break validityCheck;
+					default:
+						// not escaping a newline, no need to format the next line
+						return [];
+				}
+			}
+
+			const lines = [ position.line + 1 ];
+			const indentedLines = [];
+			indentedLines[lines[0]] = true;
+			return this.formatLines(document, document.getText(), lines, indentedLines, options);
+		}
+		return [];
+	}
+
 	public formatRange(document: TextDocument, range: Range, options?: FormattingOptions): TextEdit[] {
 		let lines = [];
 		for (let i = range.start.line; i <= range.end.line; i++) {
@@ -76,8 +117,6 @@ export class DockerFormatter {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let content = document.getText();
-		let indentation = this.getIndentation(options);
-		let edits = [];
 		let indentedLines = [];
 		for (let i = 0; i < document.lineCount; i++) {
 			indentedLines[i] = false;
@@ -89,7 +128,12 @@ export class DockerFormatter {
 				indentedLines[i] = true;
 			}
 		}
+		return this.formatLines(document, content, lines, indentedLines, options);
+	}
 
+	private formatLines(document: TextDocument, content: string, lines: number[], indentedLines: boolean[], options: FormattingOptions) {
+		const indentation = this.getIndentation(options);
+		const edits = [];
 		lineCheck: for (let line of lines) {
 			let startOffset = document.offsetAt(Position.create(line, 0));
 			for (let i = startOffset; i < content.length; i++) {
