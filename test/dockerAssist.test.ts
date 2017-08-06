@@ -38,7 +38,11 @@ function assertOnlyFROM(proposals: CompletionItem[], line: number, number: numbe
 }
 
 function assertADD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "ADD source dest");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "ADD source dest");
+	} else {
+		assert.equal(item.label, "ADD");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -92,7 +96,11 @@ function assertARG_DefaultValue(item: CompletionItem, line: number, character: n
 }
 
 function assertCMD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "CMD [ \"executable\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "CMD [ \"executable\" ]");
+	} else {
+		assert.equal(item.label, "CMD");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -108,7 +116,11 @@ function assertCMD(item: CompletionItem, line: number, character: number, prefix
 }
 
 function assertCOPY(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "COPY source dest");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "COPY source dest");
+	} else {
+		assert.equal(item.label, "COPY");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -124,7 +136,11 @@ function assertCOPY(item: CompletionItem, line: number, character: number, prefi
 }
 
 function assertENTRYPOINT(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "ENTRYPOINT [ \"executable\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "ENTRYPOINT [ \"executable\" ]");
+	} else {
+		assert.equal(item.label, "ENTRYPOINT");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -140,7 +156,11 @@ function assertENTRYPOINT(item: CompletionItem, line: number, character: number,
 }
 
 function assertENV(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "ENV key=value");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "ENV key=value");
+	} else {
+		assert.equal(item.label, "ENV");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -156,7 +176,11 @@ function assertENV(item: CompletionItem, line: number, character: number, prefix
 }
 
 function assertEXPOSE(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "EXPOSE port");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "EXPOSE port");
+	} else {
+		assert.equal(item.label, "EXPOSE");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -172,7 +196,11 @@ function assertEXPOSE(item: CompletionItem, line: number, character: number, pre
 }
 
 function assertFROM(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "FROM baseImage");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "FROM baseImage");
+	} else {
+		assert.equal(item.label, "FROM");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -188,14 +216,18 @@ function assertFROM(item: CompletionItem, line: number, character: number, prefi
 }
 
 function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ \"executable\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ \"executable\" ]");
+	} else {
+		assert.equal(item.label, "HEALTHCHECK CMD");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
 		assert.equal(item.textEdit.newText, "HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --start-period=${3:5s} --retries=${4:3} CMD [ \"${5:executable}\" ]");
 	} else {
 		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
-		assert.equal(item.textEdit.newText, "HEALTHCHECK");
+		assert.equal(item.textEdit.newText, "HEALTHCHECK CMD");
 	}
 	assert.equal(item.textEdit.range.start.line, line);
 	assert.equal(item.textEdit.range.start.character, character);
@@ -204,7 +236,11 @@ function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: nu
 }
 
 function assertHEALTHCHECK_FlagInterval(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "--interval=30s");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "--interval=30s");
+	} else {
+		assert.equal(item.label, "--interval=");
+	}
 	assert.equal(item.kind, CompletionItemKind.Field);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -220,7 +256,11 @@ function assertHEALTHCHECK_FlagInterval(item: CompletionItem, startLine: number,
 }
 
 function assertHEALTHCHECK_FlagTimeout(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "--timeout=30s");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "--timeout=30s");
+	} else {
+		assert.equal(item.label, "--timeout=");
+	}
 	assert.equal(item.kind, CompletionItemKind.Field);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -236,7 +276,11 @@ function assertHEALTHCHECK_FlagTimeout(item: CompletionItem, startLine: number, 
 }
 
 function assertHEALTHCHECK_FlagStartPeriod(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "--start-period=5s");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "--start-period=5s");
+	} else {
+		assert.equal(item.label, "--start-period=");
+	}
 	assert.equal(item.kind, CompletionItemKind.Field);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -252,7 +296,11 @@ function assertHEALTHCHECK_FlagStartPeriod(item: CompletionItem, startLine: numb
 }
 
 function assertHEALTHCHECK_FlagRetries(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "--retries=3");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "--retries=3");
+	} else {
+		assert.equal(item.label, "--retries=");
+	}
 	assert.equal(item.kind, CompletionItemKind.Field);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -279,7 +327,11 @@ function assertHEALTHCHECK_NONE(item: CompletionItem, line: number, character: n
 }
 
 function assertLABEL(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "LABEL key=\"value\"");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "LABEL key=\"value\"");
+	} else {
+		assert.equal(item.label, "LABEL");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -295,7 +347,11 @@ function assertLABEL(item: CompletionItem, line: number, character: number, pref
 }
 
 function assertMAINTAINER(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "MAINTAINER name");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "MAINTAINER name");
+	} else {
+		assert.equal(item.label, "MAINTAINER");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -311,7 +367,11 @@ function assertMAINTAINER(item: CompletionItem, line: number, character: number,
 }
 
 function assertONBUILD(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "ONBUILD INSTRUCTION");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "ONBUILD INSTRUCTION");
+	} else {
+		assert.equal(item.label, "ONBUILD");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -327,7 +387,11 @@ function assertONBUILD(item: CompletionItem, line: number, character: number, pr
 }
 
 function assertRUN(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "RUN command");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "RUN command");
+	} else {
+		assert.equal(item.label, "RUN");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -343,7 +407,11 @@ function assertRUN(item: CompletionItem, line: number, character: number, prefix
 }
 
 function assertSHELL(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "SHELL [ \"executable\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "SHELL [ \"executable\" ]");
+	} else {
+		assert.equal(item.label, "SHELL");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -359,7 +427,11 @@ function assertSHELL(item: CompletionItem, line: number, character: number, pref
 }
 
 function assertSTOPSIGNAL(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "STOPSIGNAL signal");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "STOPSIGNAL signal");
+	} else {
+		assert.equal(item.label, "STOPSIGNAL");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -375,7 +447,11 @@ function assertSTOPSIGNAL(item: CompletionItem, line: number, character: number,
 }
 
 function assertUSER(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "USER daemon");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "USER daemon");
+	} else {
+		assert.equal(item.label, "USER");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -391,7 +467,11 @@ function assertUSER(item: CompletionItem, line: number, character: number, prefi
 }
 
 function assertVOLUME(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "VOLUME [ \"/data\" ]");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "VOLUME [ \"/data\" ]");
+	} else {
+		assert.equal(item.label, "VOLUME");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -407,7 +487,11 @@ function assertVOLUME(item: CompletionItem, line: number, character: number, pre
 }
 
 function assertWORKDIR(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
-	assert.equal(item.label, "WORKDIR /path");
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "WORKDIR /path");
+	} else {
+		assert.equal(item.label, "WORKDIR");
+	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);

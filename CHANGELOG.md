@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Fixed
+- do not show arguments if snippets are not supported ([#136](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/136))
 - show only one ARG completion item if snippets are not supported ([#137](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/137))
 
 ## [0.0.4] - 2017-08-06

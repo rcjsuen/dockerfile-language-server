@@ -376,32 +376,51 @@ export class DockerAssist {
 	}
 
 	createHEALTHCHECK_CMD(prefixLength: number, offset: number): CompletionItem {
-		return this.createKeywordCompletionItem("HEALTHCHECK",
-			"HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ \"executable\" ]",
-			prefixLength,
-			offset,
-			"HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --start-period=${3:5s} --retries=${4:3} CMD [ \"${5:executable}\" ]",
-			"HEALTHCHECK_CMD");
+		if (this.snippetSupport) {
+			return this.createKeywordCompletionItem("HEALTHCHECK",
+				"HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ \"executable\" ]",
+				prefixLength,
+				offset,
+				"HEALTHCHECK --interval=${1:30s} --timeout=${2:30s} --start-period=${3:5s} --retries=${4:3} CMD [ \"${5:executable}\" ]",
+				"HEALTHCHECK_CMD");
+		}
+
+		let textEdit = this.createTextEdit(prefixLength, offset, "HEALTHCHECK CMD");
+		return {
+			data: "HEALTHCHECK_CMD",
+			textEdit: textEdit,
+			label: "HEALTHCHECK CMD",
+			kind: CompletionItemKind.Keyword,
+			insertTextFormat: InsertTextFormat.PlainText,
+		};
 	}
 
 	private createHEALTHCHECK_FlagInterval(prefixLength: number, offset: number): CompletionItem {
-		let insertText = this.snippetSupport ? "--interval=${1:30s}" : "--interval=";
-		return this.createFlagCompletionItem("--interval=30s", prefixLength, offset, insertText, "HEALTHCHECK_FlagInterval");
+		if (this.snippetSupport) {
+			return this.createFlagCompletionItem("--interval=30s", prefixLength, offset, "--interval=${1:30s}", "HEALTHCHECK_FlagInterval");
+		}
+		return this.createFlagCompletionItem("--interval=", prefixLength, offset, "--interval=", "HEALTHCHECK_FlagInterval");
 	}
 
 	private createHEALTHCHECK_FlagRetries(prefixLength: number, offset: number): CompletionItem {
-		let insertText = this.snippetSupport ? "--retries=${1:3}" : "--retries=";
-		return this.createFlagCompletionItem("--retries=3", prefixLength, offset, insertText, "HEALTHCHECK_FlagRetries");
+		if (this.snippetSupport) {
+			return this.createFlagCompletionItem("--retries=3", prefixLength, offset, "--retries=${1:3}", "HEALTHCHECK_FlagInterval");
+		}
+		return this.createFlagCompletionItem("--retries=", prefixLength, offset, "--retries=", "HEALTHCHECK_FlagInterval");
 	}
 
 	private createHEALTHCHECK_FlagStartPeriod(prefixLength: number, offset: number): CompletionItem {
-		let insertText = this.snippetSupport ? "--start-period=${1:5s}" : "--start-period=";
-		return this.createFlagCompletionItem("--start-period=5s", prefixLength, offset, insertText, "HEALTHCHECK_FlagStartPeriod");
+		if (this.snippetSupport) {
+			return this.createFlagCompletionItem("--start-period=5s", prefixLength, offset, "--start-period=${1:5s}", "HEALTHCHECK_FlagStartPeriod");
+		}
+		return this.createFlagCompletionItem("--start-period=", prefixLength, offset, "--start-period=", "HEALTHCHECK_FlagStartPeriod");
 	}
 
 	private createHEALTHCHECK_FlagTimeout(prefixLength: number, offset: number): CompletionItem {
-		let insertText = this.snippetSupport ? "--timeout=${1:30s}" : "--timeout=";
-		return this.createFlagCompletionItem("--timeout=30s", prefixLength, offset, insertText, "HEALTHCHECK_FlagTimeout");
+		if (this.snippetSupport) {
+			return this.createFlagCompletionItem("--timeout=30s", prefixLength, offset, "--timeout=${1:30s}", "HEALTHCHECK_FlagTimeout");
+		}
+		return this.createFlagCompletionItem("--timeout=", prefixLength, offset, "--timeout=", "HEALTHCHECK_FlagTimeout");
 	}
 
 	createHEALTHCHECK_NONE(prefixLength: number, offset: number): CompletionItem {
@@ -450,6 +469,8 @@ export class DockerAssist {
 
 	createKeywordCompletionItem(keyword: string, label: string, prefixLength: number, offset: number, insertText: string, markdown: string): CompletionItem {
 		if (!this.snippetSupport) {
+			// only inserting the keyword so set the label to the keyword
+			label = keyword;
 			// just insert the keyword if snippets are not supported by the client
 			insertText = keyword;
 		}
