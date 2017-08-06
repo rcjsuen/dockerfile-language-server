@@ -29,6 +29,9 @@
     "typescript": "^2.1.5",
     "nyc": "^11.0.2"
   },
+  "bin": {
+    "docker-langserver": "./lib/server.js"
+  },
   "scripts": {
     "build": "tsc -p .",
     "prepublish": "tsc -p ./src",

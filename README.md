@@ -3,7 +3,9 @@
 [![Build Status](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs.svg?branch=master)](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs) [![Coverage Status](https://coveralls.io/repos/github/rcjsuen/dockerfile-language-server-nodejs/badge.svg?branch=master)](https://coveralls.io/github/rcjsuen/dockerfile-language-server-nodejs?branch=master) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This is a language server for Dockerfiles powered by Node.js
-written in TypeScript.
+written in TypeScript. To build or to install this language server,
+you will need to have [Node.js](https://nodejs.org/en/download/)
+installed on your computer.
 
 Supported features:
 - code actions
@@ -16,10 +18,10 @@ Supported features:
 - hovers
 - rename
 
-## Setup Instructions
+## Development Instructions
 
-To build and compile this language server, you should first [install
-Node.js](https://nodejs.org/en/download/) if you haven't already done so.
+To build and compile this language server, please run the following
+commands after cloning the repository with Git.
 
 ```
 npm install
@@ -32,6 +34,27 @@ TypeScript files transpiled on-the-fly as they are modified.
 
 Once the code has finished compiling, you can connect a language server
 client to the server via Node IPC, stdio, or sockets.
+
+## Installation Instructions
+
+To install this language server onto your computer, please install the
+[dockerfile-language-server-nodejs npm module](https://www.npmjs.com/package/dockerfile-language-server-nodejs).
+The `-g` flag will install the npm module globally onto your computer.
+
+```
+npm install -g dockerfile-language-server-nodejs
+```
+
+After the installation has completed, you can start the language
+server with the `docker-langserver` binary. You should specify
+the desired method of communciating with the language server via one
+of the three arguments shown below.
+
+```
+docker-langserver --node-ipc
+docker-langserver --stdio
+docker-langserver --socket=<port>
+```
 
 ### Settings
 

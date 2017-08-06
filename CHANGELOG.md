@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- created a docker-langserver binary for launching the server ([#134](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/134))
 - textDocument/codeAction
   - created docker.command.convertToLowercase for directives not written in lowercase ([#128](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/128))
 - textDocument/onTypeFormatting
