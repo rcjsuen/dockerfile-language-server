@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.0.3] - 2017-08-06
 ### Added
 - created a docker-langserver binary for launching the server ([#134](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/134))
 - textDocument/codeAction
@@ -134,5 +136,6 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.1...v0.0.2
