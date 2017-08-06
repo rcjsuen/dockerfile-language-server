@@ -179,8 +179,12 @@ export class DockerAssist {
 		for (var i = 0; i < keywords.length; i++) {
 			switch (keywords[i]) {
 				case "ARG":
-					proposals.push(this.createARG_NameOnly(prefixLength, offset));
-					proposals.push(this.createARG_DefaultValue(prefixLength, offset));
+					if (this.snippetSupport) {
+						proposals.push(this.createARG_NameOnly(prefixLength, offset));
+						proposals.push(this.createARG_DefaultValue(prefixLength, offset));
+					} else {
+						proposals.push(this.createARG(prefixLength, offset));
+					}
 					break;
 				case "HEALTHCHECK":
 					proposals.push(this.createHEALTHCHECK_CMD(prefixLength, offset));
@@ -333,6 +337,10 @@ export class DockerAssist {
 
 	createADD(prefixLength: number, offset: number, markdown: string): CompletionItem {
 		return this.createKeywordCompletionItem("ADD", "ADD source dest", prefixLength, offset, "ADD ${1:source} ${2:dest}", markdown);
+	}
+
+	private createARG(prefixLength: number, offset: number): CompletionItem {
+		return this.createKeywordCompletionItem("ARG", "ARG", prefixLength, offset, "ARG", "ARG");
 	}
 
 	createARG_NameOnly(prefixLength: number, offset: number): CompletionItem {

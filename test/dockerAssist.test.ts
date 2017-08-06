@@ -53,6 +53,17 @@ function assertADD(item: CompletionItem, line: number, character: number, prefix
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
+function assertARG(item: CompletionItem, line: number, character: number, prefixLength: number) {
+	assert.equal(item.label, "ARG");
+	assert.equal(item.kind, CompletionItemKind.Keyword);
+	assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+	assert.equal(item.textEdit.newText, "ARG");
+	assert.equal(item.textEdit.range.start.line, line);
+	assert.equal(item.textEdit.range.start.character, character);
+	assert.equal(item.textEdit.range.end.line, line);
+	assert.equal(item.textEdit.range.end.character, character + prefixLength);
+}
+
 function assertARG_NameOnly(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	assert.equal(item.label, "ARG name");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
@@ -476,6 +487,9 @@ function assertProposals(proposals: CompletionItem[], offset: number, prefix: nu
 			case "ADD":
 				assertADD(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
+			case "ARG":
+				assertARG(proposals[i], offset, prefix, prefixLength);
+				break;
 			case "ARG_DefaultValue":
 				assertARG_DefaultValue(proposals[i], offset, prefix, prefixLength, snippetSupport);
 				break;
@@ -557,12 +571,14 @@ function assertONBUILDProposals(proposals: CompletionItem[], offset: number, pre
 }
 
 function assertAllProposals(proposals: CompletionItem[], offset: number, prefix: number, prefixLength: number, snippetSupport?: boolean) {
-	if (snippetSupport === undefined) {
-		snippetSupport = true;
+	if (snippetSupport === undefined || snippetSupport) {
+		// +1 for two ARG proposals
+		// +1 for two HEALTHCHECK proposals
+		assert.equal(proposals.length, KEYWORDS.length + 2);
+	} else {
+		// +1 for two HEALTHCHECK proposals
+		assert.equal(proposals.length, KEYWORDS.length + 1);
 	}
-	// +1 for two ARG proposals
-	// +1 for two HEALTHCHECK proposals
-	assert.equal(proposals.length, KEYWORDS.length + 2);
 	assertProposals(proposals, offset, prefix, prefixLength, snippetSupport);
 }
 
