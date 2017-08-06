@@ -30,7 +30,7 @@
     "nyc": "^11.0.2"
   },
   "bin": {
-    "docker-langserver": "./lib/server.js"
+    "docker-langserver": "./bin/docker-langserver"
   },
   "scripts": {
     "build": "tsc -p .",

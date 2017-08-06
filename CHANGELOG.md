@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Fixed
+- created actual docker-langserver file instead of referencing server.js ([#134](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/134))
 
 ## [0.0.3] - 2017-08-06
 ### Added
