@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.0.4] - 2017-08-06
 ### Fixed
 - created actual docker-langserver file instead of referencing server.js ([#134](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/134))
 
@@ -138,6 +140,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.3...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.1...v0.0.2
