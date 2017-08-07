@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.0.5] - 2017-08-07
 ### Fixed
 - do not show arguments if snippets are not supported ([#136](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/136))
 - show only one ARG completion item if snippets are not supported ([#137](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/137))
@@ -143,7 +145,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.1...v0.0.2
