@@ -1451,6 +1451,21 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(proposals.length, 0);
 			});
 
+			it("# escape=", function() {
+				let items = compute("# escape=", 2);
+				assertOnlyDirectiveEscape(items, 0, 2, 0);
+			});
+
+			it("# escape=`", function() {
+				let items = compute("# escape=`", 4);
+				assertOnlyDirectiveEscape(items, 0, 2, 2);
+			});
+
+			it("#\\n", function() {
+				let items = compute("#\n#", 1);
+				assertOnlyDirectiveEscape(items, 0, 1, 0);
+			});
+
 			it("#\\n#", function() {
 				var proposals = compute("#\n#", 3);
 				assert.equal(proposals.length, 0);

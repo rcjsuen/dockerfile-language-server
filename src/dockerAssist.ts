@@ -33,6 +33,20 @@ export class DockerAssist {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let escapeCharacter = dockerfile.getEscapeCharacter();
+
+		let directive = dockerfile.getDirective();
+		if (directive !== null && position.line === 0) {
+			let range = directive.getNameRange();
+			if (position.character <= range.start.character) {
+				// in whitespace before the directive's name
+				return [ this.createEscape(0, offset, DIRECTIVE_ESCAPE) ];
+			} else if (position.character <= range.end.character) {
+				// in the name
+				return [ this.createEscape(position.character - range.start.character, offset, DIRECTIVE_ESCAPE) ];
+			}
+			return [];
+		}
+
 		// directive only possible on the first line
 		let comments = dockerfile.getComments();
 		if (comments.length !== 0) {

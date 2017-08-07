@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { TextDocument, Range } from 'vscode-languageserver';
+import { TextDocument, Range, Position } from 'vscode-languageserver';
 import { Comment } from './comment';
 import { Directive } from './directive';
 import { Instruction } from './instruction';
@@ -168,6 +168,10 @@ export class DockerfileParser {
 				}
 			}
 			offset = document.offsetAt(line.getRange().end);
+		} else if (line instanceof Comment) {
+			dockerfile.addComment(line);
+			// skip the first line
+			offset = document.offsetAt(Position.create(1, 0));
 		}
 
 		lineCheck: for (let i = offset; i < buffer.length; i++) {
