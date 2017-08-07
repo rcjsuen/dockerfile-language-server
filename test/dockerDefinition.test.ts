@@ -148,6 +148,40 @@ describe("Dockerfile Document Definition tests", function() {
 					location = computeDefinition(document, Position.create(3, 11));
 					assert.equal(location, null);
 				});
+
+				it("repeated declaration", function() {
+					let document = createDocument(instruction + " var=value\n" + instruction + " var=value\nRUN echo ${var}\nRUN echo${var}");
+					let location = computeDefinition(document, Position.create(0, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(1, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("repeated declaration no value", function() {
+					let document = createDocument(instruction + " var\n" + instruction + " var\nRUN echo ${var}\nRUN echo${var}");
+					let location = computeDefinition(document, Position.create(0, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(1, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("redeclared variable after reference", function() {
+					let document = createDocument(instruction + " var\nRUN echo ${var}\n" + instruction + " var");
+					let location = computeDefinition(document, Position.create(0, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(1, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
 			});
 
 			describe("$var", function() {
@@ -231,6 +265,40 @@ describe("Dockerfile Document Definition tests", function() {
 					document = createDocument(instruction + "\nRUN echo '$var'");
 					location = computeDefinition(document, Position.create(1, 12));
 					assert.equal(location, null);
+				});
+
+				it("repeated declaration", function() {
+					let document = createDocument(instruction + " var=value\n" + instruction + " var=value\nRUN echo $var\nRUN echo $var");
+					let location = computeDefinition(document, Position.create(0, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(1, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("repeated declaration no value", function() {
+					let document = createDocument(instruction + " var\n" + instruction + " var\nRUN echo ${var}\nRUN echo${var}");
+					let location = computeDefinition(document, Position.create(0, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(1, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(3, 12));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+				});
+
+				it("redeclared variable after reference", function() {
+					let document = createDocument(instruction + " var\nRUN echo $var\n" + instruction + " var");
+					let location = computeDefinition(document, Position.create(0, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(1, 11));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
+					location = computeDefinition(document, Position.create(2, 5));
+					assertLocation(location, document.uri, 0, 4, 0, 7);
 				});
 			});
 		});
@@ -357,6 +425,28 @@ describe("Dockerfile Document Definition tests", function() {
 				location = computeDefinition(document, Position.create(2, 9));
 				assertLocation(location, document.uri, 0, 4, 0, 6);
 			});
+		});
+	});
+
+	describe("ARG and ENV", function() {
+		it("repeated declaration ARG first", function() {
+			let document = createDocument("ARG var\nENV var\nRUN echo $var");
+			let location = computeDefinition(document, Position.create(0, 5));
+			assertLocation(location, document.uri, 0, 4, 0, 7);
+			location = computeDefinition(document, Position.create(1, 5));
+			assertLocation(location, document.uri, 0, 4, 0, 7);
+			location = computeDefinition(document, Position.create(2, 11));
+			assertLocation(location, document.uri, 0, 4, 0, 7);
+		});
+
+		it("repeated declaration ENV first", function() {
+			let document = createDocument("ENV var\nARG var\nRUN echo $var");
+			let location = computeDefinition(document, Position.create(0, 5));
+			assertLocation(location, document.uri, 0, 4, 0, 7);
+			location = computeDefinition(document, Position.create(1, 5));
+			assertLocation(location, document.uri, 0, 4, 0, 7);
+			location = computeDefinition(document, Position.create(2, 11));
+			assertLocation(location, document.uri, 0, 4, 0, 7);
 		});
 	});
 });

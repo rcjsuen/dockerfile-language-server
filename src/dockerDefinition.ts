@@ -10,6 +10,7 @@ import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Property } from './parser/property';
 import { Arg } from './parser/instructions/arg';
+import { Env } from './parser/instructions/env';
 
 export class DockerDefinition {
 
@@ -34,37 +35,56 @@ export class DockerDefinition {
 	}
 
 	public static computeVariableDefinition(dockerfile: Dockerfile, position: Position): Property {
-		let variable = null;
-		let variables = {};
+		let variableName = null;
 		for (let arg of dockerfile.getARGs()) {
 			let property = arg.getProperty();
 			// might be an ARG with no arguments
 			if (property) {
 				// is the caret inside the definition itself
 				if (Util.isInsideRange(position, property.getNameRange())) {
+					variableName = property.getName();
+					break;
+				}
+			}
+		}
+
+		if (variableName === null) {
+			variableCheck: for (let env of dockerfile.getENVs()) {
+				let properties = env.getProperties();
+				for (let property of properties) {
+					// is the caret inside the definition itself
+					if (Util.isInsideRange(position, property.getNameRange())) {
+						variableName = property.getName();
+						break variableCheck;
+					}
+				}
+			}
+		}
+
+		if (variableName === null) {
+			variableCheck: for (let instruction of dockerfile.getInstructions()) {
+				for (let variable of instruction.getVariables()) {
+					if (Util.isInsideRange(position, variable.getNameRange())) {
+						variableName = variable.getName();
+						break variableCheck;
+					}
+				}
+			}
+		}
+
+		for (let instruction of dockerfile.getInstructions()) {
+			if (instruction instanceof Arg) {
+				let property = instruction.getProperty();
+				// might be an ARG with no arguments
+				if (property && property.getName() === variableName) {
 					return property;
 				}
-				variables[property.getName()] = property;
-			}
-		}
-		for (let env of dockerfile.getENVs()) {
-			let properties = env.getProperties();
-			for (let property of properties) {
-				// is the caret inside the definition itself
-				if (Util.isInsideRange(position, property.getNameRange())) {
-					return variables[property.getName()] ? variables[property.getName()] : property;
-				} else if (!variables[property.getName()]) {
-					variables[property.getName()] = property;
-				}
-			}
-		}
-		for (let instruction of dockerfile.getInstructions()) {
-			for (let variable of instruction.getVariables()) {
-				if (Util.isInsideRange(position, variable.getNameRange())) {
-					if (variables[variable.getName()]) {
-						return variables[variable.getName()];
+			} else if (instruction instanceof Env) {
+				let properties = instruction.getProperties();
+				for (let property of properties) {
+					if (property.getName() === variableName) {
+						return property;
 					}
-					return null;
 				}
 			}
 		}
