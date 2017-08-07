@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - fix completion handling so that the escape parser directive is suggested in more cases ([#138](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/138))
 - always use the first declaration of a variable for its definition ([#141](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/141))
+- highlight ARG variables that get declared again ([#140](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/140))
 
 ## [0.0.5] - 2017-08-07
 ### Fixed

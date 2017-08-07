@@ -52,12 +52,12 @@ export class DockerHighlight {
 				}
 			}
 		} else {
-			highlights.push(DocumentHighlight.create(location.range, DocumentHighlightKind.Write));
 
 			let definition = document.getText().substring(document.offsetAt(location.range.start), document.offsetAt(location.range.end));
 			for (let from of dockerfile.getFROMs()) {
 				let range = from.getBuildStageRange();
 				if (range && range.start.line === location.range.start.line) {
+					highlights.push(DocumentHighlight.create(location.range, DocumentHighlightKind.Write));
 					for (let instruction of dockerfile.getCOPYs()) {
 						let source = instruction.getFromValue();
 						if (source === definition) {
@@ -68,9 +68,17 @@ export class DockerHighlight {
 				}
 			}
 
+			for (let arg of dockerfile.getARGs()) {
+				let property = arg.getProperty();
+				// property may be null if it's an ARG with no arguments
+				if (property && property.getName() === definition) {
+					highlights.push(DocumentHighlight.create(property.getNameRange(), DocumentHighlightKind.Write));
+				}
+			}
+
 			for (let env of dockerfile.getENVs()) {
 				for (let property of env.getProperties()) {
-					if (property.getName() === definition && !Util.rangeEquals(property.getNameRange(), location.range)) {
+					if (property.getName() === definition) {
 						highlights.push(DocumentHighlight.create(property.getNameRange(), DocumentHighlightKind.Write));
 					}
 				}

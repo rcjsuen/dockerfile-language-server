@@ -269,6 +269,86 @@ describe("Dockerfile Document Highlight tests", function() {
 				ranges = computeHighlightRanges(document, 1, 13);
 				assertHighlightRanges(ranges, [ arg, run ]);
 			});
+
+			it("repeated declaration $var", function() {
+				let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				let declaration2 = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+				let run = DocumentHighlight.create(Range.create(Position.create(2, 10), Position.create(2, 13)), DocumentHighlightKind.Read);
+				let run2 = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
+				let expected = [ declaration, declaration2, run, run2 ];
+				let document = createDocument(instruction + " var=value\n" + instruction + " var=value\nRUN echo $var\nRUN echo $var");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 1, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 2, 11);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 3, 11);
+				assertHighlightRanges(ranges, expected);
+			});
+
+			it("repeated declaration $var no value", function() {
+				let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				let declaration2 = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+				let run = DocumentHighlight.create(Range.create(Position.create(2, 10), Position.create(2, 13)), DocumentHighlightKind.Read);
+				let run2 = DocumentHighlight.create(Range.create(Position.create(3, 10), Position.create(3, 13)), DocumentHighlightKind.Read);
+				let expected = [ declaration, declaration2, run, run2 ];
+				let document = createDocument(instruction + " var\n" + instruction + " var\nRUN echo $var\nRUN echo $var");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 1, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 2, 11);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 3, 11);
+				assertHighlightRanges(ranges, expected);
+			});
+
+			it("repeated declaration ${var}", function() {
+				let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				let declaration2 = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+				let run = DocumentHighlight.create(Range.create(Position.create(2, 11), Position.create(2, 14)), DocumentHighlightKind.Read);
+				let run2 = DocumentHighlight.create(Range.create(Position.create(3, 11), Position.create(3, 14)), DocumentHighlightKind.Read);
+				let expected = [ declaration, declaration2, run, run2 ];
+				let document = createDocument(instruction + " var=value\n" + instruction + " var=value\nRUN echo ${var}\nRUN echo ${var}");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 1, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 2, 11);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 3, 11);
+				assertHighlightRanges(ranges, expected);
+			});
+
+			it("repeated declaration $var no value", function() {
+				let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+				let declaration2 = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+				let run = DocumentHighlight.create(Range.create(Position.create(2, 11), Position.create(2, 14)), DocumentHighlightKind.Read);
+				let run2 = DocumentHighlight.create(Range.create(Position.create(3, 11), Position.create(3, 14)), DocumentHighlightKind.Read);
+				let expected = [ declaration, declaration2, run, run2 ];
+				let document = createDocument(instruction + " var\n" + instruction + " var\nRUN echo ${var}\nRUN echo ${var}");
+				let ranges = computeHighlightRanges(document, 0, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 1, 5);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 2, 12);
+				assertHighlightRanges(ranges, expected);
+
+				ranges = computeHighlightRanges(document, 3, 12);
+				assertHighlightRanges(ranges, expected);
+			});
 		});
 	}
 
