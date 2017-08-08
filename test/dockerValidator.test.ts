@@ -396,6 +396,17 @@ function assertSyntaxMissingNames(diagnostic: Diagnostic, instrument: string, st
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertDuplicateName(diagnostic: Diagnostic, instrument: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.DUPLICATE_NAME);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_DuplicateName(instrument));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function testValidArgument(instruction: string, argument: string) {
 	let gaps = [ " ", "\t", " \\\n", " \\\r", " \\\r\n" ];
 	for (let gap of gaps) {
@@ -1678,6 +1689,23 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("FROM node A$ setup");
 				assert.equal(diagnostics.length, 1);
 				assertInvalidAs(diagnostics[0], 0, 10, 0, 12);
+			});
+
+			it("duplicate name", function() {
+				let diagnostics = validate("FROM node AS setup\nFROM node AS setup");
+				assert.equal(diagnostics.length, 2);
+				assertDuplicateName(diagnostics[0], "setup", 0, 13, 0, 18);
+				assertDuplicateName(diagnostics[1], "setup", 1, 13, 1, 18);
+
+				diagnostics = validate("FROM node AS setup\nFROM node AS setUP");
+				assert.equal(diagnostics.length, 2);
+				assertDuplicateName(diagnostics[0], "setup", 0, 13, 0, 18);
+				assertDuplicateName(diagnostics[1], "setup", 1, 13, 1, 18);
+
+				diagnostics = validate("FROM node AS SETUP\nFROM node AS seTUp");
+				assert.equal(diagnostics.length, 2);
+				assertDuplicateName(diagnostics[0], "setup", 0, 13, 0, 18);
+				assertDuplicateName(diagnostics[1], "setup", 1, 13, 1, 18);
 			});
 		});
 

@@ -26,6 +26,7 @@ export enum ValidationCode {
 	ARGUMENT_REQUIRES_TWO,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	ARGUMENT_UNNECESSARY,
+	DUPLICATE_NAME,
 	FLAG_AT_LEAST_ONE,
 	FLAG_DUPLICATE,
 	FLAG_INVALID_DURATION,
@@ -198,6 +199,29 @@ export class Validator {
 				}
 			}
 		}
+
+		const names = {};
+		const froms = dockerfile.getFROMs();
+		for (let from of froms) {
+			let name = from.getBuildStage();
+			if (name) {
+				name = name.toLowerCase();
+				if (!names[name]) {
+					names[name] = [];
+				}
+				names[name].push(from.getBuildStageRange());
+			}
+		}
+
+		for (let name in names) {
+			// duplicates found
+			if (names[name].length > 1) {
+				for (let range of names[name]) {
+					problems.push(Validator.createDuplicateName(range, name));
+				}
+			}
+		}
+
 		let hasFrom = false;
 		for (let instruction of dockerfile.getInstructions()) {
 			let keyword = instruction.getKeyword();
@@ -751,6 +775,8 @@ export class Validator {
 		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
 		"syntaxMissingNames": "${0} names can not be blank",
 
+		"duplicateName": "duplicate name ${0}",
+
 		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
 		"flagDuplicate": "Duplicate flag specified: ${0}",
 		"flagInvalidDuration": "time: invalid duration ${0}",
@@ -796,6 +822,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_NoSourceImage() {
 		return Validator.dockerProblems["noSourceImage"];
+	}
+
+	public static getDiagnosticMessage_DuplicateName(name: string) {
+		return Validator.formatMessage(Validator.dockerProblems["duplicateName"], name);
 	}
 
 	public static getDiagnosticMessage_FlagAtLeastOne(flagName: string, flagValue: string) {
@@ -916,6 +946,10 @@ export class Validator {
 
 	static createInvalidEscapeDirective(start: Position, end: Position, value: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
+	}
+
+	private static createDuplicateName(range: Range, name: string): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_DuplicateName(name), ValidationCode.DUPLICATE_NAME);
 	}
 
 	static createFlagAtLeastOne(start: Position, end: Position, flagName: string, flagValue: string): Diagnostic {

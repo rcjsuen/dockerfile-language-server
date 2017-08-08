@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - warn about duplicated build stage names ([#133](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/133))
+
 ### Fixed
 - fix completion handling so that the escape parser directive is suggested in more cases ([#138](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/138))
 - always use the first declaration of a variable for its definition ([#141](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/141))
