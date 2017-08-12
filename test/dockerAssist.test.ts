@@ -1507,6 +1507,11 @@ describe('Docker Content Assist Tests', function() {
 				var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=s", 2, 13);
 				assert.equal(proposals.length, 1);
 				assertSourceImage(proposals[0], "setup", 2, 12, 2, 13);
+
+				// casing should be ignored
+				proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=S", 2, 13);
+				assert.equal(proposals.length, 1);
+				assertSourceImage(proposals[0], "setup", 2, 12, 2, 13);
 			});
 		});
 	});

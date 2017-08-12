@@ -224,11 +224,11 @@ export class DockerAssist {
 		// is the user in the --from= area
 		if (range && Util.isInsideRange(position, copy.getFromValueRange())) {
 			// get the prefix
-			let prefix = this.document.getText().substring(this.document.offsetAt(range.start), offset);
+			let prefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
 			let items: CompletionItem[] = [];
 			for (let from of dockerfile.getFROMs()) {
 				let stage = from.getBuildStage();
-				if (stage && stage.indexOf(prefix) === 0) {
+				if (stage && stage.toLowerCase().indexOf(prefix) === 0) {
 					items.push(this.createSourceImageCompletionItem(stage, prefix.length, offset));
 				}
 			}
