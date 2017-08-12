@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - textDocument/completion
-  - suggest completion items even if the prefix string's case does not match
+  - suggest completion items even if the prefix string's case does not match ([#142](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/142))
 - textDocument/publishDiagnostics
   - warn about duplicated build stage names ([#133](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/133))
 
