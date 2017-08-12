@@ -796,6 +796,12 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 0, 13);
 					assert.equal(hover.contents, "");
 				});
+
+				it("ENV var=y\\  ", function() {
+					let document = createDocument("ENV var=y\\  ");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "y");
+				});
 			});
 		});
 
