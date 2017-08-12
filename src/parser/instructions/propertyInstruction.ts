@@ -123,7 +123,7 @@ export abstract class PropertyInstruction extends Instruction {
 								continue argumentLoop;
 							}
 							// whitespace encountered, need to figure out if it extends to EOL
-							for (let j = i + 2; j < content.length; j++) {
+							whitespaceCheck: for (let j = i + 2; j < content.length; j++) {
 								switch (content.charAt(j)) {
 									case '\r':
 									case '\n':
@@ -139,18 +139,13 @@ export abstract class PropertyInstruction extends Instruction {
 										args.push(new Argument(content.substring(argStart, i),
 											Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i + 2))
 										));
-										// loop and process the encountered non-whitespace character
-										i = j - 1;
 										argStart = j;
-										continue argumentLoop;
+										break whitespaceCheck;
 								}
 							}
-							// went to EOF without encountering EOL
-							args.push(new Argument(content.substring(argStart, i),
-								Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i))
-							));
-							argStart = content.length;
-							break argumentLoop;
+							// go back and start processing the encountered non-whitespace character
+							i = argStart - 1;
+							continue argumentLoop;
 						case '\r':
 							if (content.charAt(i + 2) === '\n') {
 								i++;
