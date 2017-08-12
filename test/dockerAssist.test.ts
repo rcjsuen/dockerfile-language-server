@@ -1461,6 +1461,11 @@ describe('Docker Content Assist Tests', function() {
 				assertOnlyDirectiveEscape(items, 0, 2, 2);
 			});
 
+			it("# escape=` ", function() {
+				let items = compute("# escape=` ", 11);
+				assert.equal(items.length, 0);
+			});
+
 			it("#\\n", function() {
 				let items = compute("#\n#", 1);
 				assertOnlyDirectiveEscape(items, 0, 1, 0);
