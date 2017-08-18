@@ -175,13 +175,17 @@ export abstract class PropertyInstruction extends Instruction {
 						argStart = i;
 					}
 					for (let j = i + 1; j < content.length; j++) {
-						if (content.charAt(j) === char) {
-							args.push(new Argument(content.substring(argStart, j + 1),
-								Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + j + 1))
-							));
-							i = j;
-							argStart = -1;
-							continue argumentLoop;
+						switch (content.charAt(j)) {
+							case char:
+								args.push(new Argument(content.substring(argStart, j + 1),
+									Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + j + 1))
+								));
+								i = j;
+								argStart = -1;
+								continue argumentLoop;
+							case this.escapeChar:
+								j++;
+								break;
 						}
 					}
 					break argumentLoop;

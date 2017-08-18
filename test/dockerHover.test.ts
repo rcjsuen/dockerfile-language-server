@@ -803,6 +803,20 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "y");
 				});
 			});
+
+			describe("escaped quotes", function() {
+				it("ENV var=\"\\\"x\\\"\"", function() {
+					let document = createDocument("ENV var=\"\\\"x\\\"\"");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "\"x\"");
+				});
+
+				it("ENV var='\"\\\"'", function() {
+					let document = createDocument("ENV var='\"\\\"'");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "\"\\\"");
+				});
+			});
 		});
 
 		function createHealthcheckTest(trigger: boolean) {

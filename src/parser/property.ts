@@ -89,7 +89,9 @@ export class Property {
 		let literal = false;
 		let first = value.charAt(0);
 		let last = value.charAt(value.length - 1);
-		if ((first === '"' && last === '"') || (first === '\'' && last === '\'')) {
+		let inSingle = (first === '\'' && last === '\'');
+		let inDouble  = (first === '"' && last === '"');
+		if (inSingle || inDouble) {
 			literal = true;
 			value = value.substring(1, value.length - 1);
 		}
@@ -103,13 +105,20 @@ export class Property {
 				}
 
 				char = value.charAt(i + 1);
-				if (literal) {
+				if (inDouble) {
 					if (char === '\n') {
 						i++;
-					} else {
+					} else if (char !== '"') {
 						if (char === escapeChar) {
 							i++;
 						}	
+						escapedValue = escapedValue + escapeChar;
+					}
+					continue parseValue;
+				} else if (inSingle) {
+					if (char === '\n') {
+						i++;
+					} else {
 						escapedValue = escapedValue + escapeChar;
 					}
 					continue parseValue;
