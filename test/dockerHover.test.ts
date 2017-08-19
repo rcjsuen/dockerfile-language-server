@@ -573,6 +573,58 @@ describe("Dockerfile hover", function() {
 
 		createVariablesTest("ARG", "ARG", "=");
 
+		function createCopyTest(trigger: boolean) {
+			let onbuild = trigger ? "ONBUILD " : "";
+			let triggerOffset = onbuild.length;
+
+			describe("COPY", function() {
+				it("--from", function() {
+					let document = createDocument(onbuild + "COPY --from");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.notEqual(hover, null);
+					assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
+				});
+
+				it("--from=\\$x", function() {
+					let document = createDocument(onbuild + "COPY --from=\\$x");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.notEqual(hover, null);
+					assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
+				});
+
+				it("--from=\\a", function() {
+					let document = createDocument(onbuild + "COPY --from=\\a");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.notEqual(hover, null);
+					assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
+				});
+
+				it("--FROM", function() {
+					let document = createDocument(onbuild + "COPY --FROM");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.equal(hover, null);
+				});
+
+				it("whitespace", function() {
+					let document = createDocument(onbuild + "COPY  --from");
+					let hover = onHover(document, 0, triggerOffset + 5);
+					assert.equal(hover, null);
+				});
+
+				it("flag after", function() {
+					let document = createDocument(onbuild + "COPY app --from=alpine app");
+					let hover = onHover(document, 0, triggerOffset + 13);
+					assert.equal(hover, null);
+
+					document = createDocument(onbuild + "COPY app app --from=alpine");
+					hover = onHover(document, 0, triggerOffset + 18);
+					assert.equal(hover, null);
+				});
+			});
+		}
+
+		createCopyTest(false);
+
 		describe("ENV", function() {
 			createVariablesTest("equals delimiter", "ENV", "=");
 			createVariablesTest("space delimiter", "ENV", " ");
@@ -944,6 +996,7 @@ describe("Dockerfile hover", function() {
 		createHealthcheckTest(false);
 
 		describe("ONBUILD", function() {
+			createCopyTest(true);
 			createHealthcheckTest(true);
 		});
 	});

@@ -10,6 +10,7 @@ import {
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Arg } from './parser/instructions/arg';
 import { Env } from './parser/instructions/env';
+import { Instruction } from './parser/instruction';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { Onbuild } from './parser/instructions/onbuild';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
@@ -91,47 +92,9 @@ export class DockerHover {
 				}
 			}
 
-			switch (instruction.getKeyword()) {
-				case "HEALTHCHECK":
-					let flags = (instruction as ModifiableInstruction).getFlags();
-					for (let flag of flags) {
-						if (Util.isInsideRange(textDocumentPosition.position, flag.getNameRange())) {
-							switch (flag.getName()) {
-								case "interval":
-									return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
-								case "retries":
-									return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
-								case "start-period":
-									return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
-								case "timeout":
-									return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
-							}
-							return null;
-						}
-					}
-					break;
-				case "ONBUILD":
-					let onbuild = instruction as Onbuild;
-					if (onbuild.getTrigger() === "HEALTHCHECK") {
-						let flags = (onbuild.getTriggerInstruction() as ModifiableInstruction).getFlags();
-						for (let flag of flags) {
-							if (Util.isInsideRange(textDocumentPosition.position, flag.getNameRange())) {
-								switch (flag.getName()) {
-									case "interval":
-										return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
-									case "retries":
-										return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
-									case "start-period":
-										return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
-									case "timeout":
-										return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
-								}
-								return null;
-							}
-						}
-					}
-					break;
-
+			let hover = this.getFlagsHover(textDocumentPosition.position, instruction);
+			if (hover !== undefined) {
+				return hover;
 			}
 		}
 
@@ -141,5 +104,41 @@ export class DockerHover {
 		}
 
 		return null;
+	}
+
+	private getFlagsHover(position: Position, instruction: Instruction): Hover {
+		switch (instruction.getKeyword()) {
+			case "COPY":
+				let copyFlags = (instruction as ModifiableInstruction).getFlags();
+				if (copyFlags.length > 0 && Util.isInsideRange(position, copyFlags[0].getNameRange()) && copyFlags[0].getName() === "from") {
+					return this.markdown.getMarkdown("COPY_FlagFrom");
+				}
+				break;
+			case "HEALTHCHECK":
+				let flags = (instruction as ModifiableInstruction).getFlags();
+				for (let flag of flags) {
+					if (Util.isInsideRange(position, flag.getNameRange())) {
+						switch (flag.getName()) {
+							case "interval":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagInterval");
+							case "retries":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagRetries");
+							case "start-period":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagStartPeriod");
+							case "timeout":
+								return this.markdown.getMarkdown("HEALTHCHECK_FlagTimeout");
+						}
+						return null;
+					}
+				}
+				break;
+			case "ONBUILD":
+				let trigger = (instruction as Onbuild).getTriggerInstruction();
+				if (trigger !== null) {
+					return this.getFlagsHover(position, trigger);
+				}
+				break;
+		}
+		return undefined;
 	}
 }

@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/completion
   - COPY's --from build stage flag ([#148](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/148))
+- textDocument/hover
+  - COPY's --from build stage flag ([#150](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/150))
 - textDocument/publishDiagnostics
   - warn if ENV or LABEL is missing closing quote ([#143](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/143))
   - warn if FROM's build stage name is invalid ([#132](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/132))
