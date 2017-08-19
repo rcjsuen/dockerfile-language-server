@@ -804,7 +804,21 @@ describe("Dockerfile hover", function() {
 				});
 			});
 
-			describe("escaped quotes", function() {
+			describe("escaped single quote", function() {
+				it("ENV var='\\'", function() {
+					let document = createDocument("ENV var='\\'");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "\\");
+				});
+
+				it("ENV var='\\\\'", function() {
+					let document = createDocument("ENV var='\\\\'");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "\\\\");
+				});
+			});
+
+			describe("escaped double quotes", function() {
 				it("ENV var=\"\\\"x\\\"\"", function() {
 					let document = createDocument("ENV var=\"\\\"x\\\"\"");
 					let hover = onHover(document, 0, 6);

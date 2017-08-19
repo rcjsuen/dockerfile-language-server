@@ -150,6 +150,9 @@ export class Property {
 			let char = value.charAt(i);
 			if (char === escapeChar) {
 				if (i + 1 === value.length) {
+					if (literal) {
+						escapedValue = escapedValue + escapeChar;
+					}
 					break;
 				}
 
