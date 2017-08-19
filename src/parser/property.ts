@@ -157,6 +157,38 @@ export class Property {
 				}
 
 				char = value.charAt(i + 1);
+				if (char === ' ' || char === '\t') {
+					whitespaceCheck: for (let j = i + 2; j < value.length; j++) {
+						let char2 = value.charAt(j);
+						switch (char2) {
+							case ' ':
+							case '\t':
+								break;
+							case '\r':
+								if (value.charAt(j + 1) === '\n') {
+									j++;
+								}
+							case '\n':
+								i = j;
+								continue parseValue;
+							default:
+								if (!inDouble && !inSingle && !literal) {
+									if (char2 === escapeChar) {
+										// add the escaped character
+										escapedValue = escapedValue + char
+										// now start parsing from the next escape character
+										i = i + 1;
+									} else {
+										// the expectation is that this j = i + 2 here
+										escapedValue = escapedValue + char + char2;
+										i = j;
+									}
+									continue parseValue;
+								}
+								break whitespaceCheck;
+						}
+					}
+				}
 				if (inDouble) {
 					if (char === '\n') {
 						i++;
@@ -185,34 +217,6 @@ export class Property {
 					i++;
 				} else if (char === '\n') {
 					i++;
-				} else if (char === ' ' || char === '\t') {
-					for (let j = i + 2; j < value.length; j++) {
-						let char2 = value.charAt(j);
-						if (char2 === ' ' || char2 === '\t') {
-							continue;
-						} else if (char2 === '\r') {
-							if (value.charAt(j + 1) === '\n') {
-								i = j + 1;
-							} else {
-								i = j;
-							}
-							continue parseValue;
-						} else if (char2 === '\n') {
-							// the expectation is that this is === '\n'
-							i = j;
-							continue parseValue;
-						} else if (char2 === escapeChar) {
-							// add the escaped character
-							escapedValue = escapedValue + char
-							// now start parsing from the next escape character
-							i = i + 1;
-						} else {
-							// the expectation is that this j = i + 2 here
-							escapedValue = escapedValue + char + char2;
-							i = j;
-							continue parseValue;
-						}
-					}
 				} else {
 					// any other escapes are simply ignored
 					escapedValue = escapedValue + char;

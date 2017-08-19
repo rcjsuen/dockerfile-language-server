@@ -816,6 +816,24 @@ describe("Dockerfile hover", function() {
 					let hover = onHover(document, 0, 6);
 					assert.equal(hover.contents, "\\\\");
 				});
+
+				it("ENV var='a\\\\nb'", function() {
+					let document = createDocument("ENV var='a\\\nb'");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "ab");
+				});
+
+				it("ENV var='a\\ \\nb'", function() {
+					let document = createDocument("ENV var='a\\ \nb'");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "ab");
+				});
+
+				it("ENV var='a\\  \\r\\nb'", function() {
+					let document = createDocument("ENV var='a\\  \r\nb'");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "ab");
+				});
 			});
 
 			describe("escaped double quotes", function() {
@@ -829,6 +847,24 @@ describe("Dockerfile hover", function() {
 					let document = createDocument("ENV var='\"\\\"'");
 					let hover = onHover(document, 0, 6);
 					assert.equal(hover.contents, "\"\\\"");
+				});
+
+				it("ENV var=\"a\\\\nb\"", function() {
+					let document = createDocument("ENV var=\"a\\\nb\"");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "ab");
+				});
+
+				it("ENV var=\"a\\ \\nb\"", function() {
+					let document = createDocument("ENV var=\"a\\ \nb\"");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "ab");
+				});
+
+				it("ENV var=\"a\\  \\r\\nb\"", function() {
+					let document = createDocument("ENV var=\"a\\  \r\nb\"");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "ab");
 				});
 			});
 		});
