@@ -235,6 +235,26 @@ function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: nu
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
+function assertCOPY_FlagFrom(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "--from=stage");
+	} else {
+		assert.equal(item.label, "--from=");
+	}
+	assert.equal(item.kind, CompletionItemKind.Field);
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "--from=${1:stage}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "--from=");
+	}
+	assert.equal(item.textEdit.range.start.line, startLine);
+	assert.equal(item.textEdit.range.start.character, startCharacter);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
+}
+
 function assertHEALTHCHECK_FlagInterval(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.label, "--interval=30s");
@@ -844,110 +864,140 @@ describe('Docker Content Assist Tests', function() {
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\n";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
-			} else if (instruction === "ONBUILD") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertONBUILDProposals(proposals, lastLine, 0, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			let split = content.split("\n");
+			let lastLine = split.length - 1;
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 0, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\r\n";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
-			} else if (instruction === "ONBUILD") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertONBUILDProposals(proposals, lastLine, 0, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 0, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + " \n";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
-			} else if (instruction === "ONBUILD") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertONBUILDProposals(proposals, lastLine, 0, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 0, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + " \r\n";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
-			} else if (instruction === "ONBUILD") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertONBUILDProposals(proposals, lastLine, 0, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 0, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 
 			content = header + "FROM node\n" + instruction + escapeChar + "\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
-			} else if (instruction === "ONBUILD") {
-				let lastLine = content.split("\n").length;
-				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 1, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 
 			content = header + "FROM node\n" + instruction + escapeChar + "\r\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
-			} else if (instruction === "ONBUILD") {
-				let lastLine = content.split("\n").length;
-				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 1, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
-			} else if (instruction === "ONBUILD") {
-				let lastLine = content.split("\n").length;
-				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 1, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\r\n ";
 			proposals = compute(content, content.length);
-			if (instruction === "HEALTHCHECK") {
-				let split = content.split("\n");
-				let lastLine = split.length - 1;
-				assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
-			} else if (instruction === "ONBUILD") {
-				let lastLine = content.split("\n").length;
-				assertONBUILDProposals(proposals, lastLine - 1, 1, 0);
-			} else {
-				assert.equal(proposals.length, 0);
+			switch (instruction) {
+				case "COPY":
+					assert.equal(proposals.length, 1);
+					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					break;
+				case "HEALTHCHECK":
+					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
+					break;
+				case "ONBUILD":
+					assertONBUILDProposals(proposals, lastLine, 1, 0);
+					break;
+				default:
+					assert.equal(proposals.length, 0);
 			}
 		}
 		
@@ -1483,38 +1533,92 @@ describe('Docker Content Assist Tests', function() {
 		});
 	})
 
-	describe("COPY", function() {
-		describe("--from=", function() {
-			it("no sources", function() {
-				var proposals = computePosition("FROM busybox\nCOPY --from=", 1, 12);
-				assert.equal(proposals.length, 0);
+	function testCopy(trigger: boolean) {
+		describe("COPY", function() {
+			let onbuild = trigger ? "ONBUILD " : "";
+			let triggerOffset = onbuild.length;
+
+			describe("build stages", function() {
+				it("no sources", function() {
+					var proposals = computePosition("FROM busybox\n" + onbuild + "COPY --from=", 1, triggerOffset + 12);
+					assert.equal(proposals.length, 0);
+				});
+	
+				it("source image", function() {
+					var proposals = computePosition("FROM busybox AS source\n" + onbuild + "COPY --from=", 1, triggerOffset + 12);
+					assert.equal(proposals.length, 1);
+					assertSourceImage(proposals[0], "source", 1, triggerOffset + 12, 1, triggerOffset + 12);
+				});
+	
+				it("source images alphabetical", function() {
+					var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\n" + onbuild + "COPY --from=", 2, triggerOffset + 12);
+					assert.equal(proposals.length, 2);
+					assertSourceImage(proposals[0], "dev", 2, triggerOffset + 12, 2, triggerOffset + 12);
+					assertSourceImage(proposals[1], "setup", 2, triggerOffset + 12, 2, triggerOffset + 12);
+				});
+	
+				it("source image prefix", function() {
+					var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\n" + onbuild + "COPY --from=s", 2, triggerOffset + 13);
+					assert.equal(proposals.length, 1);
+					assertSourceImage(proposals[0], "setup", 2, triggerOffset + 12, 2, triggerOffset + 13);
+	
+					// casing should be ignored
+					proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\n" + onbuild + "COPY --from=S", 2, triggerOffset + 13);
+					assert.equal(proposals.length, 1);
+					assertSourceImage(proposals[0], "setup", 2, triggerOffset + 12, 2, triggerOffset + 13);
+				});
 			});
-
-			it("source image", function() {
-				var proposals = computePosition("FROM busybox AS source\nCOPY --from=", 1, 12);
-				assert.equal(proposals.length, 1);
-				assertSourceImage(proposals[0], "source", 1, 12, 1, 12);
-			});
-
-			it("source images alphabetical", function() {
-				var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=", 2, 12);
-				assert.equal(proposals.length, 2);
-				assertSourceImage(proposals[0], "dev", 2, 12, 2, 12);
-				assertSourceImage(proposals[1], "setup", 2, 12, 2, 12);
-			});
-
-			it("source image prefix", function() {
-				var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=s", 2, 13);
-				assert.equal(proposals.length, 1);
-				assertSourceImage(proposals[0], "setup", 2, 12, 2, 13);
-
-				// casing should be ignored
-				proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\nCOPY --from=S", 2, 13);
-				assert.equal(proposals.length, 1);
-				assertSourceImage(proposals[0], "setup", 2, 12, 2, 13);
+	
+			describe("arguments", function() {
+				it("full", function() {
+					let items = computePosition("FROM busybox\n" + onbuild + "COPY ", 1, triggerOffset + 5);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY  ", 1, triggerOffset + 5);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5);
+				});
+	
+				it("prefix", function() {
+					let items = computePosition("FROM busybox\n" + onbuild + "COPY -", 1, triggerOffset + 6);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 6);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY --", 1, triggerOffset + 7);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 7);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY --f", 1, triggerOffset + 8);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 8);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY --fr", 1, triggerOffset + 9);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 9);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY --fro", 1, triggerOffset + 10);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 10);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY --from", 1, triggerOffset + 11);
+					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 11);
+				});
+	
+				it("none", function() {
+					let items = computePosition("FROM busybox\n" + onbuild + "COPY --from=", 1, triggerOffset + 12);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY app app", 1, triggerOffset + 6);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY app app", 1, triggerOffset + 10);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY app  app", 1, triggerOffset + 9);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "COPY app --fr app", 1, triggerOffset + 13);
+					assert.equal(items.length, 0);
+				});
 			});
 		});
-	});
+	}
+
+	testCopy(false);
 
 	function testHealthcheck(trigger: boolean) {
 		describe("HEALTHCHECK", function() {
@@ -1753,6 +1857,7 @@ describe('Docker Content Assist Tests', function() {
 			});
 		});
 
+		testCopy(true);
 		testHealthcheck(true);
 	});
 

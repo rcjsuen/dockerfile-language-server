@@ -130,7 +130,7 @@ export class DockerAssist {
 			} else if (Util.isInsideRange(position, instruction.getRange())) {
 				switch (instruction.getKeyword()) {
 					case "COPY":
-						return this.createBuildStageProposals(dockerfile, instruction as Copy, position, offset);
+						return this.createCopyProposals(dockerfile, instruction as Copy, position, offset, prefix);
 					case "HEALTHCHECK":
 						let subcommand = (instruction as Healthcheck).getSubcommand();
 						if (subcommand && subcommand.isBefore(position)) {
@@ -145,12 +145,17 @@ export class DockerAssist {
 							break instructionsCheck;
 						} else {
 							let trigger = (instruction as Onbuild).getTriggerInstruction();
-							if (trigger !== null && trigger.getKeyword() === "HEALTHCHECK") {
-								let subcommand = (trigger as Healthcheck).getSubcommand();
-								if (subcommand && subcommand.isBefore(position)) {
-									return [];
+							if (trigger !== null) {
+								switch (trigger.getKeyword()) {
+									case "COPY":
+										return this.createCopyProposals(dockerfile, trigger as Copy, position, offset, prefix);
+									case "HEALTHCHECK":
+										let subcommand = (trigger as Healthcheck).getSubcommand();
+										if (subcommand && subcommand.isBefore(position)) {
+											return [];
+										}
+										return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
 								}
-								return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
 							}
 						}
 						return [];
@@ -219,17 +224,17 @@ export class DockerAssist {
 		return proposals;
 	}
 
-	private createBuildStageProposals(dockerfile: Dockerfile, copy: Copy, position: Position, offset: number) {
+	private createCopyProposals(dockerfile: Dockerfile, copy: Copy, position: Position, offset: number, prefix: string) {
 		let range = copy.getFromValueRange();
 		// is the user in the --from= area
 		if (range && Util.isInsideRange(position, copy.getFromValueRange())) {
 			// get the prefix
-			let prefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
+			let stagePrefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
 			let items: CompletionItem[] = [];
 			for (let from of dockerfile.getFROMs()) {
 				let stage = from.getBuildStage();
-				if (stage && stage.toLowerCase().indexOf(prefix) === 0) {
-					items.push(this.createSourceImageCompletionItem(stage, prefix.length, offset));
+				if (stage && stage.toLowerCase().indexOf(stagePrefix) === 0) {
+					items.push(this.createSourceImageCompletionItem(stage, stagePrefix.length, offset));
 				}
 			}
 			items.sort((item: CompletionItem, item2: CompletionItem) => {
@@ -237,6 +242,14 @@ export class DockerAssist {
 			});
 			return items;
 		}
+
+		let copyArgs = copy.getArguments();
+		if (copyArgs.length === 0) {
+			return [ this.createCOPY_FlagFrom(0, offset) ];
+		} else if (Util.isInsideRange(position, copyArgs[0].getRange()) && prefix !== "--from=" && "--from=".indexOf(prefix) === 0) {
+			return [ this.createCOPY_FlagFrom(prefix.length, offset) ];
+		}
+
 		return [];
 	}
 
@@ -407,6 +420,13 @@ export class DockerAssist {
 			kind: CompletionItemKind.Keyword,
 			insertTextFormat: InsertTextFormat.PlainText,
 		};
+	}
+
+	private createCOPY_FlagFrom(prefixLength: number, offset: number): CompletionItem {
+		if (this.snippetSupport) {
+			return this.createFlagCompletionItem("--from=stage", prefixLength, offset, "--from=${1:stage}", "COPY_FlagFrom");
+		}
+		return this.createFlagCompletionItem("--from=", prefixLength, offset, "--from=", "COPY_FlagFrom");
 	}
 
 	private createHEALTHCHECK_FlagInterval(prefixLength: number, offset: number): CompletionItem {

@@ -26,6 +26,7 @@ export class PlainTextDocumentation {
 		"hoverVolume": "Create a mount point with the specifid name and mark it as holding externally mounted volumes from the native host or from other containers.\n\n",
 		"hoverWorkdir": "Set the working directory for any subsequent ADD, COPY, CMD, ENTRYPOINT, or RUN` instructions that follow it in the `Dockerfile`.\n\n",
 
+		"hoverCopyFlagFrom": "The previous build stage to use as the source location instead of the build's context.",
 		"hoverHealthcheckFlagInterval": "The seconds to wait for the health check to run after the container has started, and then again the number of seconds to wait before running again after the previous check has completed.",
 		"hoverHealthcheckFlagRetries": "The number of consecutive failures of this health check before the container is considered to be `unhealthy`.",
 		"hoverHealthcheckFlagStartPeriod": "The number of seconds to wait for the container to startup. Failures during this grace period will not count towards the maximum number of retries. However, should a health check succeed during this period then any subsequent failures will count towards the maximum number of retries.",
@@ -69,6 +70,8 @@ export class PlainTextDocumentation {
 				"COPY hello.txt /absolute/path\n" +
 				"COPY hello.txt relative/to/workdir"
 			,
+
+			COPY_FlagFrom: this.dockerMessages["hoverCopyFlagFrom"],
 
 			ENTRYPOINT: this.dockerMessages["hoverEntrypoint"] +
 				"ENTRYPOINT [ \"/opt/app/run.sh\", \"--port\", \"8080\" ]"
