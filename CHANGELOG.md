@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/publishDiagnostics
   - warn if ENV or LABEL is missing closing quote ([#143](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/143))
+  - warn if FROM's build stage name is invalid ([#132](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/132))
 
 ### Fixed
 - correct handling of escaped quotes in ENV variables ([#144](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/144))

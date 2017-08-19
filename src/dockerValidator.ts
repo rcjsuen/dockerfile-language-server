@@ -26,7 +26,8 @@ export enum ValidationCode {
 	ARGUMENT_REQUIRES_TWO,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	ARGUMENT_UNNECESSARY,
-	DUPLICATE_NAME,
+	DUPLICATE_BUILD_STAGE_NAME,
+	INVALID_BUILD_STAGE_NAME,
 	FLAG_AT_LEAST_ONE,
 	FLAG_DUPLICATE,
 	FLAG_INVALID_DURATION,
@@ -140,10 +141,12 @@ export class Validator {
 			for (let i = 0; i < expectedArgCount.length; i++) {
 				if (expectedArgCount[i] === args.length) {
 					for (let j = 0; j < args.length; j++) {
-						let createInvalidDiagnostic = validate(j, args[j].getValue());
-						if (createInvalidDiagnostic) {
-							let range = args[j].getRange();
-							problems.push(createInvalidDiagnostic(range.start, range.end, args[i].getValue()));
+						let range = args[j].getRange();
+						let createInvalidDiagnostic = validate(j, args[j].getValue(), range);
+						if (createInvalidDiagnostic instanceof Function) {
+							problems.push(createInvalidDiagnostic(range.start, range.end, args[j].getValue()));
+						} else if (createInvalidDiagnostic !== null) {
+							problems.push(createInvalidDiagnostic);
 						}
 					}
 					return;
@@ -219,7 +222,7 @@ export class Validator {
 			// duplicates found
 			if (names[name].length > 1) {
 				for (let range of names[name]) {
-					problems.push(Validator.createDuplicateName(range, name));
+					problems.push(Validator.createDuplicateBuildStageName(range, name));
 				}
 			}
 		}
@@ -327,11 +330,20 @@ export class Validator {
 					}
 					break;
 				case "FROM":
-					this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string) {
-						if (index === 1) {
-							return argument.toUpperCase() === "AS" ? null : Validator.createInvalidAs;
+					this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string, range: Range) {
+						switch (index) {
+							case 1:
+								return argument.toUpperCase() === "AS" ? null : Validator.createInvalidAs;
+							case 2:
+								argument = argument.toLowerCase();
+								let regexp = new RegExp(/^[a-z]([a-z0-9_\-.]*)*$/);
+								if (regexp.test(argument)) {
+									return null;
+								}
+								return Validator.createInvalidBuildStageName(range, argument);;
+							default:
+								return null;
 						}
-						return null;
 					}, Validator.createRequiresOneOrThreeArguments);
 					break;
 				case "HEALTHCHECK":
@@ -804,7 +816,8 @@ export class Validator {
 		"syntaxMissingSingleQuote": "failed to process \"${0}\": unexpected end of statement while looking for matching single-quote",
 		"syntaxMissingDoubleQuote": "failed to process \"${0}\": unexpected end of statement while looking for matching double-quote",
 
-		"duplicateName": "duplicate name ${0}",
+		"duplicateBuildStageName": "duplicate name ${0}",
+		"invalidBuildStageName": "invalid name for build stage: \"${0}\", name can't start with a number or contain symbols",
 
 		"flagAtLeastOne": "${0} must be at least 1 (not ${1})",
 		"flagDuplicate": "Duplicate flag specified: ${0}",
@@ -853,9 +866,13 @@ export class Validator {
 		return Validator.dockerProblems["noSourceImage"];
 	}
 
-	public static getDiagnosticMessage_DuplicateName(name: string) {
-		return Validator.formatMessage(Validator.dockerProblems["duplicateName"], name);
+	public static getDiagnosticMessage_DuplicateBuildStageName(name: string) {
+		return Validator.formatMessage(Validator.dockerProblems["duplicateBuildStageName"], name);
 	}
+	
+		public static getDiagnosticMessage_InvalidBuildStageName(name: string) {
+			return Validator.formatMessage(Validator.dockerProblems["invalidBuildStageName"], name);
+		}
 
 	public static getDiagnosticMessage_FlagAtLeastOne(flagName: string, flagValue: string) {
 		return Validator.formatMessage(Validator.dockerProblems["flagAtLeastOne"], flagName, flagValue);
@@ -985,8 +1002,12 @@ export class Validator {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	}
 
-	private static createDuplicateName(range: Range, name: string): Diagnostic {
-		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_DuplicateName(name), ValidationCode.DUPLICATE_NAME);
+	private static createDuplicateBuildStageName(range: Range, name: string): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_DuplicateBuildStageName(name), ValidationCode.DUPLICATE_BUILD_STAGE_NAME);
+	}
+
+	private static createInvalidBuildStageName(range: Range, name: string): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_InvalidBuildStageName(name), ValidationCode.INVALID_BUILD_STAGE_NAME);
 	}
 
 	static createFlagAtLeastOne(start: Position, end: Position, flagName: string, flagValue: string): Diagnostic {

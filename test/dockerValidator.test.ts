@@ -418,11 +418,22 @@ function assertSyntaxMissingDoubleQuote(diagnostic: Diagnostic, key: string, sta
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
-function assertDuplicateName(diagnostic: Diagnostic, instrument: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.DUPLICATE_NAME);
+function assertDuplicateBuildStageName(diagnostic: Diagnostic, name: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.DUPLICATE_BUILD_STAGE_NAME);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
-	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_DuplicateName(instrument));
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_DuplicateBuildStageName(name));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
+function assertInvalidBuildStageName(diagnostic: Diagnostic, name: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.INVALID_BUILD_STAGE_NAME);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_InvalidBuildStageName(name));
 	assert.equal(diagnostic.range.start.line, startLine);
 	assert.equal(diagnostic.range.start.character, startCharacter);
 	assert.equal(diagnostic.range.end.line, endLine);
@@ -1759,6 +1770,9 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("FROM node AS \\ \n setup");
 				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node AS a_lpi-n.e99");
+				assert.equal(diagnostics.length, 0);
 			});
 
 			it("invalid as", function() {
@@ -1770,18 +1784,32 @@ describe("Docker Validator Tests", function() {
 			it("duplicate name", function() {
 				let diagnostics = validate("FROM node AS setup\nFROM node AS setup");
 				assert.equal(diagnostics.length, 2);
-				assertDuplicateName(diagnostics[0], "setup", 0, 13, 0, 18);
-				assertDuplicateName(diagnostics[1], "setup", 1, 13, 1, 18);
+				assertDuplicateBuildStageName(diagnostics[0], "setup", 0, 13, 0, 18);
+				assertDuplicateBuildStageName(diagnostics[1], "setup", 1, 13, 1, 18);
 
 				diagnostics = validate("FROM node AS setup\nFROM node AS setUP");
 				assert.equal(diagnostics.length, 2);
-				assertDuplicateName(diagnostics[0], "setup", 0, 13, 0, 18);
-				assertDuplicateName(diagnostics[1], "setup", 1, 13, 1, 18);
+				assertDuplicateBuildStageName(diagnostics[0], "setup", 0, 13, 0, 18);
+				assertDuplicateBuildStageName(diagnostics[1], "setup", 1, 13, 1, 18);
 
 				diagnostics = validate("FROM node AS SETUP\nFROM node AS seTUp");
 				assert.equal(diagnostics.length, 2);
-				assertDuplicateName(diagnostics[0], "setup", 0, 13, 0, 18);
-				assertDuplicateName(diagnostics[1], "setup", 1, 13, 1, 18);
+				assertDuplicateBuildStageName(diagnostics[0], "setup", 0, 13, 0, 18);
+				assertDuplicateBuildStageName(diagnostics[1], "setup", 1, 13, 1, 18);
+			});
+
+			it("invalid name", function() {
+				let diagnostics = validate("FROM node AS 1s");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidBuildStageName(diagnostics[0], "1s", 0, 13, 0, 15);
+
+				diagnostics = validate("FROM node AS _s");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidBuildStageName(diagnostics[0], "_s", 0, 13, 0, 15);
+
+				diagnostics = validate("FROM node AS a_lpi-n.e,99");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidBuildStageName(diagnostics[0], "a_lpi-n.e,99", 0, 13, 0, 25);
 			});
 		});
 
