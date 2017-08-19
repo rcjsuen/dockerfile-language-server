@@ -396,6 +396,28 @@ function assertSyntaxMissingNames(diagnostic: Diagnostic, instrument: string, st
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertSyntaxMissingSingleQuote(diagnostic: Diagnostic, key: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.SYNTAX_MISSING_SINGLE_QUOTE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_SyntaxMissingSingleQuote(key));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
+function assertSyntaxMissingDoubleQuote(diagnostic: Diagnostic, key: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.SYNTAX_MISSING_DOUBLE_QUOTE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_SyntaxMissingDoubleQuote(key));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertDuplicateName(diagnostic: Diagnostic, instrument: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.DUPLICATE_NAME);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1422,6 +1444,24 @@ describe("Docker Validator Tests", function() {
 
 				let diagnostics = validate("FROM node\n" + instruction + " a b");
 				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " a='\\'");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " a='\\\\'");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " var='a\\\nb'");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " var='a\\ \nb'");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"a\\\nb\"");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"a\\ \nb\"");
+				assert.equal(diagnostics.length, 0);
 			});
 
 			it("requires two", function() {
@@ -1438,6 +1478,42 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node\n" + instruction + " a=b c d=e");
 				assert.equal(diagnostics.length, 1);
 				assertSyntaxMissingEquals(diagnostics[0], "c", 1, instructionLength + 5, 1, instructionLength + 6);
+			});
+
+			it("syntax missing single quote", function() {
+				let diagnostics = validate("FROM node\n" + instruction + " var='value");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingSingleQuote(diagnostics[0], "'value", 1, instructionLength + 5, 1, instructionLength + 11);
+
+				diagnostics = validate("FROM node\n" + instruction + " var='val\\\nue");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingSingleQuote(diagnostics[0], "'value", 1, instructionLength + 5, 2, 2);
+			});
+
+			it("syntax missing double quote", function() {
+				let diagnostics = validate("FROM node\n" + instruction + " var=\"value");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 1, instructionLength + 11);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"value\\");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value\\", 1, instructionLength + 5, 1, instructionLength + 12);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"value\\\"");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value\\\"", 1, instructionLength + 5, 1, instructionLength + 13);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"a\\  ");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"a\\", 1, instructionLength + 5, 1, instructionLength + 8);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"a\\  b");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"a\\  b", 1, instructionLength + 5, 1, instructionLength + 11);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"val\\\nue");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 2, 2);
 			});
 
 			it("missing name", function() {

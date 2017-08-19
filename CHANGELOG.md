@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - warn if ENV or LABEL is missing closing quote ([#143](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/143))
+
 ### Fixed
 - correct handling of escaped quotes in ENV variables ([#144](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/144))
 

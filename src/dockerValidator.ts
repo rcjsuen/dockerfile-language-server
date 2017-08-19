@@ -46,6 +46,8 @@ export enum ValidationCode {
 	SHELL_REQUIRES_ONE,
 	SYNTAX_MISSING_EQUALS,
 	SYNTAX_MISSING_NAMES,
+	SYNTAX_MISSING_SINGLE_QUOTE,
+	SYNTAX_MISSING_DOUBLE_QUOTE,
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
 	UNKNOWN_FLAG,
@@ -222,6 +224,7 @@ export class Validator {
 			}
 		}
 
+		let escapeChar = dockerfile.getEscapeCharacter();
 		let hasFrom = false;
 		for (let instruction of dockerfile.getInstructions()) {
 			let keyword = instruction.getKeyword();
@@ -233,16 +236,16 @@ export class Validator {
 				problems.push(Validator.createNoSourceImage(range.start, range.end));
 				hasFrom = true;
 			}
-			this.validateInstruction(keywords, instruction, keyword, problems);
+			this.validateInstruction(keywords, escapeChar, instruction, keyword, problems);
 		}
 
 		for (let instruction of dockerfile.getOnbuildTriggers()) {
-			this.validateInstruction(keywords, instruction, instruction.getKeyword(), problems);
+			this.validateInstruction(keywords, escapeChar, instruction, instruction.getKeyword(), problems);
 		}
 		return problems;
 	}
 
-	private validateInstruction(keywords: string[], instruction: Instruction, keyword: string, problems: Diagnostic[]): void {
+	private validateInstruction(keywords: string[], escapeChar: string, instruction: Instruction, keyword: string, problems: Diagnostic[]): void {
 		if (keywords.indexOf(keyword) === -1) {
 			let range = instruction.getInstructionRange();
 			// invalid instruction found
@@ -292,9 +295,33 @@ export class Validator {
 								let range = property.getRange();
 								problems.push(Validator.createSyntaxMissingNames(range.start, range.end, keyword));
 							}
-							if (property.getValue() === null) {
+
+							let value = property.getValue();
+							if (value === null) {
 								let range = property.getNameRange();
 								problems.push(Validator.createSyntaxMissingEquals(range.start, range.end, property.getName()));
+							} else if (value.charAt(0) === '"') {
+								let found = false;
+								for (let i = 1; i < value.length; i++) {
+									switch (value.charAt(i)) {
+										case escapeChar:
+											i++;
+											break;
+										case '"':
+											if (i === value.length - 1) {
+												found = true;
+											}
+											break;
+									}
+								}
+
+								if (!found) {
+									let range = property.getValueRange();
+									problems.push(Validator.createSyntaxMissingDoubleQuote(range.start, range.end, property.getRawValue()));
+								}
+							} else if (value.charAt(0) === '\'' && value.charAt(value.length - 1) !== '\'') {
+								let range = property.getValueRange();
+								problems.push(Validator.createSyntaxMissingSingleQuote(range.start, range.end, value));
 							}
 						}
 					}
@@ -774,6 +801,8 @@ export class Validator {
 
 		"syntaxMissingEquals": "Syntax error - can't find = in \"${0}\". Must be of the form: name=value",
 		"syntaxMissingNames": "${0} names can not be blank",
+		"syntaxMissingSingleQuote": "failed to process \"${0}\": unexpected end of statement while looking for matching single-quote",
+		"syntaxMissingDoubleQuote": "failed to process \"${0}\": unexpected end of statement while looking for matching double-quote",
 
 		"duplicateName": "duplicate name ${0}",
 
@@ -916,6 +945,14 @@ export class Validator {
 		return Validator.formatMessage(Validator.dockerProblems["syntaxMissingNames"], instruction);
 	}
 
+	public static getDiagnosticMessage_SyntaxMissingSingleQuote(key: string) {
+		return Validator.formatMessage(Validator.dockerProblems["syntaxMissingSingleQuote"], key);
+	}
+
+	public static getDiagnosticMessage_SyntaxMissingDoubleQuote(key: string) {
+		return Validator.formatMessage(Validator.dockerProblems["syntaxMissingDoubleQuote"], key);
+	}
+
 	public static getDiagnosticMessage_InstructionCasing() {
 		return Validator.dockerProblems["instructionCasing"];
 	}
@@ -1050,6 +1087,14 @@ export class Validator {
 
 	static createSyntaxMissingEquals(start: Position, end: Position, argument: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_SyntaxMissingEquals(argument), ValidationCode.SYNTAX_MISSING_EQUALS);
+	}
+
+	private static createSyntaxMissingSingleQuote(start: Position, end: Position, argument: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_SyntaxMissingSingleQuote(argument), ValidationCode.SYNTAX_MISSING_SINGLE_QUOTE);
+	}
+
+	private static createSyntaxMissingDoubleQuote(start: Position, end: Position, argument: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_SyntaxMissingDoubleQuote(argument), ValidationCode.SYNTAX_MISSING_DOUBLE_QUOTE);
 	}
 
 	private static createSyntaxMissingNames(start: Position, end: Position, instruction: string): Diagnostic {

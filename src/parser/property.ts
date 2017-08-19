@@ -9,25 +9,30 @@ import { Util } from '../docker';
 
 export class Property {
 
+	private document: TextDocument;
+	private escapeChar: string;
 	private readonly range: Range;
 	private readonly nameRange: Range;
 	private readonly name: string = null;
+	private readonly valueRange: Range;
 	private readonly value: string = null;
 
 	constructor(document: TextDocument, escapeChar: string, arg: Argument, arg2?: Argument) {
+		this.document = document;
+		this.escapeChar = escapeChar;
 		if (arg2) {
 			this.nameRange = arg.getRange();
 			this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
-			let valueRange = arg2.getRange();
-			let value = document.getText().substring(document.offsetAt(valueRange.start), document.offsetAt(valueRange.end));
+			this.valueRange = arg2.getRange();
+			let value = document.getText().substring(document.offsetAt(this.valueRange.start), document.offsetAt(this.valueRange.end));
 			this.value = Property.getValue(value, escapeChar);
-			this.range = Range.create(this.nameRange.start, valueRange.end);
+			this.range = Range.create(this.nameRange.start, this.valueRange.end);
 		} else {
 			this.nameRange = Property.getNameRange(document, arg);
 			this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
-			let valueRange = Property.getValueRange(document, escapeChar, arg);
-			if (valueRange) {
-				let value = document.getText().substring(document.offsetAt(valueRange.start), document.offsetAt(valueRange.end));
+			this.valueRange = Property.getValueRange(document, escapeChar, arg);
+			if (this.valueRange) {
+				let value = document.getText().substring(document.offsetAt(this.valueRange.start), document.offsetAt(this.valueRange.end));
 				this.value = Property.getValue(value, escapeChar);
 			}
 			this.range = arg.getRange();
@@ -48,6 +53,42 @@ export class Property {
 
 	public getValue(): string | null {
 		return this.value;
+	}
+
+	public getValueRange(): Range | null {
+		return this.valueRange;
+	}
+
+	public getRawValue(): string {
+		let rawValue = "";
+		let value = this.document.getText().substring(this.document.offsetAt(this.valueRange.start), this.document.offsetAt(this.valueRange.end));
+		rawLoop: for (let i = 0; i < value.length; i++) {
+			let char = value.charAt(i);
+			if (char === this.escapeChar) {
+				for (let j = i + 1; j < value.length; j++) {
+					switch (value.charAt(j)) {
+						case '\r':
+							if (value.charAt(j + 1) === '\n') {
+								j++;
+							}
+						case '\n':
+							i = j;
+							continue rawLoop;
+						case ' ':
+						case '\t':
+							break;
+						default:
+							rawValue = rawValue + char;
+							continue rawLoop;
+					}
+				}
+				// this happens if there's only whitespace after the escape character
+				rawValue = rawValue + char;
+			} else {
+				rawValue = rawValue + char;
+			}
+		}
+		return rawValue;
 	}
 
 	private static getNameRange(document: TextDocument, arg: Argument): Range {
@@ -86,13 +127,21 @@ export class Property {
 	 *         consists of whitespace
 	 */
 	private static getValue(value: string, escapeChar: string): string {
-		let literal = false;
 		let first = value.charAt(0);
 		let last = value.charAt(value.length - 1);
+		let literal = first === '\'' || first === '"';
 		let inSingle = (first === '\'' && last === '\'');
-		let inDouble  = (first === '"' && last === '"');
+		let inDouble = false;
+		if (first === '"') {
+			for (let i = 1; i < value.length; i++) {
+				if (value.charAt(i) === escapeChar) {
+					i++;
+				} else if (value.charAt(i) === '"' && i === value.length - 1) {
+					inDouble = true;
+				}
+			}
+		}
 		if (inSingle || inDouble) {
-			literal = true;
 			value = value.substring(1, value.length - 1);
 		}
 
@@ -115,7 +164,7 @@ export class Property {
 						escapedValue = escapedValue + escapeChar;
 					}
 					continue parseValue;
-				} else if (inSingle) {
+				} else if (inSingle || literal) {
 					if (char === '\n') {
 						i++;
 					} else {
