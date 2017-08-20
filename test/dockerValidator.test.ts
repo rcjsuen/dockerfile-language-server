@@ -1231,6 +1231,9 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("#\r# key=value\nFROM node");
 				assert.equal(diagnostics.length, 0);
 
+				diagnostics = validate("#\r# key=value\rFROM node");
+				assert.equal(diagnostics.length, 0);
+
 				diagnostics = validate("#=# key=value\nFROM node");
 				assert.equal(diagnostics.length, 0);
 
@@ -1525,6 +1528,14 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM node\n" + instruction + " var=\"val\\\nue");
 				assert.equal(diagnostics.length, 1);
 				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 2, 2);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"val\\\rue");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 2, 2);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"val\\\r\nue");
+				assert.equal(diagnostics.length, 1);
+				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 2, 2);
 			});
 
 			it("missing name", function() {
@@ -1614,6 +1625,12 @@ describe("Docker Validator Tests", function() {
 			assert.equal(diagnostics.length, 0);
 
 			diagnostics = validate("FROM node\nEXPOSE 8000\\\r\n-9000");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM node\nEXPOSE \\ 8000");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM node\nEXPOSE 8000\\ 8001");
 			assert.equal(diagnostics.length, 0);
 		});
 
@@ -2340,6 +2357,9 @@ describe("Docker Validator Tests", function() {
 			assert.equal(diagnostics.length, 0);
 
 			diagnostics = validate("FROM busybox\nSHELL [ \"a,b\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\b\" ]");
 			assert.equal(diagnostics.length, 0);
 
 			diagnostics = validate("FROM busybox\nSHELL [ \"/bin/sh\", \\\n \"-c\" ]");

@@ -508,6 +508,13 @@ describe("Dockerfile Document Highlight tests", function() {
 				assertHighlightRanges(ranges, [ declaration, write, read, read2] );
 			});
 		});
+
+		it("empty ARG", function() {
+			let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+			let document = createDocument("ENV var=value\nARG");
+			let ranges = computeHighlightRanges(document, 0, 5);
+			assertHighlightRanges(ranges, [ declaration ]);
+		});
 	});
 
 	describe("non-existent variable", function() {
