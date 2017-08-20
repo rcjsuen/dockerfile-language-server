@@ -2377,11 +2377,26 @@ describe("Docker Validator Tests", function() {
 			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\"\" ]");
 			assert.equal(diagnostics.length, 0);
 
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\nb\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\n b\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\n  b\" ]");
+			assert.equal(diagnostics.length, 0);
+
 			diagnostics = validate("FROM busybox\nSHELL [ \"[\" ]");
 			assert.equal(diagnostics.length, 0);
 
 			diagnostics = validate("FROM busybox\nSHELL [ \"\\\\[\" ]");
 			assert.equal(diagnostics.length, 0);
+		});
+
+		it("invalid escape", function() {
+			let diagnostics = validate("FROM busybox\nSHELL [ \"a\\ b\" ]");
+			assert.equal(diagnostics.length, 1);
+			assertShellJsonForm(diagnostics[0], 1, 6, 1, 16);
 		});
 
 		it("missing starting [", function() {

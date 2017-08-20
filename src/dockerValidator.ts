@@ -762,8 +762,33 @@ export class Validator {
 					break;
 				case '\\':
 					if (quoted) {
-						if (argsContent.charAt(i + 1) === '"' || argsContent.charAt(i + 1) === '\\') {
-							i = i + 1;
+						switch (argsContent.charAt(i + 1)) {
+							case '"':
+							case '\\':
+								i++;
+								continue;
+							case ' ':
+							case '\t':
+								for (let j = i + 2; j < argsContent.length; j++) {
+									switch (argsContent.charAt(j)) {
+										case '\r':
+											if (argsContent.charAt(j + 1) === '\n') {
+												j++;
+											}
+										case '\n':
+											i = j;
+											continue argsCheck;
+										case ' ':
+										case '\t':
+											break;
+										default:
+											break argsCheck;
+									}
+								}
+								break;
+							default:
+								i++;
+								continue;
 						}
 					} else {
 						for (let j = i + 1; j < argsContent.length; j++) {

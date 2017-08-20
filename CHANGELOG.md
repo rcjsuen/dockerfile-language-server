@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - correct handling of escaped quotes in ENV variables ([#144](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/144))
 - include escape character in value of single quoted ENV variables ([#146](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/146))
 - ignore whitespace that precedes an escaped newline in ENV variables ([#147](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/147))
+- fix handling of escape characters in SHELL's JSON strings ([#151](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/151))
 
 ## [0.0.6] - 2017-08-12
 ### Added
