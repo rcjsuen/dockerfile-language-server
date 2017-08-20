@@ -17,6 +17,7 @@ Supported features:
 - formatting
 - hovers
 - rename
+- signature help
 
 ## Development Instructions
 

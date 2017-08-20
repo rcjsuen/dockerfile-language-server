@@ -8,7 +8,7 @@ import {
 	createConnection, IConnection, InitializeResult, ClientCapabilities,
 	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams, 
-	DocumentSymbolParams, SymbolInformation,
+	DocumentSymbolParams, SymbolInformation, SignatureHelp,
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent
@@ -20,6 +20,7 @@ import { CommandIds, DockerCommands } from './dockerCommands';
 import { DockerHover } from './dockerHover';
 import { MarkdownDocumentation } from './dockerMarkdown';
 import { PlainTextDocumentation } from './dockerPlainText';
+import { DockerSignatures } from './dockerSignatures';
 import { DockerSymbols } from './dockerSymbols';
 import { DockerFormatter } from './dockerFormatter';
 import { DockerHighlight } from './dockerHighlight';
@@ -34,6 +35,7 @@ let symbolsProvider = new DockerSymbols();
 let formatterProvider = new DockerFormatter();
 let definitionProvider = new DockerDefinition();
 let documentationResolver = new PlainTextDocumentation();
+let signatureHelp = new DockerSignatures();
 
 let validatorSettings = null;
 
@@ -84,7 +86,12 @@ connection.onInitialize((params): InitializeResult => {
 			documentSymbolProvider: true,
 			documentHighlightProvider: true,
 			renameProvider: true,
-			definitionProvider: true
+			definitionProvider: true,
+			signatureHelpProvider: {
+				triggerCharacters: [
+					"="
+				]
+			}
 		}
 	}
 });
@@ -159,6 +166,18 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 		return assist.computeProposals(document, textDocumentPosition.position);
 	}
 	return null;
+});
+
+connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
+	let document = documents[textDocumentPosition.textDocument.uri];
+	if (document !== null) {
+		return signatureHelp.computeSignatures(document, textDocumentPosition.position);
+	}
+	return {
+		signatures: [],
+		activeSignature: null,
+		activeParameter: null,
+	};
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {

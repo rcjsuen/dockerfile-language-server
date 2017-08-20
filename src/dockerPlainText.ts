@@ -34,6 +34,13 @@ export class PlainTextDocumentation {
 
 		"hoverEscape": "Sets the character to use to escape characters and newlines in this Dockerfile. If unspecified, the default escape character is `\\`.\n\n",
 
+		"signatureEscape": "Sets this Dockerfile's escape character. If unspecified, the default escape character is `\\`.",
+		"signatureEscape_Param": "The character to use to escape characters and newlines in this Dockerfile.",
+
+		"signatureCopyFlagFrom": "Set the build stage to use as the source location of this copy instruction instead of the build's context.",
+		"signatureCopyFlagFrom_Param": "The build stage or image name to use as the source. Also may be a numeric index.",
+		"signatureHealthcheck": "Define how Docker should test the container to check that it is still working.",
+
 		"proposalArgNameOnly": "Define a variable that users can set at build-time when using `docker build`.\n\n",
 		"proposalArgDefaultValue": "Define a variable with the given default value that users can override at build-time when using `docker build`.\n\n",
 		"proposalHealthcheckExec": "Define how Docker should test the container to check that it is still working. There can only be one HEALTHCHECK instruction in a Dockerfile.\n\nSince Docker 1.12\n\n",
@@ -153,7 +160,18 @@ export class PlainTextDocumentation {
 			,
 
 			escape: this.dockerMessages["hoverEscape"] +
-				"# escape=`"
+				"# escape=`",
+
+			signatureEscape: this.dockerMessages["signatureEscape"],
+			signatureEscape_Param: this.dockerMessages["signatureEscape_Param"],
+
+			signatureCopyFlagFrom: this.dockerMessages["signatureCopyFlagFrom"],
+			signatureCopyFlagFrom_Param: this.dockerMessages["signatureCopyFlagFrom_Param"],
+			signatureHealthcheck: this.dockerMessages["signatureHealthcheck"],
+			signatureHealthcheckFlagInterval_Param: this.dockerMessages["hoverHealthcheckFlagInterval"],
+			signatureHealthcheckFlagRetries_Param: this.dockerMessages["hoverHealthcheckFlagRetries"],
+			signatureHealthcheckFlagStartPeriod_Param: this.dockerMessages["hoverHealthcheckFlagStartPeriod"],
+			signatureHealthcheckFlagTimeout_Param: this.dockerMessages["hoverHealthcheckFlagTimeout"]
 		};
 	}
 

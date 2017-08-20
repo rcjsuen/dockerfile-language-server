@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range, Position } from 'vscode-languageserver';
+import { Flag } from '../flag';
 import { ModifiableInstruction } from './modifiableInstruction';
 
 export class Copy extends ModifiableInstruction {
@@ -13,6 +14,11 @@ export class Copy extends ModifiableInstruction {
 
 	public stopSearchingForFlags(argument: string): boolean {
 		return argument.indexOf("--") === -1;
+	}
+
+	public getFromFlag(): Flag | null {
+		let flags = super.getFlags();
+		return flags.length === 1 && flags[0].getName() === "from" ? flags[0] : null;
 	}
 
 	public getFromValue(): string | null {
