@@ -1476,6 +1476,9 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("FROM node\n" + instruction + " var=\"a\\ \nb\"");
 				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=\"\\\"\\\"\"");
+				assert.equal(diagnostics.length, 0);
 			});
 
 			it("requires two", function() {
@@ -2384,6 +2387,15 @@ describe("Docker Validator Tests", function() {
 			assert.equal(diagnostics.length, 0);
 
 			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\n  b\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\\t \n  b\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\ \t\r  b\" ]");
+			assert.equal(diagnostics.length, 0);
+
+			diagnostics = validate("FROM busybox\nSHELL [ \"a\\ \t\r\n  b\" ]");
 			assert.equal(diagnostics.length, 0);
 
 			diagnostics = validate("FROM busybox\nSHELL [ \"[\" ]");
