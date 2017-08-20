@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/publishDiagnostics
   - warn if ENV or LABEL is missing closing quote ([#143](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/143))
   - warn if FROM's build stage name is invalid ([#132](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/132))
+  - warn if an invalid unit of time is used in a duration flag ([#152](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/152))
 - textDocument/signatureHelp ([#147](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/147))
   - escape parser directive
   - COPY's --from flag

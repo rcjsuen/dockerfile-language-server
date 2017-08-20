@@ -34,6 +34,7 @@ export enum ValidationCode {
 	FLAG_LESS_THAN_1MS,
 	FLAG_MISSING_DURATION,
 	FLAG_MISSING_VALUE,
+	FLAG_UNKNOWN_UNIT,
 	NO_SOURCE_IMAGE,
 	INVALID_ESCAPE_DIRECTIVE,
 	INVALID_AS,
@@ -603,6 +604,10 @@ export class Validator {
 												start = i;
 												durationSpecified = true;
 												continue durationParse;
+											default:
+												let range = flag.getValueRange();
+												problems.push(Validator.createFlagUnknownUnit(range, unit, value));
+												continue flagCheck;
 										}
 									}
 								}
@@ -644,6 +649,10 @@ export class Validator {
 										duration += time / 1000000;
 										durationSpecified = true;
 										break durationParse;
+									default:
+										let range = flag.getValueRange();
+										problems.push(Validator.createFlagUnknownUnit(range, unit, value));
+										break;
 								}
 								continue flagCheck;
 						}	
@@ -851,6 +860,7 @@ export class Validator {
 		"flagMissingDuration": "time: missing unit in duration ${0}",
 		"flagMissingValue": "Missing a value on flag: ${0}",
 		"flagUnknown": "Unknown flag: ${0}",
+		"flagUnknownUnit": "time: unknown unit ${0} in duration ${1}",
 
 		"instructionExtraArgument": "Instruction has an extra argument",
 		"instructionMissingArgument": "Instruction has no arguments",
@@ -925,6 +935,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_FlagUnknown(flag: string) {
 		return Validator.formatMessage(Validator.dockerProblems["flagUnknown"], flag);
+	}
+
+	public static getDiagnosticMessage_FlagUnknownUnit(unit: string, duration: string) {
+		return Validator.formatMessage(Validator.dockerProblems["flagUnknownUnit"], unit, duration);
 	}
 
 	public static getDiagnosticMessage_InvalidAs() {
@@ -1061,6 +1075,10 @@ export class Validator {
 
 	static createFlagUnknown(start: Position, end: Position, flag: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagUnknown(flag), ValidationCode.UNKNOWN_FLAG);
+	}
+
+	private static createFlagUnknownUnit(range: Range, unit: string, duration: string): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_FlagUnknownUnit(unit, duration), ValidationCode.FLAG_UNKNOWN_UNIT);
 	}
 
 	static createInvalidAs(start: Position, end: Position): Diagnostic {

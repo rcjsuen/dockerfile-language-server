@@ -132,6 +132,17 @@ function assertFlagUnknown(diagnostic: Diagnostic, flag: string, startLine: numb
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertFlagUnknownUnit(diagnostic: Diagnostic, unit: string, duration: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.FLAG_UNKNOWN_UNIT);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagUnknownUnit(unit, duration));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInvalidAs(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.INVALID_AS);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -2061,6 +2072,20 @@ describe("Docker Validator Tests", function() {
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=5s5 CMD ls");
 					assert.equal(diagnostics.length, 1);
 					assertFlagMissingDuration(diagnostics[0], "5s5", 1, 22, 1, 25);
+				});
+
+				it("unknown unit", function() {
+					let diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=1x CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknownUnit(diagnostics[0], "x", "1x", 1, 22, 1, 24);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=1s1x CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknownUnit(diagnostics[0], "x", "1s1x", 1, 22, 1, 26);
+
+					diagnostics = validate("FROM alpine\nHEALTHCHECK --timeout=1x1s CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertFlagUnknownUnit(diagnostics[0], "x", "1x1s", 1, 22, 1, 26);
 				});
 
 				function createDurationTooShortTests(flag: string) {
