@@ -63,7 +63,8 @@ connection.onInitialize((params): InitializeResult => {
 				triggerCharacters: [
 					'=',
 					' ',
-					'$'
+					'$',
+					'-',
 				]
 			},
 			executeCommandProvider: {
