@@ -9,6 +9,7 @@ import {
 } from 'vscode-languageserver';
 import { KEYWORDS } from '../src/docker';
 import { DockerAssist } from '../src/dockerAssist';
+import { DockerRegistryClient } from '../src/dockerRegistryClient';
 
 function createDocument(content: string): any {
 	return TextDocument.create("uri://host/Dockerfile.sample", "dockerfile", 1, content);
@@ -19,8 +20,9 @@ function compute(content: string, offset: number, snippetSupport?: boolean): Com
 		snippetSupport = true;
 	}
 	let document = createDocument(content);
-	let assist = new DockerAssist(document, snippetSupport);
-	return assist.computeProposals(document, document.positionAt(offset));
+	let assist = new DockerAssist(document, snippetSupport, new DockerRegistryClient(null));
+	let items = assist.computeProposals(document, document.positionAt(offset));
+	return items as CompletionItem[];
 }
 
 function computePosition(content: string, line: number, character: number, snippetSupport?: boolean): CompletionItem[] {
@@ -28,8 +30,9 @@ function computePosition(content: string, line: number, character: number, snipp
 		snippetSupport = true;
 	}
 	let document = createDocument(content);
-	let assist = new DockerAssist(document, snippetSupport);
-	return assist.computeProposals(document, Position.create(line, character));
+	let assist = new DockerAssist(document, snippetSupport, new DockerRegistryClient(null));
+	let items = assist.computeProposals(document, Position.create(line, character));
+	return items as CompletionItem[];
 }
 
 function assertOnlyFROM(proposals: CompletionItem[], line: number, number: number, prefixLength: number) {
@@ -1619,6 +1622,14 @@ describe('Docker Content Assist Tests', function() {
 	}
 
 	testCopy(false);
+
+	describe("FROM", function() {
+		// currently not supported so the expectation is that no suggestions should be provided
+		it("image names", function() {
+			let items = compute("FROM node", 7);
+			assert.equal(items.length, 0);
+		});
+	});
 
 	function testHealthcheck(trigger: boolean) {
 		describe("HEALTHCHECK", function() {

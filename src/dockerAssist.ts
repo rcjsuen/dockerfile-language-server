@@ -11,8 +11,10 @@ import {
 import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { Dockerfile } from './parser/dockerfile';
 import { DockerHover } from './dockerHover';
+import { DockerRegistryClient } from './dockerRegistryClient';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Copy } from './parser/instructions/copy';
+import { From } from './parser/instructions/from';
 import { Healthcheck } from './parser/instructions/healthcheck';
 import { Onbuild } from './parser/instructions/onbuild';
 import { Instruction } from './parser/instruction';
@@ -22,12 +24,25 @@ export class DockerAssist {
 	private snippetSupport: boolean;
 	private document: TextDocument;
 
-	constructor(document: TextDocument, snippetSupport: boolean) {
+	/**
+	 * The client for communicating with a Docker registry.
+	 */
+	private dockerRegistryClient: DockerRegistryClient;
+
+	/**
+	 * Creates a content assist processor for suggesting completion items related to a Dockerfile.
+	 * 
+	 * @param document the text document to provide suggestions for
+	 * @param snippetSupport true if snippets are supported by the client, false otherwise
+	 * @param dockerRegistryClient the client for communicating with a Docker registry
+	 */
+	constructor(document: TextDocument, snippetSupport: boolean, dockerRegistryClient: DockerRegistryClient) {
 		this.document = document;
 		this.snippetSupport = snippetSupport;
+		this.dockerRegistryClient = dockerRegistryClient;
 	}
 
-	computeProposals(document: TextDocument, position: Position): CompletionItem[] {
+	public computeProposals(document: TextDocument, position: Position): CompletionItem[] | PromiseLike<CompletionItem[]> {
 		let buffer = document.getText();
 		let offset = document.offsetAt(position);
 		let parser = new DockerfileParser();
@@ -131,6 +146,8 @@ export class DockerAssist {
 				switch (instruction.getKeyword()) {
 					case "COPY":
 						return this.createCopyProposals(dockerfile, instruction as Copy, position, offset, prefix);
+					case "FROM":
+						return this.createFromProposals(instruction as From, position, prefix);
 					case "HEALTHCHECK":
 						let subcommand = (instruction as Healthcheck).getSubcommand();
 						if (subcommand && subcommand.isBefore(position)) {
@@ -250,6 +267,35 @@ export class DockerAssist {
 			return [ this.createCOPY_FlagFrom(prefix.length, offset) ];
 		}
 
+		return [];
+	}
+
+	private createFromProposals(from: From, position: Position, prefix: string): CompletionItem[] | PromiseLike<CompletionItem[]> {
+		// checks if the cursor is in the image's tag area
+		if (Util.isInsideRange(position, from.getImageTagRange())) {
+			const index = prefix.indexOf(':');
+			const lastIndex = prefix.indexOf(':');
+			if (index === lastIndex) {
+				prefix = prefix.substring(index + 1);
+			} else {
+				prefix = prefix.substring(index + 1, lastIndex);
+			}
+			const client = this.dockerRegistryClient;
+			return new Promise<CompletionItem[]>(async (resolve, reject) => {
+				const items = [];
+				const tags = await client.getTags(from.getImageName());
+				for (const tag of tags) {
+					if (tag.indexOf(prefix) === 0) {
+						items.push({
+							label: tag,
+							kind: CompletionItemKind.Property,
+							insertTextFormat: InsertTextFormat.PlainText,
+						});
+					}
+				}
+				resolve(items);
+			});
+		}
 		return [];
 	}
 

@@ -26,6 +26,7 @@ import { DockerFormatter } from './dockerFormatter';
 import { DockerHighlight } from './dockerHighlight';
 import { DockerRename } from './dockerRename';
 import { DockerDefinition } from './dockerDefinition';
+import { DockerRegistryClient } from './dockerRegistryClient';
 import { KEYWORDS } from './docker';
 
 let markdown = new MarkdownDocumentation();
@@ -40,6 +41,7 @@ let signatureHelp = new DockerSignatures();
 let validatorSettings = null;
 
 let connection: IConnection = createConnection();
+let dockerRegistryClient = new DockerRegistryClient(connection);
 
 let snippetSupport: boolean = false;
 
@@ -160,10 +162,10 @@ connection.onDidChangeConfiguration((change) => {
 	});
 });
 
-connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] | PromiseLike<CompletionItem[]> => {
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document) {
-		let assist = new DockerAssist(document, snippetSupport);
+		let assist = new DockerAssist(document, snippetSupport, dockerRegistryClient);
 		return assist.computeProposals(document, textDocumentPosition.position);
 	}
 	return null;

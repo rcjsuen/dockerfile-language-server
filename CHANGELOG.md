@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/completion
   - COPY's --from build stage flag ([#148](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/148))
   - add '-' as a trigger character to suggest instruction flags ([#155](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/155))
+  - suggest image tags in FROM instructions ([#154](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/154))
 - textDocument/hover
   - COPY's --from build stage flag ([#150](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/150))
 - textDocument/publishDiagnostics
