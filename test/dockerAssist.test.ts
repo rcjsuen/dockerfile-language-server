@@ -1582,6 +1582,12 @@ describe('Docker Content Assist Tests', function() {
 					assert.equal(proposals.length, 1);
 					assertSourceImage(proposals[0], "source", 2, triggerOffset + 12, 2, triggerOffset + 12);
 				});
+
+				it("only suggest previously declared source images", function() {
+					let proposals = computePosition("FROM node AS dev\n" + onbuild + "COPY --from=\nFROM node AS test", 1, triggerOffset + 12);
+					assert.equal(proposals.length, 1);
+					assertSourceImage(proposals[0], "dev", 1, triggerOffset + 12, 1, triggerOffset + 12);
+				});
 			});
 	
 			describe("arguments", function() {

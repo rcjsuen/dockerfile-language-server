@@ -249,11 +249,13 @@ export class DockerAssist {
 			// get the prefix
 			let stagePrefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
 			for (let from of dockerfile.getFROMs()) {
-				let stage = from.getBuildStage();
-				if (stage) {
-					const lowercase = stage.toLowerCase();
-					if (lowercase.indexOf(stagePrefix) === 0 && !names[lowercase]) {
-						names[lowercase] = stage;
+				if (copy.isAfter(from)) {
+					let stage = from.getBuildStage();
+					if (stage) {
+						const lowercase = stage.toLowerCase();
+						if (lowercase.indexOf(stagePrefix) === 0 && !names[lowercase]) {
+							names[lowercase] = stage;
+						}
 					}
 				}
 			}

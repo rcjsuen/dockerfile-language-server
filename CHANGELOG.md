@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - ignore whitespace that precedes an escaped newline in ENV variables ([#147](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/147))
 - fix handling of escape characters in SHELL's JSON strings ([#151](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/151))
 - do not suggest duplicated build stage names as completion items ([#156](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/156))
+- only suggest build stages that come after the current COPY line ([#158](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/158))
 
 ## [0.0.6] - 2017-08-12
 ### Added
