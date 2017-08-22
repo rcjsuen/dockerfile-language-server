@@ -11,6 +11,10 @@ export class From extends Instruction {
 		super(document, range, escapeChar, instruction, instructionRange);
 	}
 
+	public getImage(): string {
+		return this.getRangeContent(this.getImageRange());
+	}
+
 	/**
 	 * Returns the name of the image that will be used as the base image.
 	 * 
