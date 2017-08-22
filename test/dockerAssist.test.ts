@@ -1570,6 +1570,18 @@ describe('Docker Content Assist Tests', function() {
 					assert.equal(proposals.length, 1);
 					assertSourceImage(proposals[0], "setup", 2, triggerOffset + 12, 2, triggerOffset + 13);
 				});
+
+				it("no duplicate source images", function() {
+					let proposals = computePosition("FROM busybox AS source\nFROM busybox AS source\n" + onbuild + "COPY --from=", 2, triggerOffset + 12);
+					assert.equal(proposals.length, 1);
+					assertSourceImage(proposals[0], "source", 2, triggerOffset + 12, 2, triggerOffset + 12);
+				});
+
+				it("no duplicate source images ignoring case", function() {
+					let proposals = computePosition("FROM busybox AS source\nFROM busybox AS soURCe\n" + onbuild + "COPY --from=", 2, triggerOffset + 12);
+					assert.equal(proposals.length, 1);
+					assertSourceImage(proposals[0], "source", 2, triggerOffset + 12, 2, triggerOffset + 12);
+				});
 			});
 	
 			describe("arguments", function() {

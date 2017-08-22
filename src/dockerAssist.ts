@@ -245,14 +245,21 @@ export class DockerAssist {
 		let range = copy.getFromValueRange();
 		// is the user in the --from= area
 		if (range && Util.isInsideRange(position, copy.getFromValueRange())) {
+			const names = {};
 			// get the prefix
 			let stagePrefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
-			let items: CompletionItem[] = [];
 			for (let from of dockerfile.getFROMs()) {
 				let stage = from.getBuildStage();
-				if (stage && stage.toLowerCase().indexOf(stagePrefix) === 0) {
-					items.push(this.createSourceImageCompletionItem(stage, stagePrefix.length, offset));
+				if (stage) {
+					const lowercase = stage.toLowerCase();
+					if (lowercase.indexOf(stagePrefix) === 0 && !names[lowercase]) {
+						names[lowercase] = stage;
+					}
 				}
+			}
+			const items: CompletionItem[] = [];
+			for (const name in names) {
+				items.push(this.createSourceImageCompletionItem(names[name], stagePrefix.length, offset));
 			}
 			items.sort((item: CompletionItem, item2: CompletionItem) => {
 				return item.label.localeCompare(item2.label);
