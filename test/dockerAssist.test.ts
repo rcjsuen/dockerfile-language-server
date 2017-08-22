@@ -529,10 +529,11 @@ function assertWORKDIR(item: CompletionItem, line: number, character: number, pr
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertSourceImage(item: CompletionItem, sourceImage: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+function assertSourceImage(item: CompletionItem, sourceImage: string, documentation: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(item.label, sourceImage);
 	assert.equal(item.kind, CompletionItemKind.Reference);
 	assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+	assert.equal(item.documentation, documentation);
 	assert.equal(item.textEdit.newText, sourceImage);
 	assert.equal(item.textEdit.range.start.line, startLine);
 	assert.equal(item.textEdit.range.start.character, startCharacter);
@@ -1550,43 +1551,43 @@ describe('Docker Content Assist Tests', function() {
 				it("source image", function() {
 					var proposals = computePosition("FROM busybox AS source\n" + onbuild + "COPY --from=", 1, triggerOffset + 12);
 					assert.equal(proposals.length, 1);
-					assertSourceImage(proposals[0], "source", 1, triggerOffset + 12, 1, triggerOffset + 12);
+					assertSourceImage(proposals[0], "source", "busybox", 1, triggerOffset + 12, 1, triggerOffset + 12);
 				});
 	
 				it("source images alphabetical", function() {
-					var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\n" + onbuild + "COPY --from=", 2, triggerOffset + 12);
+					var proposals = computePosition("FROM ubuntu:trusty AS setup\nFROM redhat:rawhide AS dev\n" + onbuild + "COPY --from=", 2, triggerOffset + 12);
 					assert.equal(proposals.length, 2);
-					assertSourceImage(proposals[0], "dev", 2, triggerOffset + 12, 2, triggerOffset + 12);
-					assertSourceImage(proposals[1], "setup", 2, triggerOffset + 12, 2, triggerOffset + 12);
+					assertSourceImage(proposals[0], "dev", "redhat:rawhide", 2, triggerOffset + 12, 2, triggerOffset + 12);
+					assertSourceImage(proposals[1], "setup", "ubuntu:trusty", 2, triggerOffset + 12, 2, triggerOffset + 12);
 				});
 	
 				it("source image prefix", function() {
 					var proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\n" + onbuild + "COPY --from=s", 2, triggerOffset + 13);
 					assert.equal(proposals.length, 1);
-					assertSourceImage(proposals[0], "setup", 2, triggerOffset + 12, 2, triggerOffset + 13);
+					assertSourceImage(proposals[0], "setup", "busybox", 2, triggerOffset + 12, 2, triggerOffset + 13);
 	
 					// casing should be ignored
 					proposals = computePosition("FROM busybox AS setup\nFROM busybox AS dev\n" + onbuild + "COPY --from=S", 2, triggerOffset + 13);
 					assert.equal(proposals.length, 1);
-					assertSourceImage(proposals[0], "setup", 2, triggerOffset + 12, 2, triggerOffset + 13);
+					assertSourceImage(proposals[0], "setup", "busybox", 2, triggerOffset + 12, 2, triggerOffset + 13);
 				});
 
 				it("no duplicate source images", function() {
 					let proposals = computePosition("FROM busybox AS source\nFROM busybox AS source\n" + onbuild + "COPY --from=", 2, triggerOffset + 12);
 					assert.equal(proposals.length, 1);
-					assertSourceImage(proposals[0], "source", 2, triggerOffset + 12, 2, triggerOffset + 12);
+					assertSourceImage(proposals[0], "source", "busybox", 2, triggerOffset + 12, 2, triggerOffset + 12);
 				});
 
 				it("no duplicate source images ignoring case", function() {
 					let proposals = computePosition("FROM busybox AS source\nFROM busybox AS soURCe\n" + onbuild + "COPY --from=", 2, triggerOffset + 12);
 					assert.equal(proposals.length, 1);
-					assertSourceImage(proposals[0], "source", 2, triggerOffset + 12, 2, triggerOffset + 12);
+					assertSourceImage(proposals[0], "source", "busybox", 2, triggerOffset + 12, 2, triggerOffset + 12);
 				});
 
 				it("only suggest previously declared source images", function() {
 					let proposals = computePosition("FROM node AS dev\n" + onbuild + "COPY --from=\nFROM node AS test", 1, triggerOffset + 12);
 					assert.equal(proposals.length, 1);
-					assertSourceImage(proposals[0], "dev", 1, triggerOffset + 12, 1, triggerOffset + 12);
+					assertSourceImage(proposals[0], "dev", "node", 1, triggerOffset + 12, 1, triggerOffset + 12);
 				});
 			});
 	

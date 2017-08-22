@@ -246,6 +246,7 @@ export class DockerAssist {
 		// is the user in the --from= area
 		if (range && Util.isInsideRange(position, copy.getFromValueRange())) {
 			const names = {};
+			const images = {};
 			// get the prefix
 			let stagePrefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
 			for (let from of dockerfile.getFROMs()) {
@@ -255,13 +256,14 @@ export class DockerAssist {
 						const lowercase = stage.toLowerCase();
 						if (lowercase.indexOf(stagePrefix) === 0 && !names[lowercase]) {
 							names[lowercase] = stage;
+							images[lowercase] = from.getImage();
 						}
 					}
 				}
 			}
 			const items: CompletionItem[] = [];
 			for (const name in names) {
-				items.push(this.createSourceImageCompletionItem(names[name], stagePrefix.length, offset));
+				items.push(this.createSourceImageCompletionItem(names[name], images[name], stagePrefix.length, offset));
 			}
 			items.sort((item: CompletionItem, item2: CompletionItem) => {
 				return item.label.localeCompare(item2.label);
@@ -596,10 +598,11 @@ export class DockerAssist {
 		};
 	}
 
-	private createSourceImageCompletionItem(label: string, prefixLength: number, offset: number): CompletionItem {
+	private createSourceImageCompletionItem(label: string, documentation: string, prefixLength: number, offset: number): CompletionItem {
 		return {
 			textEdit: this.createTextEdit(prefixLength, offset, label),
 			label: label,
+			documentation: documentation,
 			kind: CompletionItemKind.Reference,
 			insertTextFormat: InsertTextFormat.PlainText,
 		};
