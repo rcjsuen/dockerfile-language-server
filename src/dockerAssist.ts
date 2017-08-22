@@ -549,7 +549,7 @@ export class DockerAssist {
 	}
 
 	createWORKDIR(prefixLength: number, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem("WORKDIR", "WORKDIR /path", prefixLength, offset, "WORKDIR ${1:/path}", markdown);
+		return this.createKeywordCompletionItem("WORKDIR", "WORKDIR /the/workdir/path", prefixLength, offset, "WORKDIR ${1:/the/workdir/path}", markdown);
 	}
 
 	createEscape(prefixLength: number, offset: number, markdown: string): CompletionItem {

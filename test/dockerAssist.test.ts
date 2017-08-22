@@ -511,14 +511,14 @@ function assertVOLUME(item: CompletionItem, line: number, character: number, pre
 
 function assertWORKDIR(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
 	if (snippetSupport === undefined || snippetSupport) {
-		assert.equal(item.label, "WORKDIR /path");
+		assert.equal(item.label, "WORKDIR /the/workdir/path");
 	} else {
 		assert.equal(item.label, "WORKDIR");
 	}
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
-		assert.equal(item.textEdit.newText, "WORKDIR ${1:/path}");
+		assert.equal(item.textEdit.newText, "WORKDIR ${1:/the/workdir/path}");
 	} else {
 		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
 		assert.equal(item.textEdit.newText, "WORKDIR");
