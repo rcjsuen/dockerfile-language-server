@@ -18,6 +18,7 @@ import { From } from './instructions/from';
 import { Healthcheck } from './instructions/healthcheck';
 import { Label } from './instructions/label';
 import { Onbuild } from './instructions/onbuild';
+import { Shell } from './instructions/shell';
 import { StopSignal } from './instructions/stopSignal';
 import { Workdir } from './instructions/workdir';
 import { User } from './instructions/user';
@@ -48,6 +49,8 @@ export class DockerfileParser {
 				return new Label(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ONBUILD":
 				return new Onbuild(document, lineRange, escapeChar, instruction, instructionRange);
+			case "SHELL":
+				return new Shell(document, lineRange, escapeChar, instruction, instructionRange);
 			case "STOPSIGNAL":
 				return new StopSignal(document, lineRange, escapeChar, instruction, instructionRange);
 			case "WORKDIR":

@@ -107,6 +107,167 @@ function assertHealthcheck_FlagTimeout(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureHealthcheckFlagTimeout_Param"));
 }
 
+function assertArg_Name(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assert.equal(signatureHelp.signatures.length, 2);
+
+	assert.equal(signatureHelp.signatures[0].label, "ARG name");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureArg_Signature0"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 1);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "name");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureArg_Signature0_Param"));
+
+	assert.equal(signatureHelp.signatures[1].label, "ARG name=defaultValue");
+	assert.notEqual(signatureHelp.signatures[1].documentation, null);
+	assert.equal(signatureHelp.signatures[1].documentation, docs.getDocumentation("signatureArg_Signature1"));
+	assert.equal(signatureHelp.signatures[1].parameters.length, 2);
+	assert.equal(signatureHelp.signatures[1].parameters[0].label, "name");
+	assert.notEqual(signatureHelp.signatures[1].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[1].parameters[0].documentation, docs.getDocumentation("signatureArg_Signature1_Param0"));
+	assert.equal(signatureHelp.signatures[1].parameters[1].label, "defaultValue");
+	assert.notEqual(signatureHelp.signatures[1].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[1].parameters[1].documentation, docs.getDocumentation("signatureArg_Signature1_Param1"));
+}
+
+function assertArg_NameDefaultValue(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures[0].label, "ARG name=defaultValue");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureArg_Signature1"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 2);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "name");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureArg_Signature1_Param0"));
+	assert.equal(signatureHelp.signatures[0].parameters[1].label, "defaultValue");
+	assert.notEqual(signatureHelp.signatures[0].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[1].documentation, docs.getDocumentation("signatureArg_Signature1_Param1"));
+}
+
+function assertShell(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.signatures[0].label, "SHELL [ \"executable\", \"parameter\", ... ]");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureShell"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 5);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "[");
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[1].label, "\"executable\"");
+	assert.notEqual(signatureHelp.signatures[0].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[1].documentation, docs.getDocumentation("signatureShell_Param1"));
+	assert.equal(signatureHelp.signatures[0].parameters[2].label, "\"parameter\"");
+	assert.notEqual(signatureHelp.signatures[0].parameters[2].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[2].documentation, docs.getDocumentation("signatureShell_Param2"));
+	assert.equal(signatureHelp.signatures[0].parameters[3].label, "...");
+	assert.notEqual(signatureHelp.signatures[0].parameters[3].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[3].documentation, docs.getDocumentation("signatureShell_Param3"));
+	assert.equal(signatureHelp.signatures[0].parameters[4].label, "]");
+	assert.equal(signatureHelp.signatures[0].parameters[4].documentation, null);
+}
+
+function assertStopsignal(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.signatures[0].label, "STOPSIGNAL signal");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureStopsignal"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 1);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "signal");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureStopsignal_Param"));
+}
+
+function assertUser_All(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assert.equal(signatureHelp.signatures.length, 4);
+
+	assert.equal(signatureHelp.signatures[0].label, "USER user");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureUser_Signature0"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 1);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "user");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureUser_Signature0_Param"));
+
+	assert.equal(signatureHelp.signatures[1].label, "USER user:group");
+	assert.notEqual(signatureHelp.signatures[1].documentation, null);
+	assert.equal(signatureHelp.signatures[1].documentation, docs.getDocumentation("signatureUser_Signature1"));
+	assert.equal(signatureHelp.signatures[1].parameters.length, 2);
+	assert.equal(signatureHelp.signatures[1].parameters[0].label, "user");
+	assert.notEqual(signatureHelp.signatures[1].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[1].parameters[0].documentation, docs.getDocumentation("signatureUser_Signature1_Param0"));
+	assert.equal(signatureHelp.signatures[1].parameters[1].label, "group");
+	assert.notEqual(signatureHelp.signatures[1].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[1].parameters[1].documentation, docs.getDocumentation("signatureUser_Signature1_Param1"));
+
+	assert.equal(signatureHelp.signatures[2].label, "USER uid");
+	assert.notEqual(signatureHelp.signatures[2].documentation, null);
+	assert.equal(signatureHelp.signatures[2].documentation, docs.getDocumentation("signatureUser_Signature2"));
+	assert.equal(signatureHelp.signatures[2].parameters.length, 1);
+	assert.equal(signatureHelp.signatures[2].parameters[0].label, "uid");
+	assert.notEqual(signatureHelp.signatures[2].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[2].parameters[0].documentation, docs.getDocumentation("signatureUser_Signature2_Param"));
+
+	assert.equal(signatureHelp.signatures[3].label, "USER uid:gid");
+	assert.notEqual(signatureHelp.signatures[3].documentation, null);
+	assert.equal(signatureHelp.signatures[3].documentation, docs.getDocumentation("signatureUser_Signature3"));
+	assert.equal(signatureHelp.signatures[3].parameters.length, 2);
+	assert.equal(signatureHelp.signatures[3].parameters[0].label, "uid");
+	assert.notEqual(signatureHelp.signatures[3].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[3].parameters[0].documentation, docs.getDocumentation("signatureUser_Signature3_Param0"));
+	assert.equal(signatureHelp.signatures[3].parameters[1].label, "gid");
+	assert.notEqual(signatureHelp.signatures[3].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[3].parameters[1].documentation, docs.getDocumentation("signatureUser_Signature3_Param1"));
+}
+
+function assertUser_GroupsOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 2);
+
+	assert.equal(signatureHelp.signatures[0].label, "USER user:group");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureUser_Signature1"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 2);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "user");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureUser_Signature1_Param0"));
+	assert.equal(signatureHelp.signatures[0].parameters[1].label, "group");
+	assert.notEqual(signatureHelp.signatures[0].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[1].documentation, docs.getDocumentation("signatureUser_Signature1_Param1"));
+
+	assert.equal(signatureHelp.signatures[1].label, "USER uid:gid");
+	assert.notEqual(signatureHelp.signatures[1].documentation, null);
+	assert.equal(signatureHelp.signatures[1].documentation, docs.getDocumentation("signatureUser_Signature3"));
+	assert.equal(signatureHelp.signatures[1].parameters.length, 2);
+	assert.equal(signatureHelp.signatures[1].parameters[0].label, "uid");
+	assert.notEqual(signatureHelp.signatures[1].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[1].parameters[0].documentation, docs.getDocumentation("signatureUser_Signature3_Param0"));
+	assert.equal(signatureHelp.signatures[1].parameters[1].label, "gid");
+	assert.notEqual(signatureHelp.signatures[1].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[1].parameters[1].documentation, docs.getDocumentation("signatureUser_Signature3_Param1"));
+}
+
+function assertWorkdir(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.signatures[0].label, "WORKDIR /the/workdir/path");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureWorkdir"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 1);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "/the/workdir/path");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureWorkdir_Param"));
+}
+
 describe("Dockerfile Signature Tests", function() {
 	describe("directives", function() {
 		describe("escape", function() {
@@ -148,6 +309,66 @@ describe("Dockerfile Signature Tests", function() {
 			});
 		});
 	});
+
+	function testArg(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("ARG", function() {
+			it("name", function() {
+				let signatureHelp = compute(onbuild + "ARG ", 0, triggerOffset + 4);
+				assertArg_Name(signatureHelp);
+
+				signatureHelp = compute(onbuild + "ARG name", 0, triggerOffset + 6);
+				assertArg_Name(signatureHelp);
+
+				signatureHelp = compute(onbuild + "ARG name", 0, triggerOffset + 8);
+				assertArg_Name(signatureHelp);
+			});
+
+			it("name=defaultValue", function() {
+				let signatureHelp = compute(onbuild + "ARG name=", 0, triggerOffset + 4);
+				assertArg_NameDefaultValue(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "ARG name=", 0, triggerOffset + 6);
+				assertArg_NameDefaultValue(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "ARG name=", 0, triggerOffset + 8);
+				assertArg_NameDefaultValue(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "ARG name=value", 0, triggerOffset + 4);
+				assertArg_NameDefaultValue(signatureHelp, 0);
+				
+				signatureHelp = compute(onbuild + "ARG name=value", 0, triggerOffset + 6);
+				assertArg_NameDefaultValue(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "ARG name=value", 0, triggerOffset + 8);
+				assertArg_NameDefaultValue(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "ARG name=value", 0, triggerOffset + 9);
+				assertArg_NameDefaultValue(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "ARG name=value", 0, triggerOffset + 12);
+				assertArg_NameDefaultValue(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "ARG name=value ", 0, triggerOffset + 15);
+				assertArg_NameDefaultValue(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "ARG name=value space", 0, triggerOffset + 16);
+				assertArg_NameDefaultValue(signatureHelp, 1);
+			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(onbuild + "ARG ", 0, triggerOffset + 1);
+				assertNoSignatures(signatureHelp);
+
+				signatureHelp = compute(onbuild + "ARG ", 0, triggerOffset + 3);
+				assertNoSignatures(signatureHelp);
+			});
+		});
+	}
+
+	testArg(false);
 
 	function testCopy(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
@@ -287,8 +508,225 @@ describe("Dockerfile Signature Tests", function() {
 
 	testHealthcheck(false);
 
-	describe("ONBUILD", function() {
+	function testShell(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("SHELL", function() {
+			it("[", function() {
+				let signatureHelp = compute(onbuild + "SHELL ", 0, triggerOffset + 6);
+				assertShell(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "SHELL  ", 0, triggerOffset + 7);
+				assertShell(signatureHelp, 0);
+			});
+
+			it("executable", function() {
+				let signatureHelp = compute(onbuild + "SHELL [", 0, triggerOffset + 7);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL [\"", 0, triggerOffset + 8);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL [ ", 0, triggerOffset + 8);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"", 0, triggerOffset + 9);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL [\"cmd\"", 0, triggerOffset + 12);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\"", 0, triggerOffset + 13);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL [\"cmd\",", 0, triggerOffset + 12);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\",", 0, triggerOffset + 13);
+				assertShell(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "SHELL []", 0, triggerOffset + 7);
+				assertShell(signatureHelp, 1);
+			});
+
+			it("parameter", function() {
+				let signatureHelp = compute(onbuild + "SHELL [\"cmd\",", 0, triggerOffset + 13);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\",", 0, triggerOffset + 14);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [\"cmd\" ,", 0, triggerOffset + 14);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\" ,", 0, triggerOffset + 15);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [\"cmd\", ", 0, triggerOffset + 14);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\", ", 0, triggerOffset + 15);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [\"cmd\" , ", 0, triggerOffset + 15);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\" , ", 0, triggerOffset + 16);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\" , \"\"", 0, triggerOffset + 18);
+				assertShell(signatureHelp, 2);
+
+				signatureHelp = compute(onbuild + "SHELL [ \"cmd\" , \"\",", 0, triggerOffset + 18);
+				assertShell(signatureHelp, 2);
+			});
+
+			it("...", function() {
+				let signatureHelp = compute(onbuild + "SHELL [\"cmd\", \"/C\",", 0, triggerOffset + 19);
+				assertShell(signatureHelp, 3);
+
+				signatureHelp = compute(onbuild + "SHELL [\"cmd\", \"/C\", ", 0, triggerOffset + 20);
+				assertShell(signatureHelp, 3);
+
+				signatureHelp = compute(onbuild + "SHELL [\"cmd\", \"/C\", \"/C\"]", 0, triggerOffset + 24);
+				assertShell(signatureHelp, 3);
+			});
+
+			it("]", function() {
+				let signatureHelp = compute(onbuild + "SHELL []", 0, triggerOffset + 8);
+				assertShell(signatureHelp, 4);
+
+				signatureHelp = compute(onbuild + "SHELL  [ ]", 0, triggerOffset + 10);
+				assertShell(signatureHelp, 4);
+
+				signatureHelp = compute(onbuild + "SHELL  [ \"cmd\" ]", 0, triggerOffset + 16);
+				assertShell(signatureHelp, 4);
+			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(onbuild + "SHELL [ \"cmd\" ] ", 0, triggerOffset + 2);
+				assertNoSignatures(signatureHelp);
+
+				signatureHelp = compute(onbuild + "SHELL [] ", 0, triggerOffset + 9);
+				assertNoSignatures(signatureHelp);
+
+				signatureHelp = compute(onbuild + "SHELL  [ \"cmd\" ] ", 0, triggerOffset + 17);
+				assertNoSignatures(signatureHelp);
+			});
+		});
+	}
+
+	testShell(false);
+
+	function testStopsignal(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("STOPSIGNAL", function() {
+			it("ok", function() {
+				let signatureHelp = compute(onbuild + "STOPSIGNAL ", 0, triggerOffset + 11);
+				assertStopsignal(signatureHelp);
+
+				signatureHelp = compute(onbuild + "STOPSIGNAL SIGKILL", 0, triggerOffset + 14);
+				assertStopsignal(signatureHelp);
+
+				signatureHelp = compute("WORKDIR /path\n" + onbuild + "STOPSIGNAL SIGKILL", 1, triggerOffset + 14);
+				assertStopsignal(signatureHelp);
+			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(onbuild + "STOPSIGNAL SIGKILL", 0, triggerOffset + 5);
+				assertNoSignatures(signatureHelp);
+			});
+		});
+	}
+
+	testStopsignal(false);
+
+	function testUser(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("USER", function() {
+			it("user / uid", function() {
+				let signatureHelp = compute(onbuild + "USER ", 0, triggerOffset + 5);
+				assertUser_All(signatureHelp);
+
+				signatureHelp = compute(onbuild + "USER user", 0, triggerOffset + 7);
+				assertUser_All(signatureHelp);
+
+				signatureHelp = compute(onbuild + "USER user ", 0, triggerOffset + 10);
+				assertUser_All(signatureHelp);
+
+				signatureHelp = compute(onbuild + "USER user name", 0, triggerOffset + 12);
+				assertUser_All(signatureHelp);
+			});
+
+			it("user:group / uid:gid", function() {
+				let signatureHelp = compute(onbuild + "USER user:group", 0, triggerOffset + 7);
+				assertUser_GroupsOnly(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "USER user:group", 0, triggerOffset + 9);
+				assertUser_GroupsOnly(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "USER user:group", 0, triggerOffset + 10);
+				assertUser_GroupsOnly(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "USER user:group", 0, triggerOffset + 13);
+				assertUser_GroupsOnly(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "USER user name:group name", 0, triggerOffset + 12);
+				assertUser_GroupsOnly(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "USER user name:group name", 0, triggerOffset + 14);
+				assertUser_GroupsOnly(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "USER user name:group name", 0, triggerOffset + 15);
+				assertUser_GroupsOnly(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "USER user name:group name", 0, triggerOffset + 18);
+				assertUser_GroupsOnly(signatureHelp, 1);
+			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(onbuild + "USER user", 0, triggerOffset + 2);
+				assertNoSignatures(signatureHelp);
+			});
+		});
+	}
+
+	testUser(false);
+
+	function testWorkdir(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("WORKDIR", function() {
+			it("ok", function() {
+				let signatureHelp = compute(onbuild + "WORKDIR ", 0, triggerOffset + 8);
+				assertWorkdir(signatureHelp);
+
+				signatureHelp = compute(onbuild + "WORKDIR a b", 0, triggerOffset + 11);
+				assertWorkdir(signatureHelp);
+			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(onbuild + "WORKDIR /path", 0, triggerOffset + 2);
+				assertNoSignatures(signatureHelp);
+			});
+		});
+	}
+
+	testWorkdir(false);
+
+	describe("ONBUILD triggers", function() {
+		testArg(true);
 		testCopy(true);
 		testHealthcheck(true);
+		testShell(true);
+		testStopsignal(true);
+		testUser(true);
+		testWorkdir(true);
 	});
 });

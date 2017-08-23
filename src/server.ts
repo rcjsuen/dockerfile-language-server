@@ -92,7 +92,11 @@ connection.onInitialize((params): InitializeResult => {
 			definitionProvider: true,
 			signatureHelpProvider: {
 				triggerCharacters: [
-					"="
+					'-',
+					'[',
+					',',
+					' ',
+					'='
 				]
 			}
 		}

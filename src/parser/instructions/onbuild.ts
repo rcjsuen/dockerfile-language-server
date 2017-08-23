@@ -35,7 +35,7 @@ export class Onbuild extends Instruction {
 		return DockerfileParser.createInstruction(
 			this.document,
 			this.escapeChar,
-			Range.create(args[0].getRange().start, args[args.length - 1].getRange().end),
+			Range.create(args[0].getRange().start, this.getRange().end),
 			this.getTriggerWord(),
 			triggerRange);
 	}
