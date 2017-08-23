@@ -154,6 +154,32 @@ export class DockerSignatures {
 						}
 					}
 					break;
+				case "EXPOSE":
+					let exposeSignatureHelp = {
+						signatures: [
+							{
+								label: "EXPOSE port ...",
+								documentation: this.documentation.getDocumentation("signatureExpose"),
+								parameters: [
+									{
+										label: "port",
+										documentation: this.documentation.getDocumentation("signatureExpose_Param0")
+									},
+									{
+										label: "...",
+										documentation: this.documentation.getDocumentation("signatureExpose_Param1")
+									}
+								]
+							}
+						],
+						activeSignature: 0,
+						activeParameter: 0
+					};
+					let exposeArgs = instruction.getArguments();
+					if (exposeArgs.length > 0 && document.offsetAt(position) > document.offsetAt(exposeArgs[0].getRange().end)) {
+						exposeSignatureHelp.activeParameter = 1;
+					}
+					return exposeSignatureHelp;
 				case "HEALTHCHECK":
 					let flags = (instruction as Healthcheck).getFlags();
 					for (let flag of flags) {

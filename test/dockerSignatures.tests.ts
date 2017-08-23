@@ -147,6 +147,22 @@ function assertArg_NameDefaultValue(signatureHelp: SignatureHelp, activeParamete
 	assert.equal(signatureHelp.signatures[0].parameters[1].documentation, docs.getDocumentation("signatureArg_Signature1_Param1"));
 }
 
+function assertExpose(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.signatures[0].label, "EXPOSE port ...");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureExpose"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 2);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "port");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureExpose_Param0"));
+	assert.equal(signatureHelp.signatures[0].parameters[1].label, "...");
+	assert.notEqual(signatureHelp.signatures[0].parameters[1].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[1].documentation, docs.getDocumentation("signatureExpose_Param1"));
+}
+
 function assertShell(signatureHelp: SignatureHelp, activeParameter: number) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, activeParameter);
@@ -402,6 +418,63 @@ describe("Dockerfile Signature Tests", function() {
 	}
 
 	testCopy(false);
+
+	function testExpose(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("EXPOSE", function() {
+			it("port", function() {
+				let signatureHelp = compute(onbuild + "EXPOSE ", 0, triggerOffset + 7);
+				assertExpose(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 7);
+				assertExpose(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 9);
+				assertExpose(signatureHelp, 0);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080 ", 0, triggerOffset + 11);
+				assertExpose(signatureHelp, 0);
+			});
+
+			it("...", function() {
+				let signatureHelp = compute(onbuild + "EXPOSE 8080 ", 0, triggerOffset + 12);
+				assertExpose(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080 8081", 0, triggerOffset + 12);
+				assertExpose(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080 8081", 0, triggerOffset + 14);
+				assertExpose(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080 8081", 0, triggerOffset + 14);
+				assertExpose(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080 8081", 0, triggerOffset + 16);
+				assertExpose(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080 8081 ", 0, triggerOffset + 16);
+				assertExpose(signatureHelp, 1);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080 8081 8082", 0, triggerOffset + 18);
+				assertExpose(signatureHelp, 1);
+			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 0);
+				assertNoSignatures(signatureHelp);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 3);
+				assertNoSignatures(signatureHelp);
+
+				signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 6);
+				assertNoSignatures(signatureHelp);
+			});
+		});
+	}
+
+	testExpose(false);
 
 	function testHealthcheck(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
@@ -723,6 +796,7 @@ describe("Dockerfile Signature Tests", function() {
 	describe("ONBUILD triggers", function() {
 		testArg(true);
 		testCopy(true);
+		testExpose(true);
 		testHealthcheck(true);
 		testShell(true);
 		testStopsignal(true);
