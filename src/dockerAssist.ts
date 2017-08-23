@@ -245,29 +245,39 @@ export class DockerAssist {
 		let range = copy.getFromValueRange();
 		// is the user in the --from= area
 		if (range && Util.isInsideRange(position, copy.getFromValueRange())) {
-			const names = {};
-			const images = {};
+			const names: { [key: string]: boolean; } = {};
+			const items: CompletionItem[] = [];
+			let stageIndex = 0;
+			// determines if the last build stage was named or not
+			let lastNumber = false;
 			// get the prefix
 			let stagePrefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
 			for (let from of dockerfile.getFROMs()) {
 				if (copy.isAfter(from)) {
+					const image = from.getImage();
 					let stage = from.getBuildStage();
 					if (stage) {
 						const lowercase = stage.toLowerCase();
 						if (lowercase.indexOf(stagePrefix) === 0 && !names[lowercase]) {
-							names[lowercase] = stage;
-							images[lowercase] = from.getImage();
+							names[lowercase] = true;
+							items.push(this.createSourceImageCompletionItem(stage, image, stageIndex, stagePrefix.length, offset));
 						}
+						lastNumber = false;
+					} else if (!names[stageIndex]) {
+						names[stageIndex] = true;
+						items.push(this.createSourceImageCompletionItem(stageIndex.toString(), image, stageIndex, stagePrefix.length, offset));
+						lastNumber = true;
 					}
+					stageIndex++;
+				} else {
+					break;
 				}
 			}
-			const items: CompletionItem[] = [];
-			for (const name in names) {
-				items.push(this.createSourceImageCompletionItem(names[name], images[name], stagePrefix.length, offset));
+
+			// last build stage was not named, don't suggest it as it is recursive
+			if (lastNumber && items.length > 0) {
+				items.pop();
 			}
-			items.sort((item: CompletionItem, item2: CompletionItem) => {
-				return item.label.localeCompare(item2.label);
-			});
 			return items;
 		}
 
@@ -598,13 +608,14 @@ export class DockerAssist {
 		};
 	}
 
-	private createSourceImageCompletionItem(label: string, documentation: string, prefixLength: number, offset: number): CompletionItem {
+	private createSourceImageCompletionItem(label: string, documentation: string, buildIndex: number, prefixLength: number, offset: number): CompletionItem {
 		return {
 			textEdit: this.createTextEdit(prefixLength, offset, label),
 			label: label,
 			documentation: documentation,
 			kind: CompletionItemKind.Reference,
 			insertTextFormat: InsertTextFormat.PlainText,
+			sortText: buildIndex.toString()
 		};
 	}
 
