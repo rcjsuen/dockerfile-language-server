@@ -4,27 +4,23 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { Comment } from './comment';
+import { Position } from 'vscode-languageserver';
 import { Directive } from './directive';
+import { Image } from './image';
 import { Instruction } from './instruction';
-import { Arg } from './instructions/arg';
-import { Cmd } from './instructions/cmd';
-import { Copy } from './instructions/copy';
-import { Env } from './instructions/env';
-import { Entrypoint } from './instructions/entrypoint';
-import { From } from './instructions/from';
-import { Healthcheck } from './instructions/healthcheck';
-import { Onbuild } from './instructions/onbuild';
-import { StopSignal } from './instructions/stopSignal';
-import { Workdir } from './instructions/workdir';
-import { User } from './instructions/user';
 import { DIRECTIVE_ESCAPE } from '../docker';
 
-export class Dockerfile {
+export class Dockerfile extends Image {
 
-	private readonly comments: Comment[] = [];
+	private readonly initialInstructions: Instruction[] = [];
+	private readonly buildStages: Image[] = [];
+	private currentBuildStage: Image;
 	private directive: Directive | null = null;
-	private readonly instructions: Instruction[] = [];
+
+	/**
+	 * Whether a FROM instruction has been added to this Dockerfile or not.
+	 */
+	private foundFrom = false;
 
 	public getEscapeCharacter(): string {
 		if (this.directive !== null && this.directive.getDirective() === DIRECTIVE_ESCAPE) {
@@ -36,124 +32,28 @@ export class Dockerfile {
 		return '\\';
 	}
 
-	public addComment(comment: Comment): void {
-		this.comments.push(comment);
-	}
-
-	public getComments(): Comment[] {
-		return this.comments;
+	public getContainingImage(position: Position): Image {
+		for (let buildStage of this.buildStages) {
+			if (buildStage.contains(position)) {
+				return buildStage;
+			}
+		}
+		return this;
 	}
 
 	public addInstruction(instruction: Instruction): void {
-		this.instructions.push(instruction);
-	}
-
-	public getInstructions(): Instruction[] {
-		return this.instructions;
-	}
-
-	/**
-	 * Gets all the ARG instructions that are defined in this Dockerfile.
-	 */
-	public getARGs(): Arg[] {
-		let args = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof Arg) {
-				args.push(instruction);
-			}
+		if (instruction.getKeyword() === "FROM") {
+			this.currentBuildStage = new Image();
+			this.buildStages.push(this.currentBuildStage);
+			this.foundFrom = true;
+		} else if (!this.foundFrom) {
+			this.initialInstructions.push(instruction);
 		}
-		return args;
-	}
 
-	/**
-	 * Gets all the CMD instructions that are defined in this Dockerfile.
-	 */
-	public getCMDs(): Cmd[] {
-		let cmds = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof Cmd) {
-				cmds.push(instruction);
-			}
+		if (this.foundFrom) {
+			this.currentBuildStage.addInstruction(instruction);
 		}
-		return cmds;
-	}
-
-	/**
-	 * Gets all the COPY instructions that are defined in this Dockerfile.
-	 */
-	public getCOPYs(): Copy[] {
-		let copies = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof Copy) {
-				copies.push(instruction);
-			}
-		}
-		return copies;
-	}
-
-	/**
-	 * Gets all the ENTRYPOINT instructions that are defined in this Dockerfile.
-	 */
-	public getENTRYPOINTs(): Entrypoint[] {
-		let froms = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof Entrypoint) {
-				froms.push(instruction);
-			}
-		}
-		return froms;
-	}
-
-	/**
-	 * Gets all the ENV instructions that are defined in this Dockerfile.
-	 */
-	public getENVs(): Env[] {
-		let args = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof Env) {
-				args.push(instruction);
-			}
-		}
-		return args;
-	}
-
-	/**
-	 * Gets all the FROM instructions that are defined in this Dockerfile.
-	 */
-	public getFROMs(): From[] {
-		let froms = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof From) {
-				froms.push(instruction);
-			}
-		}
-		return froms;
-	}
-
-	/**
-	 * Gets all the HEALTHCHECK instructions that are defined in this Dockerfile.
-	 */
-	public getHEALTHCHECKs(): Healthcheck[] {
-		let froms = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof Healthcheck) {
-				froms.push(instruction);
-			}
-		}
-		return froms;
-	}
-
-	public getOnbuildTriggers(): Instruction[] {
-		let triggers = [];
-		for (let instruction of this.instructions) {
-			if (instruction instanceof Onbuild) {
-				let trigger = instruction.getTriggerInstruction();
-				if (trigger) {
-					triggers.push(trigger);
-				}
-			}
-		}
-		return triggers;
+		super.addInstruction(instruction);
 	}
 
 	public setDirective(directive: Directive): void {

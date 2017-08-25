@@ -8,6 +8,7 @@ import { TextDocument, Position, Range, Location } from 'vscode-languageserver';
 import { Util } from './docker';
 import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
+import { Image } from './parser/image';
 import { Property } from './parser/property';
 import { Arg } from './parser/instructions/arg';
 import { Env } from './parser/instructions/env';
@@ -34,9 +35,9 @@ export class DockerDefinition {
 		return null;
 	}
 
-	public static computeVariableDefinition(dockerfile: Dockerfile, position: Position): Property {
+	public static computeVariableDefinition(image: Image, position: Position): Property {
 		let variableName = null;
-		for (let arg of dockerfile.getARGs()) {
+		for (let arg of image.getARGs()) {
 			let property = arg.getProperty();
 			// might be an ARG with no arguments
 			if (property) {
@@ -49,7 +50,7 @@ export class DockerDefinition {
 		}
 
 		if (variableName === null) {
-			variableCheck: for (let env of dockerfile.getENVs()) {
+			variableCheck: for (let env of image.getENVs()) {
 				let properties = env.getProperties();
 				for (let property of properties) {
 					// is the caret inside the definition itself
@@ -62,7 +63,7 @@ export class DockerDefinition {
 		}
 
 		if (variableName === null) {
-			variableCheck: for (let instruction of dockerfile.getInstructions()) {
+			variableCheck: for (let instruction of image.getInstructions()) {
 				for (let variable of instruction.getVariables()) {
 					if (Util.isInsideRange(position, variable.getNameRange())) {
 						variableName = variable.getName();
@@ -72,7 +73,7 @@ export class DockerDefinition {
 			}
 		}
 
-		for (let instruction of dockerfile.getInstructions()) {
+		for (let instruction of image.getInstructions()) {
 			if (instruction instanceof Arg) {
 				let property = instruction.getProperty();
 				// might be an ARG with no arguments
@@ -92,7 +93,8 @@ export class DockerDefinition {
 	}
 
 	private computeVariableDefinition(uri: string, dockerfile: Dockerfile, position: Position): Location | null {
-		let property = DockerDefinition.computeVariableDefinition(dockerfile, position);
+		let image = dockerfile.getContainingImage(position);
+		let property = DockerDefinition.computeVariableDefinition(image, position);
 		return property ? Location.create(uri, property.getNameRange()) : null;
 	}
 

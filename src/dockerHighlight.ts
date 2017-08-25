@@ -18,6 +18,7 @@ export class DockerHighlight {
 		let dockerfile = parser.parse(document);
 		let provider = new DockerDefinition();
 		let location = provider.computeDefinition(document, position);
+		let image = dockerfile.getContainingImage(position);
 		let highlights = [];
 		if (location === null) {
 			for (let instruction of dockerfile.getCOPYs()) {
@@ -35,12 +36,12 @@ export class DockerHighlight {
 				}
 			}
 
-			for (let instruction of dockerfile.getInstructions()) {
+			for (let instruction of image.getInstructions()) {
 				for (let variable of instruction.getVariables()) {
 					if (Util.isInsideRange(position, variable.getNameRange())) {
 						let name = variable.getName();
 						
-						for (let instruction of dockerfile.getInstructions()) {
+						for (let instruction of image.getInstructions()) {
 							for (let variable of instruction.getVariables()) {
 								if (variable.getName() === name) {
 									highlights.push(DocumentHighlight.create(variable.getNameRange(), DocumentHighlightKind.Read));
@@ -68,7 +69,7 @@ export class DockerHighlight {
 				}
 			}
 
-			for (let arg of dockerfile.getARGs()) {
+			for (let arg of image.getARGs()) {
 				let property = arg.getProperty();
 				// property may be null if it's an ARG with no arguments
 				if (property && property.getName() === definition) {
@@ -76,7 +77,7 @@ export class DockerHighlight {
 				}
 			}
 
-			for (let env of dockerfile.getENVs()) {
+			for (let env of image.getENVs()) {
 				for (let property of env.getProperties()) {
 					if (property.getName() === definition) {
 						highlights.push(DocumentHighlight.create(property.getNameRange(), DocumentHighlightKind.Write));
@@ -84,7 +85,7 @@ export class DockerHighlight {
 				}
 			}
 
-			for (let instruction of dockerfile.getInstructions()) {
+			for (let instruction of image.getInstructions()) {
 				for (let variable of instruction.getVariables()) {
 					if (variable.getName() === definition) {
 						highlights.push(DocumentHighlight.create(variable.getNameRange(), DocumentHighlightKind.Read));

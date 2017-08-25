@@ -200,6 +200,8 @@ describe("Dockerfile hover", function() {
 		});
 
 		function createVariablesTest(testSuiteName: string, instruction: string, delimiter: string) {
+			const space = delimiter === " ";
+
 			describe(testSuiteName, function() {
 				it("variable name", function() {
 					let document = createDocument(instruction + " z" + delimiter + "y");
@@ -379,6 +381,37 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 3, 11);
 					assert.equal(hover.contents, "value");
+					
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}\n" +
+						"FROM alpine\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}"
+					);
+					hover = onHover(document, 2, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 11);
+					assert.equal(hover.contents, "value");
+					assert.equal(onHover(document, 6, 13), null);
+					assert.equal(onHover(document, 7, 7), null);
+					assert.equal(onHover(document, 8, 11), null);
+					
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}\n" +
+						"FROM alpine\n" + instruction + " var" + delimiter + "value2\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}"
+					);
+					hover = onHover(document, 2, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 7, 13);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 8, 7);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 9, 11);
+					assert.equal(hover.contents, "value2");
 
 					document = createDocument(instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}");
 					hover = onHover(document, 2, 13);
@@ -393,6 +426,58 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 4, 18);
 					assert.equal(hover.contents, "value2");
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}\n" +
+						"FROM alpine\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}"
+					);
+					hover = onHover(document, 3, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 20);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 4, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 14);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 5, 18);
+					assert.equal(hover.contents, "value2");
+					assert.equal(onHover(document, 7, 13), null);
+					assert.equal(onHover(document, 7, 20), null);
+					assert.equal(onHover(document, 8, 7), null);
+					assert.equal(onHover(document, 8, 14), null);
+					assert.equal(onHover(document, 9, 11), null);
+					assert.equal(onHover(document, 9, 18), null);
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}\n" +
+						"FROM alpine\n" + instruction + " var" + delimiter + "value3\nARG var2=value4\nSTOPSIGNAL ${var}${var2}\nUSER ${var}${var2}\nWORKDIR ${var}${var2}"
+					);
+					hover = onHover(document, 3, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 20);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 4, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 14);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 5, 18);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 9, 13);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 9, 20);
+					assert.equal(hover.contents, "value4");
+					hover = onHover(document, 10, 7);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 10, 14);
+					assert.equal(hover.contents, "value4");
+					hover = onHover(document, 11, 11);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 11, 18);
+					assert.equal(hover.contents, "value4");
 				});
 
 				it("referenced variable ${var} no value", function() {
@@ -408,55 +493,61 @@ describe("Dockerfile hover", function() {
 				it("referenced variable ${var} empty value", function() {
 					let document = createDocument(instruction + " var" + delimiter + "\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 					let hover = onHover(document, 1, 13);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 2, 7);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 3, 11);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}\n" +
+						"FROM alpine\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}"
+					);
+					hover = onHover(document, 2, 13);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 3, 7);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 4, 11);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					assert.equal(onHover(document, 6, 13), null);
+					assert.equal(onHover(document, 7, 7), null);
+					assert.equal(onHover(document, 8, 11), null);
 				});
 
 				it("referenced variable ${var} whitespace", function() {
 					let document = createDocument(instruction + " var" + delimiter + "   \t\t   \nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}");
 					let hover = onHover(document, 1, 13);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 2, 7);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 3, 11);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "   \t\t   \nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}\n" + 
+						"FROM alpine\nSTOPSIGNAL ${var}\nUSER ${var}\nWORKDIR ${var}"
+					);
+					hover = onHover(document, 2, 13);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 3, 7);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 4, 11);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					assert.equal(onHover(document, 6, 13), null);
+					assert.equal(onHover(document, 7, 7), null);
+					assert.equal(onHover(document, 8, 11), null);
 				});
 
 				it("referenced variable ${var", function() {
 					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var\nUSER ${var\nWORKDIR ${var");
-					let hover = onHover(document, 1, 14);
-					assert.equal(hover, null);
-					hover = onHover(document, 2, 8);
-					assert.equal(hover, null);
-					hover = onHover(document, 3, 11);
-					assert.equal(hover, null);
+					assert.equal(onHover(document, 1, 14), null);
+					assert.equal(onHover(document, 2, 8), null);
+					assert.equal(onHover(document, 3, 11), null);
+
+					document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nSTOPSIGNAL ${var\nUSER ${var\nWORKDIR ${var");
+					assert.equal(onHover(document, 2, 14), null);
+					assert.equal(onHover(document, 3, 8), null);
+					assert.equal(onHover(document, 4, 11), null);
 				});
 
 				it("referenced variable $var", function() {
@@ -467,6 +558,37 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 3, 11);
 					assert.equal(hover.contents, "value");
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var\n" +
+						"FROM alpine\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var"
+					);
+					hover = onHover(document, 2, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 11);
+					assert.equal(hover.contents, "value");
+					assert.equal(onHover(document, 6, 13), null);
+					assert.equal(onHover(document, 7, 7), null);
+					assert.equal(onHover(document, 8, 11), null);
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var\n" +
+						"FROM alpine\n" + instruction + " var" + delimiter + "value2\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var"
+					);
+					hover = onHover(document, 2, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 7, 13);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 8, 7);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 9, 11);
+					assert.equal(hover.contents, "value2");
 
 					document = createDocument(instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2");
 					hover = onHover(document, 2, 13);
@@ -481,92 +603,182 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "value");
 					hover = onHover(document, 4, 15);
 					assert.equal(hover.contents, "value2");
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2\n" +
+						"FROM alpine\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2"
+					);
+					hover = onHover(document, 3, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 17);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 4, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 12);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 5, 15);
+					assert.equal(hover.contents, "value2");
+					assert.equal(onHover(document, 7, 13), null);
+					assert.equal(onHover(document, 7, 17), null);
+					assert.equal(onHover(document, 8, 7), null);
+					assert.equal(onHover(document, 8, 12), null);
+					assert.equal(onHover(document, 9, 11), null);
+					assert.equal(onHover(document, 9, 15), null);
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nARG var2=value2\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2\n" +
+						"FROM alpine\n" + instruction + " var" + delimiter + "value3\nARG var2=value4\nSTOPSIGNAL $var$var2\nUSER $var$var2\nWORKDIR $var$var2"
+					);
+					hover = onHover(document, 3, 13);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 3, 17);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 4, 7);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 12);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 5, 15);
+					assert.equal(hover.contents, "value2");
+					hover = onHover(document, 9, 13);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 9, 17);
+					assert.equal(hover.contents, "value4");
+					hover = onHover(document, 10, 7);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 10, 12);
+					assert.equal(hover.contents, "value4");
+					hover = onHover(document, 11, 11);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 11, 15);
+					assert.equal(hover.contents, "value4");
 				});
 
 				it("referenced variable $var no value", function() {
 					let document = createDocument(instruction + " var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
-					let hover = onHover(document, 1, 13);
-					assert.equal(hover, null);
-					hover = onHover(document, 2, 7);
-					assert.equal(hover, null);
-					hover = onHover(document, 3, 11);
-					assert.equal(hover, null);
+					assert.equal(onHover(document, 1, 13), null);
+					assert.equal(onHover(document, 2, 7), null);
+					assert.equal(onHover(document, 3, 11), null);
+
+					document = createDocument("FROM alpine\n" + instruction + " var\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					assert.equal(onHover(document, 2, 13), null);
+					assert.equal(onHover(document, 3, 7), null);
+					assert.equal(onHover(document, 4, 11), null);
 				});
 
 				it("referenced variable $var empty value", function() {
 					let document = createDocument(instruction + " var" + delimiter + "\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 					let hover = onHover(document, 1, 13);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 2, 7);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 3, 11);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+
+					document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "\nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					hover = onHover(document, 2, 13);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 3, 7);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 4, 11);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 				});
 
 				it("referenced variable $var whitespace", function() {
 					let document = createDocument(instruction + " var" + delimiter + "   \t\t   \nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
 					let hover = onHover(document, 1, 13);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 2, 7);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 					hover = onHover(document, 3, 11);
-					if (delimiter === " ") {
-						assert.equal(hover, null);
-					} else {
-						assert.equal(hover.contents, "");
-					}
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+
+					document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "   \t\t   \nSTOPSIGNAL $var\nUSER $var\nWORKDIR $var");
+					hover = onHover(document, 2, 13);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 3, 7);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
+					hover = onHover(document, 4, 11);
+					assert.equal(space ? hover : hover.contents, space ? null : "");
 				});
 
 				it("referenced variable '$var'", function() {
 					let document = createDocument(instruction + " var" + delimiter + "value\nRUN echo '$var'");
 					let hover = onHover(document, 1, 12);
 					assert.equal(hover.contents, "value");
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nRUN echo '$var'\n" +
+						"FROM alpine\nRUN echo '$var'"
+					);
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 12);
+					assert.equal(hover, null);
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nRUN echo '$var'\n" +
+						"FROM alpine\n" + instruction + " var" + delimiter + "value2\nRUN echo '$var'"
+					);
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 5, 12);
+					assert.equal(hover.contents, "value2");
 				});
 
 				it("referenced variable \"$var\"", function() {
 					let document = createDocument(instruction + " var" + delimiter + "value\nRUN echo \"$var\"");
 					let hover = onHover(document, 1, 12);
 					assert.equal(hover.contents, "value");
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nRUN echo \"$var\"" +
+						"FROM alpine\nRUN echo \"$var\""
+					);
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 12);
+					assert.equal(hover, null);
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nRUN echo \"$var\"\n" +
+						"FROM alpine\n" + instruction + " var" + delimiter + "value2\nRUN echo \"$var\""
+					);
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 5, 12);
+					assert.equal(hover.contents, "value2");
 				});
 
 				it("referenced variable \\${var}", function() {
 					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL \\${var}\nUSER \\${var}\nWORKDIR \\${var}");
-					let hover = onHover(document, 1, 15);
-					assert.equal(hover, null);
-					hover = onHover(document, 2, 10);
-					assert.equal(hover, null);
-					hover = onHover(document, 3, 12);
-					assert.equal(hover, null);
+					assert.equal(onHover(document, 1, 15), null);
+					assert.equal(onHover(document, 2, 10), null);
+					assert.equal(onHover(document, 3, 12), null);
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nSTOPSIGNAL \\${var}\nUSER \\${var}\nWORKDIR \\${var}"
+					);
+					assert.equal(onHover(document, 2, 15), null);
+					assert.equal(onHover(document, 3, 10), null);
+					assert.equal(onHover(document, 4, 12), null);
 				});
 
 				it("referenced variable \\$var", function() {
 					let document = createDocument(instruction + " var" + delimiter + "value\nSTOPSIGNAL \\$var\nUSER \\$var\nWORKDIR \\$var");
-					let hover = onHover(document, 1, 14);
-					assert.equal(hover, null);
-					hover = onHover(document, 2, 9);
-					assert.equal(hover, null);
-					hover = onHover(document, 3, 11);
-					assert.equal(hover, null);
+					assert.equal(onHover(document, 1, 14), null);
+					assert.equal(onHover(document, 2, 9), null);
+					assert.equal(onHover(document, 3, 11), null);
+
+					document = createDocument(
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nSTOPSIGNAL \\$var\nUSER \\$var\nWORKDIR \\$var"
+					);
+					assert.equal(onHover(document, 2, 14), null);
+					assert.equal(onHover(document, 3, 9), null);
+					assert.equal(onHover(document, 4, 11), null);
 				});
 			});
 		}
@@ -636,16 +848,67 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "bb cc dd");
 					hover = onHover(document, 1, 12);
 					assert.equal(hover.contents, "bb cc dd");
-					hover = onHover(document, 0, 11);
-					assert.equal(hover, null);
-					hover = onHover(document, 1, 18);
-					assert.equal(hover, null);
+					assert.equal(onHover(document, 0, 11), null);
+					assert.equal(onHover(document, 1, 18), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa bb cc dd\nRUN echo ${aa} ${cc}\n" +
+						"FROM alpine\nRUN echo ${aa} ${cc}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "bb cc dd");
+					assert.equal(onHover(document, 1, 11), null);
+					assert.equal(onHover(document, 2, 18), null);
+					assert.equal(onHover(document, 4, 12), null);
+					assert.equal(onHover(document, 4, 18), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa bb cc dd\nRUN echo ${aa} ${cc}\n" +
+						"FROM alpine\nENV aa bb cc ee\nRUN echo ${aa} ${cc}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "bb cc dd");
+					assert.equal(onHover(document, 1, 11), null);
+					assert.equal(onHover(document, 2, 18), null);
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "bb cc ee");
+					hover = onHover(document, 5, 12);
+					assert.equal(hover.contents, "bb cc ee");
+					assert.equal(onHover(document, 4, 11), null);
+					assert.equal(onHover(document, 5, 18), null);
 
 					document = createDocument("ENV aa a  b\nRUN echo ${aa}");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "a  b");
 					hover = onHover(document, 1, 12);
 					assert.equal(hover.contents, "a  b");
+
+					document = createDocument(
+						"FROM alpine\nENV aa a  b\nRUN echo ${aa}\n" +
+						"FROM alpine\nRUN echo ${aa}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "a  b");
+					assert.equal(onHover(document, 4, 12), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa a  b\nRUN echo ${aa}\n" +
+						"FROM alpine\nENV aa a  c\nRUN echo ${aa}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "a  c");
+					hover = onHover(document, 5, 12);
+					assert.equal(hover.contents, "a  c");
 				});
 
 				it("$var", function() {
@@ -654,16 +917,67 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "bb cc dd");
 					hover = onHover(document, 1, 11);
 					assert.equal(hover.contents, "bb cc dd");
-					hover = onHover(document, 0, 11);
-					assert.equal(hover, null);
-					hover = onHover(document, 1, 15);
-					assert.equal(hover, null);
+					assert.equal(onHover(document, 0, 11), null);
+					assert.equal(onHover(document, 1, 15), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa bb cc dd\nRUN echo $aa $cc\n" +
+						"FROM alpine\nRUN echo $aa $cc"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "bb cc dd");
+					assert.equal(onHover(document, 1, 11), null);
+					assert.equal(onHover(document, 2, 15), null);
+					assert.equal(onHover(document, 4, 11), null);
+					assert.equal(onHover(document, 4, 15), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa bb cc dd\nRUN echo $aa $cc\n" +
+						"FROM alpine\nENV aa bb cc ee\nRUN echo $aa $cc"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "bb cc dd");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "bb cc dd");
+					assert.equal(onHover(document, 1, 11), null);
+					assert.equal(onHover(document, 2, 15), null);
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "bb cc ee");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "bb cc ee");
+					assert.equal(onHover(document, 4, 11), null);
+					assert.equal(onHover(document, 5, 15), null);
 
 					document = createDocument("ENV aa a  b\nRUN echo $aa");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "a  b");
 					hover = onHover(document, 1, 11);
 					assert.equal(hover.contents, "a  b");
+
+					document = createDocument(
+						"FROM alpine\nENV aa a  b\nRUN echo $aa\n" +
+						"FROM alpine\nRUN echo $aa"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "a  b");
+					assert.equal(onHover(document, 4, 11), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa a  b\nRUN echo $aa\n" +
+						"FROM alpine\nENV aa a  c\nRUN echo $aa"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "a  c");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "a  c");
 				});
 			});
 				
@@ -675,11 +989,57 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 1, 12);
 					assert.equal(hover.contents, "a b");
 
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ b\nRUN echo ${xx}\n" +
+						"FROM alpine\nRUN echo ${xx}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a b");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "a b");
+					assert.equal(onHover(document, 4, 12), null);
+
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ b\nRUN echo ${xx}\n" +
+						"FROM alpine\nENV xx a\\ c\nRUN echo ${xx}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a b");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "a b");
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "a c");
+					hover = onHover(document, 5, 12);
+					assert.equal(hover.contents, "a c");
+
 					document = createDocument("ENV xx a\\ \\ b\nRUN echo ${xx}");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "a  b");
 					hover = onHover(document, 1, 12);
 					assert.equal(hover.contents, "a  b");
+
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ \\ b\nRUN echo ${xx}\n" +
+						"FROM alpine\nRUN echo ${xx}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "a  b");
+					assert.equal(onHover(document, 4, 12), null);
+
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ \\ b\nRUN echo ${xx}\n" +
+						"FROM alpine\nENV xx a\\ \\ c\nRUN echo ${xx}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 12);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "a  c");
+					hover = onHover(document, 5, 12);
+					assert.equal(hover.contents, "a  c");
 				});
 
 				it("$var", function() {
@@ -689,11 +1049,57 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 1, 11);
 					assert.equal(hover.contents, "a b");
 
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ b\nRUN echo $xx\n" +
+						"FROM alpine\nRUN echo $xx"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a b");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "a b");
+					assert.equal(onHover(document, 4, 11), null);
+
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ b\nRUN echo $xx\n" +
+						"FROM alpine\nENV xx a\\ c\nRUN echo $xx"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a b");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "a b");
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "a c");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "a c");
+
 					document = createDocument("ENV xx a\\ \\ b\nRUN echo $xx");
 					hover = onHover(document, 0, 5);
 					assert.equal(hover.contents, "a  b");
 					hover = onHover(document, 1, 11);
 					assert.equal(hover.contents, "a  b");
+
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ \\ b\nRUN echo $xx\n" +
+						"FROM alpine\nRUN echo $xx"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "a  b");
+					assert.equal(onHover(document, 4, 11), null);
+
+					document = createDocument(
+						"FROM alpine\nENV xx a\\ \\ b\nRUN echo $xx\n" +
+						"FROM alpine\nENV xx a\\ \\ c\nRUN echo $xx"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 2, 11);
+					assert.equal(hover.contents, "a  b");
+					hover = onHover(document, 4, 5);
+					assert.equal(hover.contents, "a  c");
+					hover = onHover(document, 5, 11);
+					assert.equal(hover.contents, "a  c");
 				});
 			});
 
@@ -714,6 +1120,41 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "x");
 					hover = onHover(document, 2, 10);
 					assert.equal(hover.contents, "y");
+
+					document = createDocument(
+						"FROM alpine\nENV aa=x\nENV aa=y bb=${aa}\nENV cc=${aa}\n" +
+						"FROM alpine\nENV cc=${aa}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 2, 5);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 2, 15);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 3, 10);
+					assert.equal(hover.contents, "y");
+					assert.equal(onHover(document, 5, 10), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa=x\nENV aa=y bb=${aa}\nENV cc=${aa}\n" +
+						"FROM alpine\nENV aa=a\nENV aa=b bb=${aa}\nENV cc=${aa}"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 2, 5);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 2, 15);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 3, 10);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 5, 5);
+					assert.equal(hover.contents, "a");
+					hover = onHover(document, 6, 5);
+					assert.equal(hover.contents, "b");
+					hover = onHover(document, 6, 15);
+					assert.equal(hover.contents, "a");
+					hover = onHover(document, 7, 10);
+					assert.equal(hover.contents, "b");
 				});
 
 				/**
@@ -731,6 +1172,41 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "x");
 					hover = onHover(document, 2, 9);
 					assert.equal(hover.contents, "y");
+
+					document = createDocument(
+						"FROM alpine\nENV aa=x\nENV aa=y bb=$aa\nENV cc=$aa\n" +
+						"FROM alpine\nENV cc=$aa"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 2, 5);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 2, 14);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 3, 9);
+					assert.equal(hover.contents, "y");
+					assert.equal(onHover(document, 5, 9), null);
+
+					document = createDocument(
+						"FROM alpine\nENV aa=x\nENV aa=y bb=$aa\nENV cc=$aa\n" +
+						"FROM alpine\nENV aa=a\nENV aa=b bb=$aa\nENV cc=$aa"
+					);
+					hover = onHover(document, 1, 5);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 2, 5);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 2, 14);
+					assert.equal(hover.contents, "x");
+					hover = onHover(document, 3, 10);
+					assert.equal(hover.contents, "y");
+					hover = onHover(document, 5, 5);
+					assert.equal(hover.contents, "a");
+					hover = onHover(document, 6, 5);
+					assert.equal(hover.contents, "b");
+					hover = onHover(document, 6, 14);
+					assert.equal(hover.contents, "a");
+					hover = onHover(document, 7, 10);
+					assert.equal(hover.contents, "b");
 				});
 			});
 
@@ -1014,6 +1490,23 @@ describe("Dockerfile hover", function() {
 				let document = createDocument("ARG aa=b\nENV aa=c\nARG aa=d\nRUN echo ${aa}");
 				let hover = onHover(document, 3, 11);
 				assert.equal(hover.contents, "c");
+
+				document = createDocument(
+					"FROM alpine\nARG aa=b\nENV aa=c\nARG aa=d\nRUN echo ${aa}\n" +
+					"FROM alpine\nRUN echo ${aa}"
+				);
+				hover = onHover(document, 4, 11);
+				assert.equal(hover.contents, "c");
+				assert.equal(onHover(document, 6, 11), null);
+
+				document = createDocument(
+					"FROM alpine\nARG aa=b\nENV aa=c\nARG aa=d\nRUN echo ${aa}\n" +
+					"FROM alpine\nARG aa=e\nENV aa=f\nARG aa=g\nRUN echo ${aa}"
+				);
+				hover = onHover(document, 4, 11);
+				assert.equal(hover.contents, "c");
+				hover = onHover(document, 9, 11);
+				assert.equal(hover.contents, "f");
 			});
 
 			/**
@@ -1026,6 +1519,23 @@ describe("Dockerfile hover", function() {
 				let document = createDocument("ARG aa=b\nENV aa=c\nARG aa=d\nRUN echo $aa");
 				let hover = onHover(document, 3, 10);
 				assert.equal(hover.contents, "c");
+
+				document = createDocument(
+					"FROM alpine\nARG aa=b\nENV aa=c\nARG aa=d\nRUN echo $aa\n" +
+					"FROM alpine\nRUN echo ${aa}"
+				);
+				hover = onHover(document, 4, 10);
+				assert.equal(hover.contents, "c");
+				assert.equal(onHover(document, 6, 10), null);
+
+				document = createDocument(
+					"FROM alpine\nARG aa=b\nENV aa=c\nARG aa=d\nRUN echo $aa\n" +
+					"FROM alpine\nARG aa=e\nENV aa=f\nARG aa=g\nRUN echo $aa"
+				);
+				hover = onHover(document, 4, 10);
+				assert.equal(hover.contents, "c");
+				hover = onHover(document, 9, 10);
+				assert.equal(hover.contents, "f");
 			});
 		});
 	});

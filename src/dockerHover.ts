@@ -29,6 +29,7 @@ export class DockerHover {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let directive = dockerfile.getDirective();
+		let image = dockerfile.getContainingImage(textDocumentPosition.position);
 
 		if (textDocumentPosition.position.line === 0 && directive !== null && directive.getDirective() === DIRECTIVE_ESCAPE) {
 			let range = directive.getNameRange();
@@ -37,11 +38,11 @@ export class DockerHover {
 			}
 		}
 
-		for (let instruction of dockerfile.getInstructions()) {
+		for (let instruction of image.getInstructions()) {
 			for (let variable of instruction.getVariables()) {
 				// are we hovering over a variable
 				if (Util.isInsideRange(textDocumentPosition.position, variable.getNameRange())) {
-					let instructions = dockerfile.getInstructions();
+					let instructions = image.getInstructions();
 					for (let i = instructions.length - 1; i >= 0; i--) {
 						// only look for variables defined before the current instruction
 						if (instruction.isAfter(instructions[i]) && instructions[i] instanceof Env) {
@@ -57,7 +58,7 @@ export class DockerHover {
 			}
 		}
 
-		for (let instruction of dockerfile.getInstructions()) {
+		for (let instruction of image.getInstructions()) {
 			let instructionRange = instruction.getInstructionRange();
 			if (Util.isInsideRange(textDocumentPosition.position, instructionRange)) {
 				return this.markdown.getMarkdown(instruction.getKeyword());
@@ -98,7 +99,7 @@ export class DockerHover {
 			}
 		}
 
-		let property = DockerDefinition.computeVariableDefinition(dockerfile, textDocumentPosition.position);
+		let property = DockerDefinition.computeVariableDefinition(image, textDocumentPosition.position);
 		if (property && property.getValue() !== null) {
 			return { contents: property.getValue() };
 		}
