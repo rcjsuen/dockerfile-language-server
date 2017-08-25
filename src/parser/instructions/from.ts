@@ -65,6 +65,25 @@ export class From extends Instruction {
 		return null;
 	}
 
+	/**
+	 * Returns the range in the document that the digest of the base
+	 * image encompasses.
+	 * 
+	 * @return the base image's digest's range in the document, or null
+	 *         if no digest has been specified
+	 */
+	public getImageDigestRange(): Range | null {
+		let range = this.getImageRange();
+		if (range) {
+			let content = this.getRangeContent(range);
+			let index = content.lastIndexOf('@');
+			if (index !== -1) {
+				return Range.create(range.start.line, range.start.character + index + 1, range.end.line, range.end.character);
+			}
+		}
+		return null;
+	}
+
 	public getBuildStage(): string | null {
 		let range = this.getBuildStageRange();
 		return range === null ? null : this.getRangeContent(range);

@@ -5,7 +5,7 @@
 import * as assert from "assert";
 
 import {
-	TextDocument, Position, Range, SignatureHelp
+	TextDocument, Position, Range, SignatureHelp, SignatureInformation
 } from 'vscode-languageserver';
 import { PlainTextDocumentation } from '../src/dockerPlainText';
 import { KEYWORDS, DIRECTIVE_ESCAPE } from '../src/docker';
@@ -161,6 +161,144 @@ function assertExpose(signatureHelp: SignatureHelp, activeParameter: number) {
 	assert.equal(signatureHelp.signatures[0].parameters[1].label, "...");
 	assert.notEqual(signatureHelp.signatures[0].parameters[1].documentation, null);
 	assert.equal(signatureHelp.signatures[0].parameters[1].documentation, docs.getDocumentation("signatureExpose_Param1"));
+}
+
+function assertFrom_Image(signature: SignatureInformation) {
+	assert.equal(signature.label, "FROM baseImage");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureFrom_Signature0"));
+	assert.equal(signature.parameters.length, 1);
+	assert.equal(signature.parameters[0].label, "baseImage");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureFrom_Signature0_Param"));
+}
+
+function assertFrom_ImageTag(signature: SignatureInformation) {
+	assert.equal(signature.label, "FROM baseImage:tag");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureFrom_Signature1"));
+	assert.equal(signature.parameters.length, 2);
+	assert.equal(signature.parameters[0].label, "baseImage");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureFrom_Signature1_Param0"));
+	assert.equal(signature.parameters[1].label, "tag");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureFrom_Signature1_Param1"));
+}
+
+function assertFrom_ImageDigest(signature: SignatureInformation) {
+	assert.equal(signature.label, "FROM baseImage@digest");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureFrom_Signature2"));
+	assert.equal(signature.parameters.length, 2);
+	assert.equal(signature.parameters[0].label, "baseImage");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureFrom_Signature2_Param0"));
+	assert.equal(signature.parameters[1].label, "digest");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureFrom_Signature2_Param1"));
+}
+
+function assertFrom_Image_BuildStage(signature: SignatureInformation) {
+	assert.equal(signature.label, "FROM baseImage AS stage");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureFrom_Signature3"));
+	assert.equal(signature.parameters.length, 3);
+	assert.equal(signature.parameters[0].label, "baseImage");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureFrom_Signature3_Param0"));
+	assert.equal(signature.parameters[1].label, "AS");
+	assert.equal(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[2].label, "stage");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureFrom_Signature3_Param2"));
+}
+
+function assertFrom_ImageTag_BuildStage(signature: SignatureInformation) {
+	assert.equal(signature.label, "FROM baseImage:tag AS stage");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureFrom_Signature4"));
+	assert.equal(signature.parameters.length, 4);
+	assert.equal(signature.parameters[0].label, "baseImage");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureFrom_Signature4_Param0"));
+	assert.equal(signature.parameters[1].label, "tag");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureFrom_Signature4_Param1"));
+	assert.equal(signature.parameters[2].label, "AS");
+	assert.equal(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[3].label, "stage");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureFrom_Signature4_Param3"));
+}
+
+function assertFrom_ImageDigest_BuildStage(signature: SignatureInformation) {
+	assert.equal(signature.label, "FROM baseImage@digest AS stage");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureFrom_Signature5"));
+	assert.equal(signature.parameters.length, 4);
+	assert.equal(signature.parameters[0].label, "baseImage");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureFrom_Signature5_Param0"));
+	assert.equal(signature.parameters[1].label, "digest");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureFrom_Signature5_Param1"));
+	assert.equal(signature.parameters[2].label, "AS");
+	assert.equal(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[3].label, "stage");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureFrom_Signature5_Param3"));
+}
+
+function assertFrom(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.signatures.length, 6);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assertFrom_Image(signatureHelp.signatures[0]);
+	assertFrom_ImageTag(signatureHelp.signatures[1]);
+	assertFrom_ImageDigest(signatureHelp.signatures[2]);
+	assertFrom_Image_BuildStage(signatureHelp.signatures[3]);
+	assertFrom_ImageTag_BuildStage(signatureHelp.signatures[4]);
+	assertFrom_ImageDigest_BuildStage(signatureHelp.signatures[5]);
+}
+
+function assertFrom_Tags(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 2);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertFrom_ImageTag(signatureHelp.signatures[0]);
+	assertFrom_ImageTag_BuildStage(signatureHelp.signatures[1]);
+}
+
+function assertFrom_Digests(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 2);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertFrom_ImageDigest(signatureHelp.signatures[0]);
+	assertFrom_ImageDigest_BuildStage(signatureHelp.signatures[1]);
+}
+
+function assertFrom_BuildStages(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 3);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertFrom_Image_BuildStage(signatureHelp.signatures[0]);
+	assertFrom_ImageTag_BuildStage(signatureHelp.signatures[1]);
+	assertFrom_ImageDigest_BuildStage(signatureHelp.signatures[2]);
+}
+
+function assertFrom_Tags_BuildStages_Only(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertFrom_ImageTag_BuildStage(signatureHelp.signatures[0]);
+}
+
+function assertFrom_Digests_BuildStages_Only(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertFrom_ImageDigest_BuildStage(signatureHelp.signatures[0]);
 }
 
 function assertShell(signatureHelp: SignatureHelp, activeParameter: number) {
@@ -475,6 +613,161 @@ describe("Dockerfile Signature Tests", function() {
 	}
 
 	testExpose(false);
+
+	describe("FROM", function() {
+		it("all", function() {
+			assertFrom(compute("FROM ", 0, 5));
+			assertFrom(compute("FROM node", 0, 7));
+			assertFrom(compute("FROM node", 0, 9));
+			assertFrom(compute("FROM  node", 0, 5));
+		});
+
+		it("tags", function() {
+			assertFrom_Tags(compute("FROM node:", 0, 7), 0);
+			assertFrom_Tags(compute("FROM node:", 0, 10), 1);
+			assertFrom_Tags(compute("FROM node:latest", 0, 12), 1);
+			assertFrom_Tags(compute("FROM node:latest", 0, 16), 1);
+		});
+
+		it("digests", function() {
+			assertFrom_Digests(compute("FROM node@", 0, 7), 0);
+			assertFrom_Digests(compute("FROM node@", 0, 10), 1);
+			assertFrom_Digests(compute("FROM node@sha256:613685c22f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700", 0, 12), 1);
+			assertFrom_Digests(compute("FROM node@sha256:613685c22f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700", 0, 16), 1);
+			assertFrom_Digests(compute("FROM node@sha256:613685c22f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700", 0, 17), 1);
+			assertFrom_Digests(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700", 0, 20), 1);
+			assertFrom_Digests(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700", 0, 80), 1);
+		});
+
+		it("stages", function() {
+			assertFrom_BuildStages(compute("FROM node ", 0, 10), 1);
+
+			assertFrom_BuildStages(compute("FROM node AS", 0, 5), 0);
+			assertFrom_BuildStages(compute("FROM node AS", 0, 7), 0);
+			assertFrom_BuildStages(compute("FROM node AS", 0, 9), 0);
+			assertFrom_BuildStages(compute("FROM node AS", 0, 10), 1);
+			assertFrom_BuildStages(compute("FROM node AS", 0, 11), 1);
+			assertFrom_BuildStages(compute("FROM node AS", 0, 12), 1);
+
+			assertFrom_BuildStages(compute("FROM node AS ", 0, 13), 2);
+
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 5), 0);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 7), 0);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 9), 0);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 10), 1);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 11), 1);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 12), 1);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 13), 2);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 14), 2);
+			assertFrom_BuildStages(compute("FROM node AS js", 0, 15), 2);
+		});
+
+		it("tags and stages", function() {
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: ", 0, 11), 2);
+
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS", 0, 5), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS", 0, 7), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS", 0, 9), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS", 0, 10), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS", 0, 11), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS", 0, 12), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS", 0, 13), 2);
+
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS ", 0, 14), 3);
+
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 5), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 7), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 9), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 10), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 11), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 12), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 13), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 14), 3);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 15), 3);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node: AS js", 0, 16), 3);
+
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 5), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 7), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 9), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 10), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 13), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 16), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 17), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 18), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS", 0, 19), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS ", 0, 20), 3);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 5), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 7), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 9), 0);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 10), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 13), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 16), 1);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 17), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 18), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 19), 2);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 20), 3);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 21), 3);
+			assertFrom_Tags_BuildStages_Only(compute("FROM node:latest AS js", 0, 22), 3);
+		});
+
+		it("digests and stages", function() {
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ ", 0, 11), 2);
+
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS", 0, 5), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS", 0, 7), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS", 0, 9), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS", 0, 10), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS", 0, 11), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS", 0, 12), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS", 0, 13), 2);
+
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS ", 0, 14), 3);
+
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 5), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 7), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 9), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 10), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 11), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 12), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 13), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 14), 3);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 15), 3);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@ AS js", 0, 16), 3);
+
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 5), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 7), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 9), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 10), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 13), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 16), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 17), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 35), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 80), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 81), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 82), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS", 0, 83), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS ", 0, 84), 3);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 5), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 7), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 9), 0);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 10), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 13), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 16), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 17), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 35), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 80), 1);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 81), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 82), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 83), 2);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 84), 3);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 85), 3);
+			assertFrom_Digests_BuildStages_Only(compute("FROM node@sha256:61368522f65d01f2264bdd49b8a336488e14faf29f3ff9b6bf76a4da23c4700 AS js", 0, 86), 3);
+		});
+
+		it("invalid", function() {
+			assertNoSignatures(compute("FROM node AS js ", 0, 16));
+		});
+	});
 
 	function testHealthcheck(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";

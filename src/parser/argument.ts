@@ -22,6 +22,13 @@ export class Argument {
 		return this.value;
 	}
 
+	public isAfter(position: Position): boolean {
+		if (this.range.end.line < position.line) {
+			return true;
+		}
+		return this.range.start.line < position.line ? true : this.range.start.character > position.character;
+	}
+
 	public isBefore(position: Position): boolean {
 		if (this.range.start.line < position.line) {
 			return true;
