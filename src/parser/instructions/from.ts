@@ -57,9 +57,11 @@ export class From extends Instruction {
 		let range = this.getImageRange();
 		if (range) {
 			let content = this.getRangeContent(range);
-			let index = content.lastIndexOf(':');
-			if (index !== -1) {
-				return Range.create(range.start.line, range.start.character + index + 1, range.end.line, range.end.character);
+			if (content.indexOf('@') === -1) {
+				let index = content.lastIndexOf(':');
+				if (index !== -1) {
+					return Range.create(range.start.line, range.start.character + index + 1, range.end.line, range.end.character);
+				}
 			}
 		}
 		return null;
