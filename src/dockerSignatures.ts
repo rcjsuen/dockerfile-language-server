@@ -8,10 +8,12 @@ import {
 import { Dockerfile } from './parser/dockerfile';
 import { Argument } from './parser/argument';
 import { Instruction } from './parser/instruction';
+import { Property } from './parser/property';
 import { Arg } from './parser/instructions/arg';
 import { Copy } from './parser/instructions/copy';
 import { From } from './parser/instructions/from';
 import { Healthcheck } from './parser/instructions/healthcheck';
+import { Label } from './parser/instructions/label';
 import { Shell } from './parser/instructions/shell';
 import { PlainTextDocumentation } from './dockerPlainText';
 import { DockerfileParser } from './parser/dockerfileParser';
@@ -156,6 +158,60 @@ export class DockerSignatures {
 						}
 					}
 					break;
+				case "LABEL":
+					const labelSignatures = [
+						{
+							label: "LABEL key value",
+							documentation: this.documentation.getDocumentation("signatureLabel_Signature0"),
+							parameters: [
+								{
+									label: "key",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature0_Param0")
+								},
+								{
+									label: "value",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature0_Param1")
+								}
+							]
+						},
+						{
+							label: "LABEL key=value",
+							documentation: this.documentation.getDocumentation("signatureLabel_Signature1"),
+							parameters: [
+								{
+									label: "key",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature1_Param0")
+								},
+								{
+									label: "value",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature1_Param1")
+								}
+							]
+						},
+						{
+							label: "LABEL key=value key2=value2",
+							documentation: this.documentation.getDocumentation("signatureLabel_Signature2"),
+							parameters: [
+								{
+									label: "key",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param0")
+								},
+								{
+									label: "value",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param1")
+								},
+								{
+									label: "key2",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param2")
+								},
+								{
+									label: "value2",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param3")
+								}
+							]
+						}
+					];
+					return this.getPropertySignatureHelp(document, position, labelSignatures, (instruction as Label).getProperties());
 				case "EXPOSE":
 					let exposeSignatureHelp = {
 						signatures: [
@@ -623,5 +679,56 @@ export class DockerSignatures {
 			return tag || digest ? 2 : 1;
 		}
 		return inTag || inDigest ? 1 : 0;
+	}
+
+	private getPropertySignatureHelp(document: TextDocument, position: Position, signatures: SignatureInformation[], properties: Property[]): SignatureHelp {
+		return {
+			signatures: this.getPropertySignatures(document, position, signatures, properties),
+			activeSignature: 0,
+			activeParameter: this.getPropertySignatureActiveParameter(document, position, signatures, properties)
+		};
+	}
+
+	private getPropertySignatures(document: TextDocument, position: Position, signatures: SignatureInformation[], properties: Property[]): SignatureInformation[] {
+		if (properties.length === 0) {
+			return signatures;
+		} else if (properties.length === 1) {
+			const valueRange = properties[0].getValueRange();
+			if (valueRange === null) {
+				return properties[0].isNameBefore(position) ? [ signatures[0] ] : signatures;
+			}
+
+			const delimiter = document.getText().substring(document.offsetAt(properties[0].getNameRange().end), document.offsetAt(valueRange.start));
+			if (delimiter.indexOf('=') === -1) {
+				return [ signatures[0] ];
+			} else if (properties[0].isValueBefore(position)) {
+				return [ signatures[2] ];
+			}
+		} else {
+			return [ signatures[2] ];
+		}
+		return [ signatures[1], signatures[2] ];
+	}
+
+	private getPropertySignatureActiveParameter(document: TextDocument, position: Position, signatures: SignatureInformation[], properties: Property[]): number {
+		if (properties.length === 0) {
+			return 0;
+		}
+
+		for (let i = properties.length - 1; i > 0; i--) {
+			if (properties[i].isInValue(position)) {
+				return 3;
+			} else if (properties[i].isNameBefore(position) || properties[i].isInName(position)) {
+				return 2;
+			}
+		}
+
+		if (properties[0].isInValue(position)) {
+			return 1;
+		} else if (properties[0].isValueBefore(position)) {
+			const delimiter = document.getText().substring(document.offsetAt(properties[0].getNameRange().end), document.offsetAt(properties[0].getValueRange().start));
+			return delimiter.indexOf('=') === -1 ? 1 : 2;
+		}
+		return properties[0].isNameBefore(position) ? 1 : 0;
 	}
 }

@@ -2,7 +2,7 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { TextDocument, Range } from 'vscode-languageserver';
+import { TextDocument, Range, Position } from 'vscode-languageserver';
 
 import { Argument } from './argument';
 import { Util } from '../docker';
@@ -57,6 +57,32 @@ export class Property {
 
 	public getValueRange(): Range | null {
 		return this.valueRange;
+	}
+
+	public isInName(position: Position): boolean {
+		return Util.isInsideRange(position, this.nameRange);
+	}
+
+	public isNameBefore(position: Position): boolean {
+		if (this.isInName(position)) {
+			return false;
+		} else if (this.nameRange.start.line < position.line) {
+			return true;
+		}
+		return this.nameRange.start.line === position.line ? this.nameRange.end.character < position.character : false;
+	}
+
+	public isValueBefore(position: Position): boolean {
+		if (this.valueRange === null) {
+			return false;
+		} else if (this.valueRange.start.line < position.line) {
+			return true;
+		}
+		return this.valueRange.start.line === position.line ? this.valueRange.end.character < position.character : false;
+	}
+
+	public isInValue(position: Position): boolean {
+		return this.valueRange === null ? false : Util.isInsideRange(position, this.valueRange);
 	}
 
 	public getRawValue(): string {

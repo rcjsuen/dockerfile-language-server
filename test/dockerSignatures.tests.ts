@@ -301,6 +301,82 @@ function assertFrom_Digests_BuildStages_Only(signatureHelp: SignatureHelp, activ
 	assertFrom_ImageDigest_BuildStage(signatureHelp.signatures[0]);
 }
 
+function assertLabel_Space(signature: SignatureInformation) {
+	assert.equal(signature.label, "LABEL key value");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureLabel_Signature0"));
+	assert.equal(signature.parameters.length, 2);
+	assert.equal(signature.parameters[0].label, "key");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureLabel_Signature0_Param0"));
+	assert.equal(signature.parameters[1].label, "value");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureLabel_Signature0_Param1"));
+}
+
+function assertLabel_EqualsSingle(signature: SignatureInformation) {
+	assert.equal(signature.label, "LABEL key=value");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureLabel_Signature1"));
+	assert.equal(signature.parameters.length, 2);
+	assert.equal(signature.parameters[0].label, "key");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureLabel_Signature1_Param0"));
+	assert.equal(signature.parameters[1].label, "value");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureLabel_Signature1_Param1"));
+}
+
+function assertLabel_EqualsMulti(signature: SignatureInformation) {
+	assert.equal(signature.label, "LABEL key=value key2=value2");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureLabel_Signature2"));
+	assert.equal(signature.parameters.length, 4);
+	assert.equal(signature.parameters[0].label, "key");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureLabel_Signature2_Param0"));
+	assert.equal(signature.parameters[1].label, "value");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureLabel_Signature2_Param1"));
+	assert.equal(signature.parameters[2].label, "key2");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureLabel_Signature2_Param2"));
+	assert.equal(signature.parameters[3].label, "value2");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureLabel_Signature2_Param3"));
+}
+
+function assertLabel(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.signatures.length, 3);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assertLabel_Space(signatureHelp.signatures[0]);
+	assertLabel_EqualsSingle(signatureHelp.signatures[1]);
+	assertLabel_EqualsMulti(signatureHelp.signatures[2]);
+}
+
+function assertLabel_SpaceOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertLabel_Space(signatureHelp.signatures[0]);
+}
+
+function assertLabel_Equals(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 2);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertLabel_EqualsSingle(signatureHelp.signatures[0]);
+	assertLabel_EqualsMulti(signatureHelp.signatures[1]);
+}
+
+function assertLabel_EqualsMultiOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertLabel_EqualsMulti(signatureHelp.signatures[0]);
+}
+
 function assertShell(signatureHelp: SignatureHelp, activeParameter: number) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, activeParameter);
@@ -874,6 +950,124 @@ describe("Dockerfile Signature Tests", function() {
 
 	testHealthcheck(false);
 
+	function testLabel(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("LABEL", function() {
+			it("all", function() {
+				assertLabel(compute(onbuild + "LABEL ", 0, triggerOffset + 6));
+
+				assertLabel(compute(onbuild + "LABEL key", 0, triggerOffset + 6));
+				assertLabel(compute(onbuild + "LABEL key", 0, triggerOffset + 7));
+				assertLabel(compute(onbuild + "LABEL key", 0, triggerOffset + 9));
+
+				assertLabel(compute(onbuild + "LABEL  key", 0, triggerOffset + 6));
+
+				assertLabel(compute(onbuild + "LABEL key ", 0, triggerOffset + 6));
+				assertLabel(compute(onbuild + "LABEL key ", 0, triggerOffset + 9));
+			});
+
+			it("space", function() {
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key ", 0, triggerOffset + 10), 1);
+
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value", 0, triggerOffset + 6), 0);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value", 0, triggerOffset + 9), 0);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value", 0, triggerOffset + 10), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value", 0, triggerOffset + 12), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value", 0, triggerOffset + 15), 1);
+
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key =value", 0, triggerOffset + 6), 0);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key =value", 0, triggerOffset + 9), 0);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key =value", 0, triggerOffset + 10), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key =value", 0, triggerOffset + 11), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key =value", 0, triggerOffset + 13), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key =value", 0, triggerOffset + 16), 1);
+
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value ", 0, triggerOffset + 16), 1);
+
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 6), 0);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 9), 0);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 10), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 12), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 15), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 16), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 18), 1);
+				assertLabel_SpaceOnly(compute(onbuild + "LABEL key value spaced", 0, triggerOffset + 22), 1);
+			});
+
+			it("equals", function() {
+				assertLabel_Equals(compute(onbuild + "LABEL key=", 0, triggerOffset + 6), 0);
+				assertLabel_Equals(compute(onbuild + "LABEL key=", 0, triggerOffset + 7), 0);
+				assertLabel_Equals(compute(onbuild + "LABEL key=", 0, triggerOffset + 9), 0);
+				assertLabel_Equals(compute(onbuild + "LABEL key=", 0, triggerOffset + 10), 1);
+
+				assertLabel_Equals(compute(onbuild + "LABEL key=value", 0, triggerOffset + 6), 0);
+				assertLabel_Equals(compute(onbuild + "LABEL key=value", 0, triggerOffset + 9), 0);
+				assertLabel_Equals(compute(onbuild + "LABEL key=value", 0, triggerOffset + 10), 1);
+				assertLabel_Equals(compute(onbuild + "LABEL key=value", 0, triggerOffset + 12), 1);
+				assertLabel_Equals(compute(onbuild + "LABEL key=value", 0, triggerOffset + 15), 1);
+			});
+
+			it("equals multiples", function() {
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value ", 0, triggerOffset + 16), 2);
+
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 6), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 9), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 10), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 12), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 15), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 16), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 18), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2", 0, triggerOffset + 20), 2);
+
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 6), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 9), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 10), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 12), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 15), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 16), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 18), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 20), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=", 0, triggerOffset + 21), 3);
+
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 6), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 9), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 10), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 12), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 15), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 16), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 18), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 20), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 21), 3);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 24), 3);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2", 0, triggerOffset + 27), 3);
+
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 ", 0, triggerOffset + 28), 2);
+
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 6), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 9), 0);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 10), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 12), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 15), 1);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 16), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 18), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 20), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 21), 3);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 24), 3);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 27), 3);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 28), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 30), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 32), 2);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 33), 3);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 36), 3);
+				assertLabel_EqualsMultiOnly(compute(onbuild + "LABEL key=value key2=value2 key3=value3", 0, triggerOffset + 39), 3);
+			});
+		});
+	}
+
+	testLabel(false);
+
 	function testShell(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
 		let triggerOffset = trigger ? 8 : 0;
@@ -1091,6 +1285,7 @@ describe("Dockerfile Signature Tests", function() {
 		testCopy(true);
 		testExpose(true);
 		testHealthcheck(true);
+		testLabel(true);
 		testShell(true);
 		testStopsignal(true);
 		testUser(true);
