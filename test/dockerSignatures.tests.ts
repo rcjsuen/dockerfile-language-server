@@ -377,6 +377,19 @@ function assertLabel_EqualsMultiOnly(signatureHelp: SignatureHelp, activeParamet
 	assertLabel_EqualsMulti(signatureHelp.signatures[0]);
 }
 
+function assertOnbuild(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.signatures[0].label, "ONBUILD INSTRUCTION");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureOnbuild"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 1);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "INSTRUCTION");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureOnbuild_Param"));
+}
+
 function assertShell(signatureHelp: SignatureHelp, activeParameter: number) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, activeParameter);
@@ -590,10 +603,18 @@ describe("Dockerfile Signature Tests", function() {
 
 			it("invalid", function() {
 				let signatureHelp = compute(onbuild + "ARG ", 0, triggerOffset + 1);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 
 				signatureHelp = compute(onbuild + "ARG ", 0, triggerOffset + 3);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 			});
 		});
 	}
@@ -677,13 +698,25 @@ describe("Dockerfile Signature Tests", function() {
 
 			it("invalid", function() {
 				let signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 0);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 
 				signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 3);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 
 				signatureHelp = compute(onbuild + "EXPOSE 8080", 0, triggerOffset + 6);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 			});
 		});
 	}
@@ -1068,6 +1101,25 @@ describe("Dockerfile Signature Tests", function() {
 
 	testLabel(false);
 
+	describe("ONBUILD", function() {
+		it("trigger instruction", function() {
+			assertOnbuild(compute("ONBUILD ", 0, 8));
+
+			assertOnbuild(compute("ONBUILD  ", 0, 8));
+			assertOnbuild(compute("ONBUILD  ", 0, 9));
+
+			assertOnbuild(compute("ONBUILD TRIGGER", 0, 8));
+			assertOnbuild(compute("ONBUILD TRIGGER", 0, 12));
+			assertOnbuild(compute("ONBUILD TRIGGER", 0, 15));
+
+			assertNoSignatures(compute("ONBUILD TRIGGER ", 0, 16));
+
+			assertNoSignatures(compute("ONBUILD TRIGGER argument", 0, 16));
+			assertNoSignatures(compute("ONBUILD TRIGGER argument", 0, 20));
+			assertNoSignatures(compute("ONBUILD TRIGGER argument", 0, 24));
+		});
+	});
+
 	function testShell(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
 		let triggerOffset = trigger ? 8 : 0;
@@ -1166,7 +1218,11 @@ describe("Dockerfile Signature Tests", function() {
 
 			it("invalid", function() {
 				let signatureHelp = compute(onbuild + "SHELL [ \"cmd\" ] ", 0, triggerOffset + 2);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 
 				signatureHelp = compute(onbuild + "SHELL [] ", 0, triggerOffset + 9);
 				assertNoSignatures(signatureHelp);
@@ -1197,7 +1253,11 @@ describe("Dockerfile Signature Tests", function() {
 
 			it("invalid", function() {
 				let signatureHelp = compute(onbuild + "STOPSIGNAL SIGKILL", 0, triggerOffset + 5);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 			});
 		});
 	}
@@ -1251,7 +1311,11 @@ describe("Dockerfile Signature Tests", function() {
 
 			it("invalid", function() {
 				let signatureHelp = compute(onbuild + "USER user", 0, triggerOffset + 2);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 			});
 		});
 	}
@@ -1273,7 +1337,11 @@ describe("Dockerfile Signature Tests", function() {
 
 			it("invalid", function() {
 				let signatureHelp = compute(onbuild + "WORKDIR /path", 0, triggerOffset + 2);
-				assertNoSignatures(signatureHelp);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
 			});
 		});
 	}

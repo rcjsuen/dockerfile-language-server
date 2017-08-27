@@ -49,9 +49,9 @@ export class DockerSignatures {
 			}
 		}
 
-		let signatureHelp = this.getInstructionSignatures(document, dockerfile.getInstructions(), position);
+		let signatureHelp = this.getInstructionSignatures(document, dockerfile.getOnbuildTriggers(), position);
 		if (!signatureHelp) {
-			signatureHelp = this.getInstructionSignatures(document, dockerfile.getOnbuildTriggers(), position);
+			signatureHelp = this.getInstructionSignatures(document, dockerfile.getInstructions(), position);
 			if (!signatureHelp) {
 				signatureHelp = {
 					signatures: [],
@@ -318,6 +318,27 @@ export class DockerSignatures {
 						}
 					}
 					break;
+				case "ONBUILD":
+					const onbuildArgs = instruction.getArguments();
+					if (onbuildArgs.length > 0 && onbuildArgs[0].isBefore(position)) {
+						return null;
+					}
+					return {
+						signatures: [
+							{
+								label: "ONBUILD INSTRUCTION",
+								documentation: this.documentation.getDocumentation("signatureOnbuild"),
+								parameters: [
+									{
+										label: "INSTRUCTION",
+										documentation: this.documentation.getDocumentation("signatureOnbuild_Param")
+									}
+								]
+							}
+						],
+						activeSignature: 0,
+						activeParameter: 0
+					};
 				case "SHELL":
 					let shell = instruction as Shell;
 					let shellSignatureHelp: SignatureHelp = {
