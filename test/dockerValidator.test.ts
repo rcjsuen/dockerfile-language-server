@@ -275,6 +275,17 @@ function assertHealthcheckCmdArgumentMissing(diagnostic: Diagnostic, startLine: 
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertCOPYRequiresAtLeastTwoArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_TWO);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_COPYRequiresAtLeastTwoArguments());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertENVRequiresTwoArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_TWO);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -839,27 +850,30 @@ describe("Docker Validator Tests", function() {
 		});
 
 		describe("missing argument", function() {
-			function testMissingArgument(instruction: string, prefix: string, middle: string, suffix: string, safe?: boolean) {
+			function testMissingArgument(instruction: string, prefix: string, middle: string, suffix: string, safe?: boolean, assertFunction?: Function) {
 				var length = instruction.length;
 				let diagnostics = validate("FROM node\n" + instruction + prefix + middle + suffix);
 				if (safe) {
 					assert.equal(diagnostics.length, 0);
+				} else if (assertFunction) {
+					assert.equal(diagnostics.length, 1);
+					assertFunction(diagnostics[0], 1, 0, 1, length);
 				} else {
 					assert.equal(diagnostics.length, 1);
 					assertInstructionMissingArgument(diagnostics[0], 1, 0, 1, length);
 				}
 			}
 
-			function testMissingArgumentLoop(instruction: string, safe?: boolean) {
+			function testMissingArgumentLoop(instruction: string, safe?: boolean, assertFunction?: Function) {
 				let newlines = [ "", "\r", "\n", "\r\n", "\\\r", "\\\n", "\\\r\n" ];
 				for (let newline of newlines) {
-					testMissingArgument(instruction, "", newline, "", safe);
-					testMissingArgument(instruction, "", newline, " ", safe);
-					testMissingArgument(instruction, " ", newline, "", safe);
-					testMissingArgument(instruction, " ", newline, " ", safe);
-					testMissingArgument(instruction, "", newline, "\t", safe);
-					testMissingArgument(instruction, "\t", newline, "", safe);
-					testMissingArgument(instruction, "\t", newline, "\t", safe);
+					testMissingArgument(instruction, "", newline, "", safe, assertFunction);
+					testMissingArgument(instruction, "", newline, " ", safe, assertFunction);
+					testMissingArgument(instruction, " ", newline, "", safe, assertFunction);
+					testMissingArgument(instruction, " ", newline, " ", safe, assertFunction);
+					testMissingArgument(instruction, "", newline, "\t", safe, assertFunction);
+					testMissingArgument(instruction, "\t", newline, "", safe, assertFunction);
+					testMissingArgument(instruction, "\t", newline, "\t", safe, assertFunction);
 				}
 			}
 
@@ -876,7 +890,7 @@ describe("Docker Validator Tests", function() {
 			});
 
 			it("COPY", function() {
-				return testMissingArgumentLoop("COPY");
+				return testMissingArgumentLoop("COPY", false, assertCOPYRequiresAtLeastTwoArguments);
 			});
 
 			it("ENTRYPOINT", function() {
@@ -1416,6 +1430,31 @@ describe("Docker Validator Tests", function() {
 	});
 
 	describe("COPY", function() {
+		describe("arguments", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM alpine\nCOPY . .");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("requires at least two", function() {
+				let diagnostics = validate("FROM alpine\nCOPY ");
+				assert.equal(diagnostics.length, 1);
+				assertCOPYRequiresAtLeastTwoArguments(diagnostics[0], 1, 0, 1, 4);
+
+				diagnostics = validate("FROM alpine\nCOPY .");
+				assert.equal(diagnostics.length, 1);
+				assertCOPYRequiresAtLeastTwoArguments(diagnostics[0], 1, 5, 1, 6);
+
+				diagnostics = validate("FROM alpine\nCOPY --from=busybox");
+				assert.equal(diagnostics.length, 1);
+				assertCOPYRequiresAtLeastTwoArguments(diagnostics[0], 1, 0, 1, 4);
+
+				diagnostics = validate("FROM alpine\nCOPY --from=busybox .");
+				assert.equal(diagnostics.length, 1);
+				assertCOPYRequiresAtLeastTwoArguments(diagnostics[0], 1, 20, 1, 21);
+			});
+		});
+
 		describe("build stages", function() {
 			it("ok", function() {
 				let diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --from=bb . .");

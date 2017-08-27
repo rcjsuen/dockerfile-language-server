@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
   - warn if ENV or LABEL is missing closing quote ([#143](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/143))
   - warn if FROM's build stage name is invalid ([#132](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/132))
   - warn if an invalid unit of time is used in a duration flag ([#152](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/152))
+  - warn if COPY does not have two arguments ([#157](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/157))
 - textDocument/signatureHelp
   - escape parser directive ([#147](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/147))
   - instruction flags ([#147](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/147))

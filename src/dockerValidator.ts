@@ -24,6 +24,7 @@ export enum ValidationCode {
 	ARGUMENT_EXTRA,
 	ARGUMENT_REQUIRES_ONE,
 	ARGUMENT_REQUIRES_TWO,
+	ARGUMENT_REQUIRES_AT_LEAST_TWO,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	ARGUMENT_UNNECESSARY,
 	DUPLICATE_BUILD_STAGE_NAME,
@@ -473,18 +474,25 @@ export class Validator {
 					break;
 				case "COPY":
 					let copyArgs = instruction.getArguments();
-					if (copyArgs.length === 0) {
-						let range = instruction.getInstructionRange();
-						problems.push(Validator.createMissingArgument(range.start, range.end));
-					} else {
-						let flags = (instruction as ModifiableInstruction).getFlags();
-						if (flags.length > 0 && flags[0].getName() !== "from") {
+					let flags = (instruction as ModifiableInstruction).getFlags();
+					if (flags.length > 0) {
+						if (flags[0].getName() !== "from") {
 							let range = flags[0].getNameRange();
 							problems.push(Validator.createFlagUnknown(range.start, range.end, flags[0].getName()));
 						}
-						this.checkFlagValue(flags, [ "from" ], problems);
-						this.checkDuplicateFlags(flags, [ "from" ], problems);
+
+						if (copyArgs.length == 2) {
+							problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(copyArgs[1].getRange()));
+						} else if (copyArgs.length == 1) {
+							problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(instruction.getInstructionRange()));
+						}
+					} else if (copyArgs.length === 1) {
+						problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(copyArgs[0].getRange()));
+					} else if (copyArgs.length === 0) {
+						problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(instruction.getInstructionRange()));
 					}
+					this.checkFlagValue(flags, [ "from" ], problems);
+					this.checkDuplicateFlags(flags, [ "from" ], problems);
 					break;
 				default:
 					this.checkArguments(instruction, problems, [ -1 ], function() {
@@ -866,6 +874,7 @@ export class Validator {
 		"instructionMissingArgument": "Instruction has no arguments",
 		"instructionMultiple": "There can only be one ${0} instruction in a Dockerfile",
 		"instructionRequiresOneArgument": "${0} requires exactly one argument",
+		"instructionRequiresAtLeastTwoArguments": "${0} requires at least two arguments",
 		"instructionRequiresTwoArguments": "${0} must have two arguments",
 		"instructionUnnecessaryArgument": "${0} takes no arguments",
 		"instructionUnknown": "Unknown instruction: ${0}",
@@ -971,6 +980,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_ARGRequiresOneArgument() {
 		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresOneArgument"], "ARG");
+	}
+
+	public static getDiagnosticMessage_COPYRequiresAtLeastTwoArguments() {
+		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresAtLeastTwoArguments"], "COPY");
 	}
 
 	public static getDiagnosticMessage_ENVRequiresTwoArguments() {
@@ -1115,6 +1128,10 @@ export class Validator {
 
 	static createARGRequiresOneArgument(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_ARGRequiresOneArgument(), ValidationCode.ARGUMENT_REQUIRES_ONE);
+	}
+
+	private static createCOPYRequiresAtLeastTwoArguments(range: Range): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_COPYRequiresAtLeastTwoArguments(), ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_TWO);
 	}
 
 	static createENVRequiresTwoArguments(start: Position, end: Position): Diagnostic {
