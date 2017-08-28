@@ -8,7 +8,7 @@ import { TextDocument, Position, Range, Location } from 'vscode-languageserver';
 import { Util } from './docker';
 import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
-import { Image } from './parser/image';
+import { ImageTemplate } from './parser/imageTemplate';
 import { Property } from './parser/property';
 import { Arg } from './parser/instructions/arg';
 import { Env } from './parser/instructions/env';
@@ -35,7 +35,7 @@ export class DockerDefinition {
 		return null;
 	}
 
-	public static computeVariableDefinition(image: Image, position: Position): Property {
+	private static computeVariableDefinition(image: ImageTemplate, position: Position): Property {
 		let variableName = null;
 		for (let arg of image.getARGs()) {
 			let property = arg.getProperty();
@@ -92,9 +92,26 @@ export class DockerDefinition {
 		return null;
 	}
 
-	private computeVariableDefinition(uri: string, dockerfile: Dockerfile, position: Position): Location | null {
+	public static findDefinition(dockerfile: Dockerfile, position: Position): Property {
+		for (const from of dockerfile.getFROMs()) {
+			for (const variable of from.getVariables()) {
+				if (Util.isInsideRange(position, variable.getNameRange())) {
+					for (const arg of dockerfile.getInitialARGs()) {
+						const property = arg.getProperty();
+						if (property && property.getName() === variable.getName()) {
+							return property;
+						}
+					}
+					return null;
+				}
+			}
+		}
 		let image = dockerfile.getContainingImage(position);
-		let property = DockerDefinition.computeVariableDefinition(image, position);
+		return DockerDefinition.computeVariableDefinition(image, position);
+	}
+
+	private computeVariableDefinition(uri: string, dockerfile: Dockerfile, position: Position): Location | null {
+		const property = DockerDefinition.findDefinition(dockerfile, position);
 		return property ? Location.create(uri, property.getNameRange()) : null;
 	}
 

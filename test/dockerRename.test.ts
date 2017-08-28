@@ -940,6 +940,198 @@ describe("Dockerfile Document Rename tests", function() {
 		});
 	});
 
+
+
+	describe("before FROM", function() {
+		describe("ARG", function() {
+			it("FROM lookup", function() {
+				let expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed")
+				];
+				let document = createDocument("ARG image=alpine\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+
+				expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(2, 6, 2, 11), "renamed")
+				];
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), expectedEdits);
+
+				expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 4, 1, 9), "renamed"),
+					TextEdit.replace(Range.create(2, 6, 2, 11), "renamed")
+				];
+				document = createDocument("ARG image=alpine\nARG image=alpine\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), expectedEdits);
+			});
+
+			it("reused variable name", function() {
+				let expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+				];
+				let document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 6, "renamed"), [ TextEdit.replace(Range.create(2, 4, 2, 9), "renamed") ]);
+
+				expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(3, 6, 3, 11), "renamed")
+				];
+				document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 6, "renamed"), [ TextEdit.replace(Range.create(2, 4, 2, 9), "renamed") ]);
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+
+				expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(2, 6, 2, 11), "renamed")
+				];
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image\nARG image=alpine2");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 3, 6, "renamed"), [ TextEdit.replace(Range.create(3, 4, 3, 9), "renamed") ]);
+			});
+
+			it("scoped", function() {
+				let document = createDocument("ARG image=alpine\nFROM alpine\nRUN echo $image");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 2, 12, "renamed"), [ TextEdit.replace(Range.create(2, 10, 2, 15), "renamed") ]);
+
+				let expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed")
+				];
+				document = createDocument("ARG image=alpine\nFROM $image\nRUN echo $image");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 12, "renamed"), [ TextEdit.replace(Range.create(2, 10, 2, 15), "renamed") ]);
+			});
+
+			it("non-existent variable", function() {
+				let document = createDocument("FROM $image\nARG image");
+				assertEdits(rename(document, 0, 8, "renamed"), [ TextEdit.replace(Range.create(0, 6, 0, 11), "renamed") ]);
+				assertEdits(rename(document, 1, 7, "renamed"), [ TextEdit.replace(Range.create(1, 4, 1, 9), "renamed") ]);
+
+				document = createDocument("ARG\nFROM $image");
+				assertEdits(rename(document, 1, 8, "renamed"), [ TextEdit.replace(Range.create(1, 6, 1, 11), "renamed") ]);
+
+				let expectedEdits = [
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(2, 6, 2, 11), "renamed")
+				];
+				document = createDocument("ARG\nFROM $image\nFROM $image");
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), expectedEdits);
+
+				document = createDocument("ARG image=alpine\nFROM $image2\nARG image2=alpine2");
+				assertEdits(rename(document, 0, 8, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 10, "renamed"), [ TextEdit.replace(Range.create(1, 6, 1, 12), "renamed") ]);
+				assertEdits(rename(document, 2, 8, "renamed"), [ TextEdit.replace(Range.create(2, 4, 2, 10), "renamed") ]);
+			});
+		});
+
+		describe("ENV", function() {
+			it("FROM lookup", function() {
+				let document = createDocument("ENV image=alpine\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 8, "renamed"), [ TextEdit.replace(Range.create(1, 6, 1, 11), "renamed") ]);
+
+				let expectedEdits = [
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(2, 6, 2, 11), "renamed")
+				];
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), expectedEdits);
+
+				expectedEdits = [
+					TextEdit.replace(Range.create(0, 4, 0, 9), "renamed"),
+					TextEdit.replace(Range.create(1, 4, 1, 9), "renamed"),
+				];
+				document = createDocument("ENV image=alpine\nENV image=alpine\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 1, 6, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), [ TextEdit.replace(Range.create(2, 6, 2, 11), "renamed") ]);
+			});
+
+			it("reused variable name", function() {
+				let document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 8, "renamed"), [ TextEdit.replace(Range.create(1, 6, 1, 11), "renamed") ]);
+				assertEdits(rename(document, 2, 6, "renamed"), [ TextEdit.replace(Range.create(2, 4, 2, 9), "renamed") ]);
+
+				let expectedEdits = [
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(3, 6, 3, 11), "renamed")
+				];
+				document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2\nFROM $image");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 6, "renamed"), [ TextEdit.replace(Range.create(2, 4, 2, 9), "renamed") ]);
+				assertEdits(rename(document, 3, 6, "renamed"), expectedEdits);
+
+				expectedEdits = [
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(2, 6, 2, 11), "renamed")
+				];
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image\nENV image=alpine2");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 3, 6, "renamed"), [ TextEdit.replace(Range.create(3, 4, 3, 9), "renamed") ]);
+			});
+
+			it("scoped", function() {
+				let document = createDocument("ENV image=alpine\nFROM alpine\nRUN echo $image");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 2, 12, "renamed"), [ TextEdit.replace(Range.create(2, 10, 2, 15), "renamed") ]);
+
+				document = createDocument("ENV image=alpine\nFROM $image\nRUN echo $image");
+				assertEdits(rename(document, 0, 6, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 8, "renamed"), [ TextEdit.replace(Range.create(1, 6, 1, 11), "renamed") ]);
+				assertEdits(rename(document, 2, 12, "renamed"), [ TextEdit.replace(Range.create(2, 10, 2, 15), "renamed") ]);
+			});
+
+			it("non-existent variable", function() {
+				let document = createDocument("FROM $image\nENV image");
+				assertEdits(rename(document, 0, 8, "renamed"), [ TextEdit.replace(Range.create(0, 6, 0, 11), "renamed") ]);
+				assertEdits(rename(document, 1, 7, "renamed"), [ TextEdit.replace(Range.create(1, 4, 1, 9), "renamed") ]);
+
+				document = createDocument("ENV\nFROM $image");
+				assertEdits(rename(document, 1, 8, "renamed"), [ TextEdit.replace(Range.create(1, 6, 1, 11), "renamed") ]);
+
+				let expectedEdits = [
+					TextEdit.replace(Range.create(1, 6, 1, 11), "renamed"),
+					TextEdit.replace(Range.create(2, 6, 2, 11), "renamed")
+				];
+				document = createDocument("ENV\nFROM $image\nFROM $image");
+				assertEdits(rename(document, 1, 8, "renamed"), expectedEdits);
+				assertEdits(rename(document, 2, 8, "renamed"), expectedEdits);
+
+				document = createDocument("ENV image=alpine\nFROM $image2\nENV image2=alpine2");
+				assertEdits(rename(document, 0, 8, "renamed"), [ TextEdit.replace(Range.create(0, 4, 0, 9), "renamed") ]);
+				assertEdits(rename(document, 1, 10, "renamed"), [ TextEdit.replace(Range.create(1, 6, 1, 12), "renamed") ]);
+				assertEdits(rename(document, 2, 8, "renamed"), [ TextEdit.replace(Range.create(2, 4, 2, 10), "renamed") ]);
+			});
+		});
+	});
+
 	describe("non-existent variable", function() {
 		describe("no FROM", function() {
 			it("${var}", function() {

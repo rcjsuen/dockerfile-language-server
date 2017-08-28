@@ -6,15 +6,16 @@
 
 import { Position } from 'vscode-languageserver';
 import { Directive } from './directive';
-import { Image } from './image';
+import { ImageTemplate } from './imageTemplate';
 import { Instruction } from './instruction';
+import { Arg } from './instructions/arg';
 import { DIRECTIVE_ESCAPE } from '../docker';
 
-export class Dockerfile extends Image {
+export class Dockerfile extends ImageTemplate {
 
-	private readonly initialInstructions: Instruction[] = [];
-	private readonly buildStages: Image[] = [];
-	private currentBuildStage: Image;
+	private readonly initialInstructions = new ImageTemplate();
+	private readonly buildStages: ImageTemplate[] = [];
+	private currentBuildStage: ImageTemplate;
 	private directive: Directive | null = null;
 
 	/**
@@ -32,22 +33,26 @@ export class Dockerfile extends Image {
 		return '\\';
 	}
 
-	public getContainingImage(position: Position): Image {
+	public getInitialARGs(): Arg[] {
+		return this.initialInstructions.getARGs();
+	}
+
+	public getContainingImage(position: Position): ImageTemplate {
 		for (let buildStage of this.buildStages) {
 			if (buildStage.contains(position)) {
 				return buildStage;
 			}
 		}
-		return this;
+		return this.initialInstructions;
 	}
 
 	public addInstruction(instruction: Instruction): void {
 		if (instruction.getKeyword() === "FROM") {
-			this.currentBuildStage = new Image();
+			this.currentBuildStage = new ImageTemplate();
 			this.buildStages.push(this.currentBuildStage);
 			this.foundFrom = true;
 		} else if (!this.foundFrom) {
-			this.initialInstructions.push(instruction);
+			this.initialInstructions.addInstruction(instruction);
 		}
 
 		if (this.foundFrom) {

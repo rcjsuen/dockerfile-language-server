@@ -1540,6 +1540,136 @@ describe("Dockerfile hover", function() {
 		});
 	});
 
+	describe("before FROM", function() {
+		describe("ARG", function() {
+			it("FROM lookup", function() {
+				let document = createDocument("ARG image=alpine\nFROM $image");
+				let hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 1, 8);
+				assert.equal(hover.contents, "alpine");
+
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image");
+				hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 1, 8);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 2, 8);
+				assert.equal(hover.contents, "alpine");
+			});
+
+			it("reused variable name", function() {
+				let document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2");
+				let hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 1, 8);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 2, 6);
+				assert.equal(hover.contents, "alpine2");
+
+				document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2\nFROM $image");
+				hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 1, 8);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 2, 6);
+				assert.equal(hover.contents, "alpine2");
+				hover = onHover(document, 3, 8);
+				assert.equal(hover.contents, "alpine");
+
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image\nARG image=alpine2");
+				hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 1, 8);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 2, 6);
+				assert.equal(hover.contents, "alpine");
+				hover = onHover(document, 3, 8);
+				assert.equal(hover.contents, "alpine2");
+			});
+
+			it("scoped", function() {
+				let document = createDocument("ARG image=alpine\nFROM alpine\nRUN echo $image");
+				assert.equal(onHover(document, 2, 12), null);
+			});
+
+			it("non-existent variable", function() {
+				let document = createDocument("FROM $image\nARG image");
+				assert.equal(onHover(document, 0, 8), null);
+
+				document = createDocument("ARG\nFROM $image");
+				assert.equal(onHover(document, 1, 8), null);
+
+				document = createDocument("ARG image=alpine\nFROM $image2\nARG image2=alpine2");
+				let hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				assert.equal(onHover(document, 1, 8), null);
+				hover = onHover(document, 2, 6);
+				assert.equal(hover.contents, "alpine2");
+			});
+		});
+
+		describe("ENV", function() {
+			it("FROM lookup", function() {
+				let document = createDocument("ENV image=alpine\nFROM $image");
+				let hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				assert.equal(onHover(document, 1, 8), null);
+
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image");
+				hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				assert.equal(onHover(document, 1, 8), null);
+				assert.equal(onHover(document, 2, 8), null);
+			});
+
+			it("reused variable name", function() {
+				let document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2");
+				let hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				assert.equal(onHover(document, 1, 8), null);
+				hover = onHover(document, 2, 6);
+				assert.equal(hover.contents, "alpine2");
+
+				document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2\nFROM $image");
+				hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				assert.equal(onHover(document, 1, 8), null);
+				hover = onHover(document, 2, 6);
+				assert.equal(hover.contents, "alpine2");
+				assert.equal(onHover(document, 3, 8), null);
+
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image\nENV image=alpine2");
+				hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				assert.equal(onHover(document, 1, 8), null);
+				assert.equal(onHover(document, 2, 8), null);
+				hover = onHover(document, 3, 6);
+				assert.equal(hover.contents, "alpine2");
+			});
+
+			it("scoped", function() {
+				let document = createDocument("ENV image=alpine\nFROM alpine\nRUN echo $image");
+				assert.equal(onHover(document, 2, 12), null);
+			});
+
+			it("non-existent variable", function() {
+				let document = createDocument("FROM $image\nENV image");
+				assert.equal(onHover(document, 0, 8), null);
+
+				document = createDocument("ENV\nFROM $image");
+				assert.equal(onHover(document, 1, 8), null);
+
+				document = createDocument("ENV image=alpine\nFROM $image2\nENV image2=alpine2");
+				let hover = onHover(document, 0, 6);
+				assert.equal(hover.contents, "alpine");
+				assert.equal(onHover(document, 1, 8), null);
+				hover = onHover(document, 2, 6);
+				assert.equal(hover.contents, "alpine2");
+			});
+		});
+	});
+
 	describe("keyword nesting", function() {
 		it("ONBUILD EXPOSE", function() {
 			let document = createDocument("ONBUILD EXPOSE 8080");

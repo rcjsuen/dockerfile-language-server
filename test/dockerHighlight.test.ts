@@ -1189,6 +1189,253 @@ describe("Dockerfile Document Highlight tests", function() {
 		});
 	});
 
+	describe("before FROM", function() {
+		describe("ARG", function() {
+			it("FROM lookup", function() {
+				let arg = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				let expected = [ arg, from ];
+				let document = createDocument("ARG image=alpine\nFROM $image");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, expected);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, expected);
+
+				let from2 = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				expected = [ arg, from, from2 ];
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, expected);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, expected);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, expected);
+
+				arg = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let arg2 = DocumentHighlight.create(Range.create(1, 4, 1, 9), DocumentHighlightKind.Write);
+				from = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				expected = [ arg, arg2, from ];
+				document = createDocument("ARG image=alpine\nARG image=alpine\nFROM $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, expected);
+				ranges = computeHighlightRanges(document, 1, 6);
+				assertHighlightRanges(ranges, expected);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, expected);
+			});
+
+			it("reused variable name", function() {
+				let arg = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				let arg2 = DocumentHighlight.create(Range.create(2, 4, 2, 9), DocumentHighlightKind.Write);
+				let document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ arg, from ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ arg, from ]);
+				ranges = computeHighlightRanges(document, 2, 6);
+				assertHighlightRanges(ranges, [ arg2 ]);
+
+				let from2 = DocumentHighlight.create(Range.create(3, 6, 3, 11), DocumentHighlightKind.Read);
+				document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2\nFROM $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ arg, from, from2 ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ arg, from, from2 ]);
+				ranges = computeHighlightRanges(document, 2, 6);
+				assertHighlightRanges(ranges, [ arg2 ]);
+				ranges = computeHighlightRanges(document, 3, 8);
+				assertHighlightRanges(ranges, [ arg, from, from2 ]);
+
+				from2 = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				arg2 = DocumentHighlight.create(Range.create(3, 4, 3, 9), DocumentHighlightKind.Write);
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image\nARG image=alpine2");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ arg, from, from2 ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ arg, from, from2 ]);
+				ranges = computeHighlightRanges(document, 2, 6);
+				assertHighlightRanges(ranges, [ arg, from, from2 ]);
+				ranges = computeHighlightRanges(document, 3, 8);
+				assertHighlightRanges(ranges, [ arg2 ]);
+			});
+
+			it("scoped", function() {
+				let arg = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let run = DocumentHighlight.create(Range.create(2, 10, 2, 15), DocumentHighlightKind.Read);
+				let document = createDocument("ARG image=alpine\nFROM alpine\nRUN echo $image");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ arg ]);
+				ranges = computeHighlightRanges(document, 2, 12);
+				assertHighlightRanges(ranges, [ run ]);
+
+				let from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				document = createDocument("ARG image=alpine\nFROM $image\nRUN echo $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ arg, from ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ arg, from ]);
+				ranges = computeHighlightRanges(document, 2, 12);
+				assertHighlightRanges(ranges, [ run ]);
+			});
+
+			it("non-existent variable", function() {
+				let from = DocumentHighlight.create(Range.create(0, 6, 0, 11), DocumentHighlightKind.Read);
+				let arg = DocumentHighlight.create(Range.create(1, 4, 1, 9), DocumentHighlightKind.Write);
+				let document = createDocument("FROM $image\nARG image");
+				let ranges = computeHighlightRanges(document, 0, 8);
+				assertHighlightRanges(ranges, [ from ]);
+				ranges = computeHighlightRanges(document, 1, 7);
+				assertHighlightRanges(ranges, [ arg ]);
+
+				from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				document = createDocument("ARG\nFROM $image");
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from ]);
+
+				from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				let from2 = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				document = createDocument("ARG\nFROM $image\nFROM $image");
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+
+				arg = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				from = DocumentHighlight.create(Range.create(1, 6, 1, 12), DocumentHighlightKind.Read);
+				let arg2 = DocumentHighlight.create(Range.create(2, 4, 2, 10), DocumentHighlightKind.Write);
+				document = createDocument("ARG image=alpine\nFROM $image2\nARG image2=alpine2");
+				ranges = computeHighlightRanges(document, 0, 8);
+				assertHighlightRanges(ranges, [ arg ]);
+				ranges = computeHighlightRanges(document, 1, 10);
+				assertHighlightRanges(ranges, [ from ]);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, [ arg2 ]);
+			});
+		});
+
+		describe("ENV", function() {
+			it("FROM lookup", function() {
+				let env = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				let document = createDocument("ENV image=alpine\nFROM $image");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from ]);
+
+				let from2 = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+
+				env = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let env2 = DocumentHighlight.create(Range.create(1, 4, 1, 9), DocumentHighlightKind.Write);
+				from = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				document = createDocument("ENV image=alpine\nENV image=alpine\nFROM $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env, env2 ]);
+				ranges = computeHighlightRanges(document, 1, 6);
+				assertHighlightRanges(ranges, [ env, env2 ]);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, [ from ]);
+			});
+
+			it("reused variable name", function() {
+				let env = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				let env2 = DocumentHighlight.create(Range.create(2, 4, 2, 9), DocumentHighlightKind.Write);
+				let document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from ]);
+				ranges = computeHighlightRanges(document, 2, 6);
+				assertHighlightRanges(ranges, [ env2 ]);
+
+				let from2 = DocumentHighlight.create(Range.create(3, 6, 3, 11), DocumentHighlightKind.Read);
+				document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2\nFROM $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+				ranges = computeHighlightRanges(document, 2, 6);
+				assertHighlightRanges(ranges, [ env2 ]);
+				ranges = computeHighlightRanges(document, 3, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+
+				from2 = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				env2 = DocumentHighlight.create(Range.create(3, 4, 3, 9), DocumentHighlightKind.Write);
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image\nENV image=alpine2");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+				ranges = computeHighlightRanges(document, 2, 6);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+				ranges = computeHighlightRanges(document, 3, 8);
+				assertHighlightRanges(ranges, [ env2 ]);
+			});
+
+			it("scoped", function() {
+				let env = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				let run = DocumentHighlight.create(Range.create(2, 10, 2, 15), DocumentHighlightKind.Read);
+				let document = createDocument("ENV image=alpine\nFROM alpine\nRUN echo $image");
+				let ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 2, 12);
+				assertHighlightRanges(ranges, [ run ]);
+
+				let from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				document = createDocument("ENV image=alpine\nFROM $image\nRUN echo $image");
+				ranges = computeHighlightRanges(document, 0, 6);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from ]);
+				ranges = computeHighlightRanges(document, 2, 12);
+				assertHighlightRanges(ranges, [ run ]);
+			});
+
+			it("non-existent variable", function() {
+				let from = DocumentHighlight.create(Range.create(0, 6, 0, 11), DocumentHighlightKind.Read);
+				let env = DocumentHighlight.create(Range.create(1, 4, 1, 9), DocumentHighlightKind.Write);
+				let document = createDocument("FROM $image\nENV image");
+				let ranges = computeHighlightRanges(document, 0, 8);
+				assertHighlightRanges(ranges, [ from ]);
+				ranges = computeHighlightRanges(document, 1, 7);
+				assertHighlightRanges(ranges, [ env ]);
+
+				from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				document = createDocument("ENV\nFROM $image");
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from ]);
+
+				from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				let from2 = DocumentHighlight.create(Range.create(2, 6, 2, 11), DocumentHighlightKind.Read);
+				document = createDocument("ENV\nFROM $image\nFROM $image");
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, [ from, from2 ]);
+
+				env = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
+				from = DocumentHighlight.create(Range.create(1, 6, 1, 12), DocumentHighlightKind.Read);
+				let env2 = DocumentHighlight.create(Range.create(2, 4, 2, 10), DocumentHighlightKind.Write);
+				document = createDocument("ENV image=alpine\nFROM $image2\nENV image2=alpine2");
+				ranges = computeHighlightRanges(document, 0, 8);
+				assertHighlightRanges(ranges, [ env ]);
+				ranges = computeHighlightRanges(document, 1, 10);
+				assertHighlightRanges(ranges, [ from ]);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, [ env2 ]);
+			});
+		});
+	});
+
 	describe("non-existent variable", function() {
 		describe("no FROM", function() {
 			it("${var}", function() {

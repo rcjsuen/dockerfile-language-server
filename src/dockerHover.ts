@@ -99,7 +99,7 @@ export class DockerHover {
 			}
 		}
 
-		let property = DockerDefinition.computeVariableDefinition(image, textDocumentPosition.position);
+		let property = DockerDefinition.findDefinition(dockerfile, textDocumentPosition.position);
 		if (property && property.getValue() !== null) {
 			return { contents: property.getValue() };
 		}

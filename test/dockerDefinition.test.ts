@@ -17,6 +17,10 @@ function computeDefinition(document: TextDocument, position: Position): Location
 	return provider.computeDefinition(document, position);
 }
 
+function findDefinition(document: TextDocument, line: number, character: number): Location {
+	return provider.computeDefinition(document, Position.create(line, character));
+}
+
 function assertLocation(location: Location, uri: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(location.uri, uri);
 	assert.equal(location.range.start.line, startLine);
@@ -1121,6 +1125,152 @@ describe("Dockerfile Document Definition tests", function() {
 				assertLocation(location, document.uri, 5, 4, 5, 7);
 				location = computeDefinition(document, Position.create(7, 11));
 				assertLocation(location, document.uri, 5, 4, 5, 7);
+			});
+		});
+	});
+
+	describe("before FROM", function() {
+		describe("ARG", function() {
+			it("FROM lookup", function() {
+				let document = createDocument("ARG image=alpine\nFROM $image");
+				let location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 2, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+			});
+
+			it("reused variable name", function() {
+				let document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2");
+				let location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 2, 6);
+				assertLocation(location, document.uri, 2, 4, 2, 9);
+
+				document = createDocument("ARG image=alpine\nFROM $image\nARG image=alpine2\nFROM $image");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 2, 6);
+				assertLocation(location, document.uri, 2, 4, 2, 9);
+				location = findDefinition(document, 3, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+
+				document = createDocument("ARG image=alpine\nFROM $image\nFROM $image\nARG image=alpine2");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 2, 8);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 3, 6);
+				assertLocation(location, document.uri, 3, 4, 3, 9);
+			});
+
+			it("scoped", function() {
+				let document = createDocument("ARG image=alpine\nFROM alpine\nRUN echo $image");
+				let location = findDefinition(document, 2, 12);
+				assert.equal(location, null);
+			});
+
+			it("non-existent variable", function() {
+				let document = createDocument("FROM $image\nARG image");
+				let location = findDefinition(document, 0, 8);
+				assert.equal(location, null);
+
+				document = createDocument("ARG\nFROM $image");
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+
+				document = createDocument("ARG image=alpine\nFROM $image2\nARG image2=alpine2");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+				location = findDefinition(document, 2, 6);
+				assertLocation(location, document.uri, 2, 4, 2, 10);
+			});
+		});
+
+		describe("ENV", function() {
+			it("FROM lookup", function() {
+				let document = createDocument("ENV image=alpine\nFROM $image");
+				let location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+				location = findDefinition(document, 2, 8);
+				assert.equal(location, null);
+			});
+
+			it("reused variable name", function() {
+				let document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2");
+				let location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+				location = findDefinition(document, 2, 6);
+				assertLocation(location, document.uri, 2, 4, 2, 9);
+
+				document = createDocument("ENV image=alpine\nFROM $image\nENV image=alpine2\nFROM $image");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+				location = findDefinition(document, 2, 6);
+				assertLocation(location, document.uri, 2, 4, 2, 9);
+				location = findDefinition(document, 3, 8);
+				assert.equal(location, null);
+
+				document = createDocument("ENV image=alpine\nFROM $image\nFROM $image\nENV image=alpine2");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+				location = findDefinition(document, 2, 8);
+				assert.equal(location, null);
+				location = findDefinition(document, 3, 6);
+				assertLocation(location, document.uri, 3, 4, 3, 9);
+			});
+
+			it("scoped", function() {
+				let document = createDocument("ENV image=alpine\nFROM alpine\nRUN echo $image");
+				let location = findDefinition(document, 2, 12);
+				assert.equal(location, null);
+			});
+
+			it("non-existent variable", function() {
+				let document = createDocument("FROM $image\nENV image");
+				let location = findDefinition(document, 0, 8);
+				assert.equal(location, null);
+
+				document = createDocument("ENV\nFROM $image");
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+
+				document = createDocument("ENV image=alpine\nFROM $image2\nENV image2=alpine2");
+				location = findDefinition(document, 0, 6);
+				assertLocation(location, document.uri, 0, 4, 0, 9);
+				location = findDefinition(document, 1, 8);
+				assert.equal(location, null);
+				location = findDefinition(document, 2, 6);
+				assertLocation(location, document.uri, 2, 4, 2, 10);
 			});
 		});
 	});

@@ -17,7 +17,7 @@ import { Healthcheck } from './instructions/healthcheck';
 import { Onbuild } from './instructions/onbuild';
 import { Util } from '../docker';
 
-export class Image {
+export class ImageTemplate {
 
 	private readonly comments: Comment[] = [];
 	private readonly instructions: Instruction[] = [];
