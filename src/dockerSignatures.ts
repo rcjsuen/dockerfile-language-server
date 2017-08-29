@@ -11,6 +11,7 @@ import { Instruction } from './parser/instruction';
 import { Property } from './parser/property';
 import { Arg } from './parser/instructions/arg';
 import { Copy } from './parser/instructions/copy';
+import { Env } from './parser/instructions/env';
 import { From } from './parser/instructions/from';
 import { Healthcheck } from './parser/instructions/healthcheck';
 import { Label } from './parser/instructions/label';
@@ -158,60 +159,60 @@ export class DockerSignatures {
 						}
 					}
 					break;
-				case "LABEL":
-					const labelSignatures = [
+				case "ENV":
+					const envSignatures = [
 						{
-							label: "LABEL key value",
-							documentation: this.documentation.getDocumentation("signatureLabel_Signature0"),
+							label: "ENV key value",
+							documentation: this.documentation.getDocumentation("signatureEnv_Signature0"),
 							parameters: [
 								{
 									label: "key",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature0_Param0")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature0_Param0")
 								},
 								{
 									label: "value",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature0_Param1")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature0_Param1")
 								}
 							]
 						},
 						{
-							label: "LABEL key=value",
-							documentation: this.documentation.getDocumentation("signatureLabel_Signature1"),
+							label: "ENV key=value",
+							documentation: this.documentation.getDocumentation("signatureEnv_Signature1"),
 							parameters: [
 								{
 									label: "key",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature1_Param0")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature1_Param0")
 								},
 								{
 									label: "value",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature1_Param1")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature1_Param1")
 								}
 							]
 						},
 						{
-							label: "LABEL key=value key2=value2",
-							documentation: this.documentation.getDocumentation("signatureLabel_Signature2"),
+							label: "ENV key=value key2=value2",
+							documentation: this.documentation.getDocumentation("signatureEnv_Signature2"),
 							parameters: [
 								{
 									label: "key",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param0")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature2_Param0")
 								},
 								{
 									label: "value",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param1")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature2_Param1")
 								},
 								{
 									label: "key2",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param2")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature2_Param2")
 								},
 								{
 									label: "value2",
-									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param3")
+									documentation: this.documentation.getDocumentation("signatureEnv_Signature2_Param3")
 								}
 							]
 						}
 					];
-					return this.getPropertySignatureHelp(document, position, labelSignatures, (instruction as Label).getProperties());
+					return this.getPropertySignatureHelp(document, position, envSignatures, (instruction as Env).getProperties());
 				case "EXPOSE":
 					let exposeSignatureHelp = {
 						signatures: [
@@ -318,6 +319,60 @@ export class DockerSignatures {
 						}
 					}
 					break;
+				case "LABEL":
+					const labelSignatures = [
+						{
+							label: "LABEL key value",
+							documentation: this.documentation.getDocumentation("signatureLabel_Signature0"),
+							parameters: [
+								{
+									label: "key",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature0_Param0")
+								},
+								{
+									label: "value",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature0_Param1")
+								}
+							]
+						},
+						{
+							label: "LABEL key=value",
+							documentation: this.documentation.getDocumentation("signatureLabel_Signature1"),
+							parameters: [
+								{
+									label: "key",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature1_Param0")
+								},
+								{
+									label: "value",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature1_Param1")
+								}
+							]
+						},
+						{
+							label: "LABEL key=value key2=value2",
+							documentation: this.documentation.getDocumentation("signatureLabel_Signature2"),
+							parameters: [
+								{
+									label: "key",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param0")
+								},
+								{
+									label: "value",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param1")
+								},
+								{
+									label: "key2",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param2")
+								},
+								{
+									label: "value2",
+									documentation: this.documentation.getDocumentation("signatureLabel_Signature2_Param3")
+								}
+							]
+						}
+					];
+					return this.getPropertySignatureHelp(document, position, labelSignatures, (instruction as Label).getProperties());
 				case "ONBUILD":
 					const onbuildArgs = instruction.getArguments();
 					if (onbuildArgs.length > 0 && onbuildArgs[0].isBefore(position)) {

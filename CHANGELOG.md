@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
     - HEALTHCHECK CMD flags
   - instructions ([#162](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/162))
     - ARG
+    - ENV
     - EXPOSE
     - FROM
     - LABEL
