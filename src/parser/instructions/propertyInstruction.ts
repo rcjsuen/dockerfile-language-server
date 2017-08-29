@@ -191,9 +191,11 @@ export abstract class PropertyInstruction extends Instruction {
 					break argumentLoop;
 				case ' ':
 				case '\t':
-					args.push(new Argument(content.substring(argStart, i),
-						Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i))
-					));
+					if (argStart !== -1) {
+						args.push(new Argument(content.substring(argStart, i),
+							Range.create(this.document.positionAt(instructionNameEndOffset + start + argStart), this.document.positionAt(instructionNameEndOffset + start + i))
+						));
+					}
 					argStart = -1;
 					break;
 				default:

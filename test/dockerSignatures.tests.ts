@@ -1183,6 +1183,8 @@ describe("Dockerfile Signature Tests", function() {
 
 				assertEqualsMultiOnly(compute(prefix + " key=value key2=value2 ", 0, offset + 23), 2);
 
+				assertEqualsMultiOnly(compute(prefix + " key=value  key2=value2", 0, offset + 11), 2);
+
 				assertEqualsMultiOnly(compute(prefix + " key=value key2=value2 key3=value3", 0, offset + 1), 0);
 				assertEqualsMultiOnly(compute(prefix + " key=value key2=value2 key3=value3", 0, offset + 4), 0);
 				assertEqualsMultiOnly(compute(prefix + " key=value key2=value2 key3=value3", 0, offset + 5), 1);
