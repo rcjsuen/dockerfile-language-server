@@ -475,6 +475,19 @@ function assertLabel_EqualsMultiOnly(signatureHelp: SignatureHelp, activeParamet
 	assertLabel_EqualsMulti(signatureHelp.signatures[0]);
 }
 
+function assertMaintainer(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.signatures[0].label, "MAINTAINER name");
+	assert.notEqual(signatureHelp.signatures[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].documentation, docs.getDocumentation("signatureMaintainer"));
+	assert.equal(signatureHelp.signatures[0].parameters.length, 1);
+	assert.equal(signatureHelp.signatures[0].parameters[0].label, "name");
+	assert.notEqual(signatureHelp.signatures[0].parameters[0].documentation, null);
+	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureMaintainer_Param"));
+}
+
 function assertOnbuild(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, 0);
@@ -1212,6 +1225,31 @@ describe("Dockerfile Signature Tests", function() {
 
 	testLabel(false);
 
+	function testMaintainer(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
+		describe("MAINTAINER", function() {
+			it("ok", function() {
+				assertMaintainer(compute(onbuild + "MAINTAINER ", 0, triggerOffset + 11));
+				assertMaintainer(compute(onbuild + "MAINTAINER name", 0, triggerOffset + 11));
+				assertMaintainer(compute(onbuild + "MAINTAINER name", 0, triggerOffset + 12));
+				assertMaintainer(compute(onbuild + "MAINTAINER name", 0, triggerOffset + 15));
+			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(onbuild + "MAINTAINER name", 0, triggerOffset + 5);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
+			});
+		});
+	}
+
+	testMaintainer(false);
+
 	describe("ONBUILD", function() {
 		it("trigger instruction", function() {
 			assertOnbuild(compute("ONBUILD ", 0, 8));
@@ -1466,6 +1504,7 @@ describe("Dockerfile Signature Tests", function() {
 		testExpose(true);
 		testHealthcheck(true);
 		testLabel(true);
+		testMaintainer(true);
 		testShell(true);
 		testStopsignal(true);
 		testUser(true);

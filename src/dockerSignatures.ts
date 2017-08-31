@@ -373,6 +373,23 @@ export class DockerSignatures {
 						}
 					];
 					return this.getPropertySignatureHelp(document, position, labelSignatures, (instruction as Label).getProperties());
+				case "MAINTAINER":
+					return {
+						signatures: [
+							{
+								label: "MAINTAINER name",
+								documentation: this.documentation.getDocumentation("signatureMaintainer"),
+								parameters: [
+									{
+										label: "name",
+										documentation: this.documentation.getDocumentation("signatureMaintainer_Param")
+									}
+								]
+							}
+						],
+						activeSignature: 0,
+						activeParameter: 0
+					};
 				case "ONBUILD":
 					const onbuildArgs = instruction.getArguments();
 					if (onbuildArgs.length > 0 && onbuildArgs[0].isBefore(position)) {

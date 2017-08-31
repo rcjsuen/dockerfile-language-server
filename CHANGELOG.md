@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
     - EXPOSE
     - FROM
     - LABEL
+    - MAINTAINER
     - ONBUILD
     - SHELL
     - STOPSIGNAL
