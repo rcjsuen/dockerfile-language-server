@@ -958,13 +958,6 @@ describe("Dockerfile Signature Tests", function() {
 					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 37), 2);
 				});
 
-				it("...", function() {
-					assertShell(compute(prefix + " node ", 0, offset + 6), 1);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 6), 1);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 12), 1);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 15), 1);
-				});
-
 				it("valid JSON", function() {
 					assertShell(compute(prefix + " [] ", 0, offset + 4), 1);
 					assertShell(compute(prefix + "  [ \"cmd\" ] ", 0, offset + 12), 2);
