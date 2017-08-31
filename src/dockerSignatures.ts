@@ -9,13 +9,13 @@ import { Dockerfile } from './parser/dockerfile';
 import { Argument } from './parser/argument';
 import { Instruction } from './parser/instruction';
 import { Property } from './parser/property';
+import { JSONInstruction } from './parser/instructions/jsonInstruction';
 import { Arg } from './parser/instructions/arg';
 import { Copy } from './parser/instructions/copy';
 import { Env } from './parser/instructions/env';
 import { From } from './parser/instructions/from';
 import { Healthcheck } from './parser/instructions/healthcheck';
 import { Label } from './parser/instructions/label';
-import { Shell } from './parser/instructions/shell';
 import { PlainTextDocumentation } from './dockerPlainText';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
@@ -159,6 +159,73 @@ export class DockerSignatures {
 						}
 					}
 					break;
+				case "ENTRYPOINT":
+					const entrypoint = instruction as JSONInstruction;
+					const entrypointJsonSignature = {
+						label: "ENTRYPOINT [ \"executable\", \"parameter\", ... ]",
+						documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature0"),
+						parameters: [
+							{
+								label: "["
+							},
+							{
+								label: "\"executable\"",
+								documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature0_Param1")
+							},
+							{
+								label: "\"parameter\"",
+								documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature0_Param2")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature0_Param3")
+							},
+							{
+								label: "]"
+							}
+						]
+					};
+					const entrypointShellSignature = {
+						label: "ENTRYPOINT executable parameter ...",
+						documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature1"),
+						parameters: [
+							{
+								label: "executable",
+								documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature1_Param0")
+							},
+							{
+								label: "parameter",
+								documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature1_Param1")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureEntrypoint_Signature1_Param2")
+							}
+						]
+					};
+					let activeParameter = this.getJSONSignatureActiveParameter(entrypoint, position);
+					if (activeParameter === -1) {
+						activeParameter = this.getSignatureActiveParameter(entrypoint, position, 2);
+						return {
+							signatures: [ entrypointShellSignature ],
+							activeSignature: 0,
+							activeParameter: activeParameter
+						}
+					} else if (activeParameter === 0) {
+						return {
+							signatures: [
+								entrypointJsonSignature,
+								entrypointShellSignature
+							],
+							activeSignature: 0,
+							activeParameter: activeParameter
+						}
+					}
+					return {
+						signatures: [ entrypointJsonSignature ],
+						activeSignature: 0,
+						activeParameter: activeParameter
+					}
 				case "ENV":
 					const envSignatures = [
 						{
@@ -412,7 +479,7 @@ export class DockerSignatures {
 						activeParameter: 0
 					};
 				case "SHELL":
-					let shell = instruction as Shell;
+					let shell = instruction as JSONInstruction;
 					let shellSignatureHelp: SignatureHelp = {
 						signatures: [
 							{
@@ -443,41 +510,8 @@ export class DockerSignatures {
 						activeSignature: 0,
 						activeParameter: null
 					};
-
-					const closingBracket = shell.getClosingBracket();
-					if (closingBracket) {
-						let range = closingBracket.getRange();
-						if (range.end.line === position.line && range.end.character === position.character) {
-							shellSignatureHelp.activeParameter = 4;
-							return shellSignatureHelp;
-						} else if (closingBracket.isBefore(position)) {
-							return null;
-						}
-					}
-
-					const parameter = shell.getParameter();
-					if (parameter && parameter.isBefore(position)) {
-						shellSignatureHelp.activeParameter = 3;
-						return shellSignatureHelp;
-					}
-
-					const executable = shell.getExecutable();
-					if (executable && executable.isBefore(position)) {
-						shellSignatureHelp.activeParameter = 2;
-						return shellSignatureHelp;
-					}
-
-					const openingBracket = shell.getOpeningBracket();
-					if (openingBracket) {
-						let range = openingBracket.getRange();
-						if ((range.end.line === position.line && range.end.character === position.character) || openingBracket.isBefore(position)) {
-							shellSignatureHelp.activeParameter = 1;
-							return shellSignatureHelp;
-						}
-					}
-
-					shellSignatureHelp.activeParameter = 0;
-					return shellSignatureHelp;
+					shellSignatureHelp.activeParameter = this.getJSONSignatureActiveParameter(shell, position);
+					return shellSignatureHelp.activeParameter === -1 ? null : shellSignatureHelp;
 				case "STOPSIGNAL":
 					return {
 						signatures: [
@@ -772,6 +806,53 @@ export class DockerSignatures {
 			return tag || digest ? 2 : 1;
 		}
 		return inTag || inDigest ? 1 : 0;
+	}
+
+	private getJSONSignatureActiveParameter(instruction: JSONInstruction, position: Position): number {
+		const closingBracket = instruction.getClosingBracket();
+		if (closingBracket) {
+			const range = closingBracket.getRange();
+			if (range.end.line === position.line && range.end.character === position.character) {
+				return 4;
+			} else if (closingBracket.isBefore(position)) {
+				return -1;
+			}
+		}
+
+		const parameter = instruction.getSecondJSONElement();
+		if (parameter && parameter.isBefore(position)) {
+			return 3;
+		}
+
+		const executable = instruction.getFirstJSONElement();
+		if (executable && executable.isBefore(position)) {
+			return 2;
+		}
+
+		const openingBracket = instruction.getOpeningBracket();
+		if (openingBracket) {
+			const range = openingBracket.getRange();
+			if ((range.end.line === position.line && range.end.character === position.character) || openingBracket.isBefore(position)) {
+				return 1;
+			}
+			return 0;
+		} else if (instruction.getArguments().length === 0) {
+			return 0;
+		}
+
+		return -1;
+	}
+
+	private getSignatureActiveParameter(instruction: Instruction, position: Position, max: number): number {
+		const args = instruction.getArguments();
+		for (let i = args.length - 1; i >= 0; i--) {
+			if (args[i].isBefore(position)) {
+				return Math.min(i + 1, max);
+			} else if (Util.isInsideRange(position, args[i].getRange())) {
+				return Math.min(i, max);
+			}
+		}
+		return 0;
 	}
 
 	private getPropertySignatureHelp(document: TextDocument, position: Position, signatures: SignatureInformation[], properties: Property[]): SignatureHelp {
