@@ -79,6 +79,8 @@ export class PlainTextDocumentation {
 		"signatureUser_Signature2_Param": "The UID to use.",
 		"signatureUser_Signature3": "Set the UID and GID to use for running any RUN, CMD, and ENTRYPOINT instructions that follow.",
 		"signatureUser_Signature3_Param1": "The GID to use.",
+		"signatureVolume_Signature0": "Create mount points for holding externally mounted volumes from the native host or other containers.",
+		"signatureVolume_Signature0_Param0": "The name of the mount point.",
 		"signatureWorkdir": "Set the working directory for any ADD, COPY, CMD, ENTRYPOINT, or RUN instructions that follow.",
 		"signatureWorkdir_Param": "The absolute or relative path to use as the working directory. Will be created if it does not exist.",
 
@@ -290,6 +292,12 @@ export class PlainTextDocumentation {
 			signatureUser_Signature3: this.dockerMessages["signatureUser_Signature3"],
 			signatureUser_Signature3_Param0: this.dockerMessages["signatureUser_Signature2_Param"],
 			signatureUser_Signature3_Param1: this.dockerMessages["signatureUser_Signature3_Param1"],
+			signatureVolume_Signature0: this.dockerMessages["signatureVolume_Signature0"],
+			signatureVolume_Signature0_Param0: this.dockerMessages["signatureVolume_Signature0_Param0"],
+			signatureVolume_Signature0_Param1: this.dockerMessages["signatureVolume_Signature0_Param0"],
+			signatureVolume_Signature1: this.dockerMessages["signatureVolume_Signature0"],
+			signatureVolume_Signature1_Param1: this.dockerMessages["signatureVolume_Signature0_Param0"],
+			signatureVolume_Signature1_Param2: this.dockerMessages["signatureVolume_Signature0_Param0"],
 			signatureWorkdir: this.dockerMessages["signatureWorkdir"],
 			signatureWorkdir_Param: this.dockerMessages["signatureWorkdir_Param"]
 		};

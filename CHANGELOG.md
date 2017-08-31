@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
     - SHELL
     - STOPSIGNAL
     - USER
+    - VOLUME
     - WORKDIR
 
 ### Fixed

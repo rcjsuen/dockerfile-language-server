@@ -667,6 +667,58 @@ function assertUser_GroupsOnly(signatureHelp: SignatureHelp, activeParameter: nu
 	assert.equal(signatureHelp.signatures[1].parameters[1].documentation, docs.getDocumentation("signatureUser_Signature3_Param1"));
 }
 
+function assertVolume_JSON(signature: SignatureInformation) {
+	assert.equal(signature.label, "VOLUME [ \"/vol\", ... ]");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureVolume_Signature1"));
+	assert.equal(signature.parameters.length, 4);
+	assert.equal(signature.parameters[0].label, "[");
+	assert.equal(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[1].label, "\"/vol\"");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureVolume_Signature1_Param1"));
+	assert.equal(signature.parameters[2].label, "...");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureVolume_Signature1_Param2"));
+	assert.equal(signature.parameters[3].label, "]");
+	assert.equal(signature.parameters[3].documentation, null);
+}
+
+function assertVolume_Shell(signature: SignatureInformation) {
+	assert.equal(signature.label, "VOLUME /vol ...");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureVolume_Signature0"));
+	assert.equal(signature.parameters.length, 2);
+	assert.equal(signature.parameters[0].label, "/vol");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureVolume_Signature0_Param0"));
+	assert.equal(signature.parameters[1].label, "...");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureVolume_Signature0_Param1"));
+}
+
+function assertVolume(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 2);
+	assertVolume_JSON(signatureHelp.signatures[0]);
+	assertVolume_Shell(signatureHelp.signatures[1]);
+}
+
+function assertVolume_JSONOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertVolume_JSON(signatureHelp.signatures[0]);
+}
+
+function assertVolume_ShellOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertVolume_Shell(signatureHelp.signatures[0]);
+}
+
 function assertWorkdir(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, 0);
@@ -823,7 +875,7 @@ describe("Dockerfile Signature Tests", function() {
 
 	testCopy(false);
 
-	function testParameterizedInstruction(instruction, trigger: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
+	function testParameterizedInstruction(instruction, trigger: boolean, singleParameter: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
 		const onbuild = trigger ? "ONBUILD " : "";
 		const prefix = onbuild + instruction;
 		const triggerOffset = onbuild.length;
@@ -862,15 +914,17 @@ describe("Dockerfile Signature Tests", function() {
 				});
 
 				it("...", function() {
-					assertJSON(compute(prefix + " [\"cmd\", \"/C\",", 0, offset + 14), 3);
-					assertJSON(compute(prefix + " [\"cmd\", \"/C\", ", 0, offset + 15), 3);
-					assertJSON(compute(prefix + " [\"cmd\", \"/C\", \"/C\"]", 0, offset + 19), 3);
+					const activeParameter = singleParameter ? 2 : 3;
+					assertJSON(compute(prefix + " [\"cmd\", \"/C\",", 0, offset + 14), activeParameter);
+					assertJSON(compute(prefix + " [\"cmd\", \"/C\", ", 0, offset + 15), activeParameter);
+					assertJSON(compute(prefix + " [\"cmd\", \"/C\", \"/C\"]", 0, offset + 19), activeParameter);
 				});
 
 				it("]", function() {
-					assertJSON(compute(prefix + " []", 0, offset + 3), 4);
-					assertJSON(compute(prefix + "  [ ]", 0, offset + 5), 4);
-					assertJSON(compute(prefix + "  [ \"cmd\" ]", 0, offset + 11), 4);
+					const activeParameter = singleParameter ? 3 : 4;
+					assertJSON(compute(prefix + " []", 0, offset + 3), activeParameter);
+					assertJSON(compute(prefix + "  [ ]", 0, offset + 5), activeParameter);
+					assertJSON(compute(prefix + "  [ \"cmd\" ]", 0, offset + 11), activeParameter);
 				});
 
 				it("invalid", function() {
@@ -939,35 +993,37 @@ describe("Dockerfile Signature Tests", function() {
 				});
 
 				it("...", function() {
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 16), 2);
+					const activeParameter = singleParameter ? 1 : 2;
+					assertShell(compute(prefix + " node --inspect ", 0, offset + 16), activeParameter);
 
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 16), 2);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 20), 2);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 25), 2);
+					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 16), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 20), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 25), activeParameter);
 
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 16), 2);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 20), 2);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 25), 2);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 26), 2);
+					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 16), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 20), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 25), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 26), activeParameter);
 
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 16), 2);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 20), 2);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 25), 2);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 26), 2);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 30), 2);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 37), 2);
+					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 16), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 20), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 25), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 26), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 30), activeParameter);
+					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 37), activeParameter);
 				});
 
 				it("valid JSON", function() {
+					const activeParameter = singleParameter ? 1 : 2;
 					assertShell(compute(prefix + " [] ", 0, offset + 4), 1);
-					assertShell(compute(prefix + "  [ \"cmd\" ] ", 0, offset + 12), 2);
+					assertShell(compute(prefix + "  [ \"cmd\" ] ", 0, offset + 12), activeParameter);
 				});
 			});
 		});
 	}
 
 	function testEntrypoint(trigger: boolean) {
-		testParameterizedInstruction("ENTRYPOINT", trigger, assertEntrypoint, assertEntrypoint_JSONOnly, assertEntrypoint_ShellOnly);
+		testParameterizedInstruction("ENTRYPOINT", trigger, false, assertEntrypoint, assertEntrypoint_JSONOnly, assertEntrypoint_ShellOnly);
 	}
 
 	testEntrypoint(false);
@@ -1678,6 +1734,12 @@ describe("Dockerfile Signature Tests", function() {
 
 	testUser(false);
 
+	function testVolume(trigger: boolean) {
+		testParameterizedInstruction("VOLUME", trigger, true, assertVolume, assertVolume_JSONOnly, assertVolume_ShellOnly);
+	}
+
+	testVolume(false);
+
 	function testWorkdir(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
 		let triggerOffset = trigger ? 8 : 0;
@@ -1716,6 +1778,7 @@ describe("Dockerfile Signature Tests", function() {
 		testShell(true);
 		testStopsignal(true);
 		testUser(true);
+		testVolume(true);
 		testWorkdir(true);
 	});
 });

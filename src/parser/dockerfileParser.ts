@@ -22,6 +22,7 @@ import { Shell } from './instructions/shell';
 import { StopSignal } from './instructions/stopSignal';
 import { Workdir } from './instructions/workdir';
 import { User } from './instructions/user';
+import { Volume } from './instructions/volume';
 import { Dockerfile } from './dockerfile';
 import { DIRECTIVE_ESCAPE } from '../docker';
 
@@ -57,6 +58,8 @@ export class DockerfileParser {
 				return new Workdir(document, lineRange, escapeChar, instruction, instructionRange);
 			case "USER":
 				return new User(document, lineRange, escapeChar, instruction, instructionRange);
+			case "VOLUME":
+				return new Volume(document, lineRange, escapeChar, instruction, instructionRange);
 		}
 		return new Instruction(document, lineRange, escapeChar, instruction, instructionRange);
 	}

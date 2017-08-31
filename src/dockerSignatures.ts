@@ -203,28 +203,28 @@ export class DockerSignatures {
 							}
 						]
 					};
-					let activeParameter = this.getJSONSignatureActiveParameter(entrypoint, position);
-					if (activeParameter === -1) {
-						activeParameter = this.getSignatureActiveParameter(entrypoint, position, 2);
+					let entrypointActiveParameter = this.getJSONSignatureActiveParameter(entrypoint, position, false);
+					if (entrypointActiveParameter === -1) {
+						entrypointActiveParameter = this.getSignatureActiveParameter(entrypoint, position, 2);
 						return {
 							signatures: [ entrypointShellSignature ],
 							activeSignature: 0,
-							activeParameter: activeParameter
+							activeParameter: entrypointActiveParameter
 						}
-					} else if (activeParameter === 0) {
+					} else if (entrypointActiveParameter === 0) {
 						return {
 							signatures: [
 								entrypointJsonSignature,
 								entrypointShellSignature
 							],
 							activeSignature: 0,
-							activeParameter: activeParameter
+							activeParameter: entrypointActiveParameter
 						}
 					}
 					return {
 						signatures: [ entrypointJsonSignature ],
 						activeSignature: 0,
-						activeParameter: activeParameter
+						activeParameter: entrypointActiveParameter
 					}
 				case "ENV":
 					const envSignatures = [
@@ -510,7 +510,7 @@ export class DockerSignatures {
 						activeSignature: 0,
 						activeParameter: null
 					};
-					shellSignatureHelp.activeParameter = this.getJSONSignatureActiveParameter(shell, position);
+					shellSignatureHelp.activeParameter = this.getJSONSignatureActiveParameter(shell, position, false);
 					return shellSignatureHelp.activeParameter === -1 ? null : shellSignatureHelp;
 				case "STOPSIGNAL":
 					return {
@@ -626,6 +626,65 @@ export class DockerSignatures {
 						}
 					}
 					return userSignatureHelp;
+				case "VOLUME":
+					const volume = instruction as JSONInstruction;
+					const volumeJsonSignature = {
+						label: "VOLUME [ \"/vol\", ... ]",
+						documentation: this.documentation.getDocumentation("signatureVolume_Signature1"),
+						parameters: [
+							{
+								label: "["
+							},
+							{
+								label: "\"/vol\"",
+								documentation: this.documentation.getDocumentation("signatureVolume_Signature1_Param1")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureVolume_Signature1_Param2")
+							},
+							{
+								label: "]"
+							}
+						]
+					};
+					const volumeShellSignature = {
+						label: "VOLUME /vol ...",
+						documentation: this.documentation.getDocumentation("signatureVolume_Signature0"),
+						parameters: [
+							{
+								label: "/vol",
+								documentation: this.documentation.getDocumentation("signatureVolume_Signature0_Param0")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureVolume_Signature0_Param1")
+							}
+						]
+					};
+					let volumeActiveParameter = this.getJSONSignatureActiveParameter(volume, position, true);
+					if (volumeActiveParameter === -1) {
+						volumeActiveParameter = this.getSignatureActiveParameter(volume, position, 1);
+						return {
+							signatures: [ volumeShellSignature ],
+							activeSignature: 0,
+							activeParameter: volumeActiveParameter
+						}
+					} else if (volumeActiveParameter === 0) {
+						return {
+							signatures: [
+								volumeJsonSignature,
+								volumeShellSignature
+							],
+							activeSignature: 0,
+							activeParameter: volumeActiveParameter
+						}
+					}
+					return {
+						signatures: [ volumeJsonSignature ],
+						activeSignature: 0,
+						activeParameter: volumeActiveParameter
+					}
 				case "WORKDIR":
 					return {
 						signatures: [
@@ -808,20 +867,22 @@ export class DockerSignatures {
 		return inTag || inDigest ? 1 : 0;
 	}
 
-	private getJSONSignatureActiveParameter(instruction: JSONInstruction, position: Position): number {
+	private getJSONSignatureActiveParameter(instruction: JSONInstruction, position: Position, singleParameter: boolean): number {
 		const closingBracket = instruction.getClosingBracket();
 		if (closingBracket) {
 			const range = closingBracket.getRange();
 			if (range.end.line === position.line && range.end.character === position.character) {
-				return 4;
+				return singleParameter ? 3 : 4;
 			} else if (closingBracket.isBefore(position)) {
 				return -1;
 			}
 		}
 
-		const parameter = instruction.getSecondJSONElement();
-		if (parameter && parameter.isBefore(position)) {
-			return 3;
+		if (!singleParameter) {
+			const parameter = instruction.getSecondJSONElement();
+			if (parameter && parameter.isBefore(position)) {
+				return 3;
+			}
 		}
 
 		const executable = instruction.getFirstJSONElement();
