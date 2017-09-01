@@ -32,11 +32,8 @@ export class JSONInstruction extends Instruction {
 			return;
 		}
 
+		const argsOffset = document.offsetAt(this.getArgumentsRange().start);
 		let fullStart = -1;
-		let rangeStart = -1;
-		let rangeEnd = -1;
-		let argsRange = this.getArgumentsRange();
-		const argsOffset = document.offsetAt(argsRange.start);
 		let last = "";
 		let quoted = false;
 		argsCheck: for (let i = 0; i < argsContent.length; i++) {
@@ -59,7 +56,6 @@ export class JSONInstruction extends Instruction {
 						continue;
 					} else if (last === '"') {
 						if (quoted) {
-							rangeEnd = i + 1;
 							// quoted string done
 							quoted = false;
 						} else {
