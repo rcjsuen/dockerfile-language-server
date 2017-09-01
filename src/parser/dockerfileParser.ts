@@ -9,6 +9,7 @@ import { Comment } from './comment';
 import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Line } from './line';
+import { JSONInstruction } from './instructions/jsonInstruction';
 import { Arg } from './instructions/arg';
 import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
@@ -50,6 +51,8 @@ export class DockerfileParser {
 				return new Label(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ONBUILD":
 				return new Onbuild(document, lineRange, escapeChar, instruction, instructionRange);
+			case "RUN":
+				return new JSONInstruction(document, lineRange, escapeChar, instruction, instructionRange);
 			case "SHELL":
 				return new Shell(document, lineRange, escapeChar, instruction, instructionRange);
 			case "STOPSIGNAL":

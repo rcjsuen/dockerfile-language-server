@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
     - LABEL
     - MAINTAINER
     - ONBUILD
+    - RUN
     - SHELL
     - STOPSIGNAL
     - USER

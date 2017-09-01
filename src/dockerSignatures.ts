@@ -203,29 +203,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					let entrypointActiveParameter = this.getJSONSignatureActiveParameter(entrypoint, position, false);
-					if (entrypointActiveParameter === -1) {
-						entrypointActiveParameter = this.getSignatureActiveParameter(entrypoint, position, 2);
-						return {
-							signatures: [ entrypointShellSignature ],
-							activeSignature: 0,
-							activeParameter: entrypointActiveParameter
-						}
-					} else if (entrypointActiveParameter === 0) {
-						return {
-							signatures: [
-								entrypointJsonSignature,
-								entrypointShellSignature
-							],
-							activeSignature: 0,
-							activeParameter: entrypointActiveParameter
-						}
-					}
-					return {
-						signatures: [ entrypointJsonSignature ],
-						activeSignature: 0,
-						activeParameter: entrypointActiveParameter
-					}
+					return this.getJSONInstructionSignatureHelp(entrypoint, position, entrypointJsonSignature, entrypointShellSignature, true, false);
 				case "ENV":
 					const envSignatures = [
 						{
@@ -478,6 +456,51 @@ export class DockerSignatures {
 						activeSignature: 0,
 						activeParameter: 0
 					};
+				case "RUN":
+					const run = instruction as JSONInstruction;
+					const runShellSignature = {
+						label: "RUN command parameter ...",
+						documentation: this.documentation.getDocumentation("signatureRun_Signature0"),
+						parameters: [
+							{
+								label: "command",
+								documentation: this.documentation.getDocumentation("signatureRun_Signature0_Param0")
+							},
+							{
+								label: "parameter",
+								documentation: this.documentation.getDocumentation("signatureRun_Signature0_Param1")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureRun_Signature0_Param2")
+							}
+						]
+					};
+					const runJsonSignature = {
+						label: "RUN [ \"command\", \"parameter\", ... ]",
+						documentation: this.documentation.getDocumentation("signatureRun_Signature1"),
+						parameters: [
+							{
+								label: "["
+							},
+							{
+								label: "\"command\"",
+								documentation: this.documentation.getDocumentation("signatureRun_Signature1_Param1")
+							},
+							{
+								label: "\"parameter\"",
+								documentation: this.documentation.getDocumentation("signatureRun_Signature1_Param2")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureRun_Signature1_Param3")
+							},
+							{
+								label: "]"
+							}
+						]
+					};
+					return this.getJSONInstructionSignatureHelp(run, position, runJsonSignature, runShellSignature, false, false);
 				case "SHELL":
 					let shell = instruction as JSONInstruction;
 					let shellSignatureHelp: SignatureHelp = {
@@ -662,29 +685,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					let volumeActiveParameter = this.getJSONSignatureActiveParameter(volume, position, true);
-					if (volumeActiveParameter === -1) {
-						volumeActiveParameter = this.getSignatureActiveParameter(volume, position, 1);
-						return {
-							signatures: [ volumeShellSignature ],
-							activeSignature: 0,
-							activeParameter: volumeActiveParameter
-						}
-					} else if (volumeActiveParameter === 0) {
-						return {
-							signatures: [
-								volumeJsonSignature,
-								volumeShellSignature
-							],
-							activeSignature: 0,
-							activeParameter: volumeActiveParameter
-						}
-					}
-					return {
-						signatures: [ volumeJsonSignature ],
-						activeSignature: 0,
-						activeParameter: volumeActiveParameter
-					}
+					return this.getJSONInstructionSignatureHelp(volume, position, volumeJsonSignature, volumeShellSignature, true, true);
 				case "WORKDIR":
 					return {
 						signatures: [
@@ -865,6 +866,42 @@ export class DockerSignatures {
 			return tag || digest ? 2 : 1;
 		}
 		return inTag || inDigest ? 1 : 0;
+	}
+
+	private getJSONInstructionSignatureHelp(instruction: JSONInstruction, position: Position, jsonSignature: SignatureInformation, shellSignature: SignatureInformation, jsonFirst: boolean, singleParameter: boolean): SignatureHelp {
+		let activeParameter = this.getJSONSignatureActiveParameter(instruction, position, singleParameter);
+		if (activeParameter === -1) {
+			activeParameter = this.getSignatureActiveParameter(instruction, position, singleParameter ? 1 : 2);
+			return {
+				signatures: [ shellSignature ],
+				activeSignature: 0,
+				activeParameter: activeParameter
+			}
+		} else if (activeParameter === 0) {
+			if (jsonFirst) {
+				return {
+					signatures: [
+						jsonSignature,
+						shellSignature
+					],
+					activeSignature: 0,
+					activeParameter: 0
+				}
+			}
+			return {
+				signatures: [
+					shellSignature,
+					jsonSignature
+				],
+				activeSignature: 0,
+				activeParameter: 0
+			}
+		}
+		return {
+			signatures: [ jsonSignature ],
+			activeSignature: 0,
+			activeParameter: activeParameter
+		}
 	}
 
 	private getJSONSignatureActiveParameter(instruction: JSONInstruction, position: Position, singleParameter: boolean): number {

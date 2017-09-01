@@ -559,6 +559,64 @@ function assertOnbuild(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureOnbuild_Param"));
 }
 
+function assertRun_Shell(signature: SignatureInformation) {
+	assert.equal(signature.label, "RUN command parameter ...");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureRun_Signature0"));
+	assert.equal(signature.parameters.length, 3);
+	assert.equal(signature.parameters[0].label, "command");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureRun_Signature0_Param0"));
+	assert.equal(signature.parameters[1].label, "parameter");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureRun_Signature0_Param1"));
+	assert.equal(signature.parameters[2].label, "...");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureRun_Signature0_Param2"));
+}
+
+function assertRun_JSON(signature: SignatureInformation) {
+	assert.equal(signature.label, "RUN [ \"command\", \"parameter\", ... ]");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureRun_Signature1"));
+	assert.equal(signature.parameters.length, 5);
+	assert.equal(signature.parameters[0].label, "[");
+	assert.equal(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[1].label, "\"command\"");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureRun_Signature1_Param1"));
+	assert.equal(signature.parameters[2].label, "\"parameter\"");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureRun_Signature1_Param2"));
+	assert.equal(signature.parameters[3].label, "...");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureRun_Signature1_Param3"));
+	assert.equal(signature.parameters[4].label, "]");
+	assert.equal(signature.parameters[4].documentation, null);
+}
+
+function assertRun(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 2);
+	assertRun_Shell(signatureHelp.signatures[0]);
+	assertRun_JSON(signatureHelp.signatures[1]);
+}
+
+function assertRun_JSONOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertRun_JSON(signatureHelp.signatures[0]);
+}
+
+function assertRun_ShellOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertRun_Shell(signatureHelp.signatures[0]);
+}
+
 function assertShell(signatureHelp: SignatureHelp, activeParameter: number) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, activeParameter);
@@ -1532,6 +1590,12 @@ describe("Dockerfile Signature Tests", function() {
 		});
 	});
 
+	function testRun(trigger: boolean) {
+		testParameterizedInstruction("RUN", trigger, false, assertRun, assertRun_JSONOnly, assertRun_ShellOnly);
+	}
+
+	testRun(false);
+
 	function testShell(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
 		let triggerOffset = trigger ? 8 : 0;
@@ -1775,6 +1839,7 @@ describe("Dockerfile Signature Tests", function() {
 		testHealthcheck(true);
 		testLabel(true);
 		testMaintainer(true);
+		testRun(true);
 		testShell(true);
 		testStopsignal(true);
 		testUser(true);
