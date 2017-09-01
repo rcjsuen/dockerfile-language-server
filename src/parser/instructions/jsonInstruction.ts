@@ -10,8 +10,7 @@ export class JSONInstruction extends Instruction {
 
 	private readonly openingBracket: Argument;
 	private readonly closingBracket: Argument;
-	private readonly executable: Argument;
-	private readonly parameter: Argument;
+	private readonly jsonStrings = [];
 
 	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range, escapeChar, instruction, instructionRange);
@@ -73,19 +72,10 @@ export class JSONInstruction extends Instruction {
 					break;
 				case ',':
 					if (!quoted) {
-						if (this.executable) {
-							if (!this.parameter) {
-								this.parameter = new Argument(
-									argsContent.substring(fullStart, i),
-									Range.create(document.positionAt(argsOffset + fullStart), document.positionAt(argsOffset + i))
-								);
-							}
-						} else {
-							this.executable = new Argument(
-								argsContent.substring(fullStart, i),
-								Range.create(document.positionAt(argsOffset + fullStart), document.positionAt(argsOffset + i))
-							);
-						}
+						this.jsonStrings.push(new Argument(
+							argsContent.substring(fullStart, i),
+							Range.create(document.positionAt(argsOffset + fullStart), document.positionAt(argsOffset + i))
+						));
 						fullStart = i + 1;
 						if (last === '"') {
 							last = ','
@@ -96,6 +86,10 @@ export class JSONInstruction extends Instruction {
 					break;
 				case ']':
 					if (!quoted && last !== "") {
+						this.jsonStrings.push(new Argument(
+							argsContent.substring(fullStart, i),
+							Range.create(document.positionAt(argsOffset + fullStart), document.positionAt(argsOffset + i))
+						));
 						this.closingBracket = new Argument(
 							"]", Range.create(document.positionAt(argsOffset + i), document.positionAt(argsOffset + i + 1))
 						);
@@ -167,12 +161,8 @@ export class JSONInstruction extends Instruction {
 		return this.openingBracket;
 	}
 
-	public getFirstJSONElement(): Argument | null {
-		return this.executable;
-	}
-
-	public getSecondJSONElement(): Argument | null {
-		return this.parameter;
+	public getJSONStrings(): Argument[] {
+		return this.jsonStrings;
 	}
 
 	public getClosingBracket(): Argument | null {

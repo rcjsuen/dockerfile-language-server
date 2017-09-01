@@ -61,6 +61,64 @@ function assertKeyValue_EqualsMulti(signature: SignatureInformation, label: stri
 	assert.equal(signature.parameters[3].documentation, paramDoc4);
 }
 
+function assertAdd_Shell(signature: SignatureInformation) {
+	assert.equal(signature.label, "ADD source ... dest");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureAdd_Signature0"));
+	assert.equal(signature.parameters.length, 3);
+	assert.equal(signature.parameters[0].label, "source");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureAdd_Signature0_Param0"));
+	assert.equal(signature.parameters[1].label, "...");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureAdd_Signature0_Param1"));
+	assert.equal(signature.parameters[2].label, "dest");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureAdd_Signature0_Param2"));
+}
+
+function assertAdd_JSON(signature: SignatureInformation) {
+	assert.equal(signature.label, "ADD [ \"source\", ..., \"dest\" ]");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureAdd_Signature1"));
+	assert.equal(signature.parameters.length, 5);
+	assert.equal(signature.parameters[0].label, "[");
+	assert.equal(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[1].label, "\"source\"");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureAdd_Signature0_Param1"));
+	assert.equal(signature.parameters[2].label, "...");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureAdd_Signature1_Param2"));
+	assert.equal(signature.parameters[3].label, "\"dest\"");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureAdd_Signature1_Param3"));
+	assert.equal(signature.parameters[4].label, "]");
+	assert.equal(signature.parameters[4].documentation, null);
+}
+
+function assertAdd(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 2);
+	assertAdd_Shell(signatureHelp.signatures[0]);
+	assertAdd_JSON(signatureHelp.signatures[1]);
+}
+
+function assertAdd_JSONOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertAdd_JSON(signatureHelp.signatures[0]);
+}
+
+function assertAdd_ShellOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertAdd_Shell(signatureHelp.signatures[0]);
+}
+
 function assertEscape(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, 0);
@@ -832,6 +890,12 @@ describe("Dockerfile Signature Tests", function() {
 		});
 	});
 
+	function testAdd(trigger: boolean) {
+		testParameterizedInstruction("ADD", trigger, false, false, assertAdd, assertAdd_JSONOnly, assertAdd_ShellOnly);
+	}
+
+	testAdd(false);
+
 	function testArg(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
 		let triggerOffset = trigger ? 8 : 0;
@@ -933,7 +997,7 @@ describe("Dockerfile Signature Tests", function() {
 
 	testCopy(false);
 
-	function testParameterizedInstruction(instruction, trigger: boolean, singleParameter: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
+	function testParameterizedInstruction(instruction, trigger: boolean, singleParameter: boolean, finalRepeats: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
 		const onbuild = trigger ? "ONBUILD " : "";
 		const prefix = onbuild + instruction;
 		const triggerOffset = onbuild.length;
@@ -956,19 +1020,21 @@ describe("Dockerfile Signature Tests", function() {
 					assertJSON(compute(prefix + " [\"cmd\",", 0, offset + 7), 1);
 					assertJSON(compute(prefix + " [ \"cmd\",", 0, offset + 8), 1);
 					assertJSON(compute(prefix + " []", 0, offset + 2), 1);
+					assertJSON(compute(prefix + " [ \"cmd\" ", 0, offset + 9), 1);
 				});
 
 				it("parameter", function() {
-					assertJSON(compute(prefix + " [\"cmd\",", 0, offset + 8), 2);
-					assertJSON(compute(prefix + " [ \"cmd\",", 0, offset + 9), 2);
-					assertJSON(compute(prefix + " [\"cmd\" ,", 0, offset + 9), 2);
-					assertJSON(compute(prefix + " [ \"cmd\" ,", 0, offset + 10), 2);
-					assertJSON(compute(prefix + " [\"cmd\", ", 0, offset + 9), 2);
-					assertJSON(compute(prefix + " [ \"cmd\", ", 0, offset + 10), 2);
-					assertJSON(compute(prefix + " [\"cmd\" , ", 0, offset + 10), 2);
-					assertJSON(compute(prefix + " [ \"cmd\" , ", 0, offset + 11), 2);
-					assertJSON(compute(prefix + " [ \"cmd\" , \"\"", 0, offset + 13), 2);
-					assertJSON(compute(prefix + " [ \"cmd\" , \"\",", 0, offset + 13), 2);
+					const activeParameter = finalRepeats ? 2 : 3;
+					assertJSON(compute(prefix + " [\"cmd\",", 0, offset + 8), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\",", 0, offset + 9), activeParameter);
+					assertJSON(compute(prefix + " [\"cmd\" ,", 0, offset + 9), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\" ,", 0, offset + 10), activeParameter);
+					assertJSON(compute(prefix + " [\"cmd\", ", 0, offset + 9), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\", ", 0, offset + 10), activeParameter);
+					assertJSON(compute(prefix + " [\"cmd\" , ", 0, offset + 10), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\" , ", 0, offset + 11), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\" , \"\"", 0, offset + 13), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\" , \"\",", 0, offset + 13), activeParameter);
 				});
 
 				it("...", function() {
@@ -976,6 +1042,30 @@ describe("Dockerfile Signature Tests", function() {
 					assertJSON(compute(prefix + " [\"cmd\", \"/C\",", 0, offset + 14), activeParameter);
 					assertJSON(compute(prefix + " [\"cmd\", \"/C\", ", 0, offset + 15), activeParameter);
 					assertJSON(compute(prefix + " [\"cmd\", \"/C\", \"/C\"]", 0, offset + 19), activeParameter);
+
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 3), 1);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 5), 1);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 8), 1);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 10), 2);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 12), 2);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 14), 2);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 16), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 18), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 20), activeParameter);
+
+					const thirdArgument = finalRepeats && !singleParameter ? 3 : 2;
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 3), 1);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 5), 1);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 8), 1);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 10), 2);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 12), 2);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 14), 2);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 16), thirdArgument);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 18), thirdArgument);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 20), thirdArgument);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 22), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 24), activeParameter);
+					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 26), activeParameter);
 				});
 
 				it("]", function() {
@@ -1027,15 +1117,16 @@ describe("Dockerfile Signature Tests", function() {
 				});
 
 				it("parameter", function() {
-					assertShell(compute(prefix + " node ", 0, offset + 6), 1);
+					const activeParameter = finalRepeats ? 1 : 2;
+					assertShell(compute(prefix + " node ", 0, offset + 6), activeParameter);
 
-					assertShell(compute(prefix + " node --inspect", 0, offset + 6), 1);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 12), 1);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 15), 1);
+					assertShell(compute(prefix + " node --inspect", 0, offset + 6), activeParameter);
+					assertShell(compute(prefix + " node --inspect", 0, offset + 12), activeParameter);
+					assertShell(compute(prefix + " node --inspect", 0, offset + 15), activeParameter);
 
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 6), 1);
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 12), 1);
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 15), 1);
+					assertShell(compute(prefix + " node --inspect ", 0, offset + 6), activeParameter);
+					assertShell(compute(prefix + " node --inspect ", 0, offset + 12), activeParameter);
+					assertShell(compute(prefix + " node --inspect ", 0, offset + 15), activeParameter);
 
 					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 6), 1);
 					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 12), 1);
@@ -1051,7 +1142,7 @@ describe("Dockerfile Signature Tests", function() {
 				});
 
 				it("...", function() {
-					const activeParameter = singleParameter ? 1 : 2;
+					let activeParameter = singleParameter ? 1 : 2;
 					assertShell(compute(prefix + " node --inspect ", 0, offset + 16), activeParameter);
 
 					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 16), activeParameter);
@@ -1063,25 +1154,26 @@ describe("Dockerfile Signature Tests", function() {
 					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 25), activeParameter);
 					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 26), activeParameter);
 
+					activeParameter = singleParameter || !finalRepeats ? 1 : 2;
 					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 16), activeParameter);
 					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 20), activeParameter);
 					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 25), activeParameter);
+					activeParameter = singleParameter ? 1 : 2;
 					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 26), activeParameter);
 					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 30), activeParameter);
 					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 37), activeParameter);
 				});
 
 				it("valid JSON", function() {
-					const activeParameter = singleParameter ? 1 : 2;
-					assertShell(compute(prefix + " [] ", 0, offset + 4), 1);
-					assertShell(compute(prefix + "  [ \"cmd\" ] ", 0, offset + 12), activeParameter);
+					assertShell(compute(prefix + " [] ", 0, offset + 4), finalRepeats ? 1 : 2);
+					assertShell(compute(prefix + "  [ \"cmd\" ] ", 0, offset + 12), singleParameter ? 1 : 2);
 				});
 			});
 		});
 	}
 
 	function testEntrypoint(trigger: boolean) {
-		testParameterizedInstruction("ENTRYPOINT", trigger, false, assertEntrypoint, assertEntrypoint_JSONOnly, assertEntrypoint_ShellOnly);
+		testParameterizedInstruction("ENTRYPOINT", trigger, false, true, assertEntrypoint, assertEntrypoint_JSONOnly, assertEntrypoint_ShellOnly);
 	}
 
 	testEntrypoint(false);
@@ -1591,7 +1683,7 @@ describe("Dockerfile Signature Tests", function() {
 	});
 
 	function testRun(trigger: boolean) {
-		testParameterizedInstruction("RUN", trigger, false, assertRun, assertRun_JSONOnly, assertRun_ShellOnly);
+		testParameterizedInstruction("RUN", trigger, false, true, assertRun, assertRun_JSONOnly, assertRun_ShellOnly);
 	}
 
 	testRun(false);
@@ -1799,7 +1891,7 @@ describe("Dockerfile Signature Tests", function() {
 	testUser(false);
 
 	function testVolume(trigger: boolean) {
-		testParameterizedInstruction("VOLUME", trigger, true, assertVolume, assertVolume_JSONOnly, assertVolume_ShellOnly);
+		testParameterizedInstruction("VOLUME", trigger, true, true, assertVolume, assertVolume_JSONOnly, assertVolume_ShellOnly);
 	}
 
 	testVolume(false);
@@ -1831,6 +1923,7 @@ describe("Dockerfile Signature Tests", function() {
 	testWorkdir(false);
 
 	describe("ONBUILD triggers", function() {
+		testAdd(true);
 		testArg(true);
 		testCopy(true);
 		testEntrypoint(true);

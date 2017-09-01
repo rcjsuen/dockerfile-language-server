@@ -74,6 +74,51 @@ export class DockerSignatures {
 			}
 
 			switch (instruction.getKeyword()) {
+				case "ADD":
+					const add = instruction as JSONInstruction;
+					const addShellSignature = {
+						label: "ADD source ... dest",
+						documentation: this.documentation.getDocumentation("signatureAdd_Signature0"),
+						parameters: [
+							{
+								label: "source",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature0_Param0")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature0_Param1")
+							},
+							{
+								label: "dest",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature0_Param2")
+							}
+						]
+					};
+					const addJsonSignature = {
+						label: "ADD [ \"source\", ..., \"dest\" ]",
+						documentation: this.documentation.getDocumentation("signatureAdd_Signature1"),
+						parameters: [
+							{
+								label: "["
+							},
+							{
+								label: "\"source\"",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param1")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param2")
+							},
+							{
+								label: "\"dest\"",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param3")
+							},
+							{
+								label: "]"
+							}
+						]
+					};
+					return this.getJSONInstructionSignatureHelp(add, position, addJsonSignature, addShellSignature, false, false, false);
 				case "ARG":
 					let argSignatureHelp: SignatureHelp = {
 						signatures: [
@@ -203,7 +248,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(entrypoint, position, entrypointJsonSignature, entrypointShellSignature, true, false);
+					return this.getJSONInstructionSignatureHelp(entrypoint, position, entrypointJsonSignature, entrypointShellSignature, true, false, true);
 				case "ENV":
 					const envSignatures = [
 						{
@@ -500,7 +545,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(run, position, runJsonSignature, runShellSignature, false, false);
+					return this.getJSONInstructionSignatureHelp(run, position, runJsonSignature, runShellSignature, false, false, true);
 				case "SHELL":
 					let shell = instruction as JSONInstruction;
 					let shellSignatureHelp: SignatureHelp = {
@@ -533,7 +578,7 @@ export class DockerSignatures {
 						activeSignature: 0,
 						activeParameter: null
 					};
-					shellSignatureHelp.activeParameter = this.getJSONSignatureActiveParameter(shell, position, false);
+					shellSignatureHelp.activeParameter = this.getJSONSignatureActiveParameter(shell, position, false, true);
 					return shellSignatureHelp.activeParameter === -1 ? null : shellSignatureHelp;
 				case "STOPSIGNAL":
 					return {
@@ -685,7 +730,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(volume, position, volumeJsonSignature, volumeShellSignature, true, true);
+					return this.getJSONInstructionSignatureHelp(volume, position, volumeJsonSignature, volumeShellSignature, true, true, true);
 				case "WORKDIR":
 					return {
 						signatures: [
@@ -868,10 +913,10 @@ export class DockerSignatures {
 		return inTag || inDigest ? 1 : 0;
 	}
 
-	private getJSONInstructionSignatureHelp(instruction: JSONInstruction, position: Position, jsonSignature: SignatureInformation, shellSignature: SignatureInformation, jsonFirst: boolean, singleParameter: boolean): SignatureHelp {
-		let activeParameter = this.getJSONSignatureActiveParameter(instruction, position, singleParameter);
+	private getJSONInstructionSignatureHelp(instruction: JSONInstruction, position: Position, jsonSignature: SignatureInformation, shellSignature: SignatureInformation, jsonFirst: boolean, singleParameter: boolean, finalRepeats: boolean): SignatureHelp {
+		let activeParameter = this.getJSONSignatureActiveParameter(instruction, position, singleParameter, finalRepeats);
 		if (activeParameter === -1) {
-			activeParameter = this.getSignatureActiveParameter(instruction, position, singleParameter ? 1 : 2);
+			activeParameter = this.getSignatureActiveParameter(instruction, position, singleParameter ? 1 : 2, finalRepeats);
 			return {
 				signatures: [ shellSignature ],
 				activeSignature: 0,
@@ -904,7 +949,7 @@ export class DockerSignatures {
 		}
 	}
 
-	private getJSONSignatureActiveParameter(instruction: JSONInstruction, position: Position, singleParameter: boolean): number {
+	private getJSONSignatureActiveParameter(instruction: JSONInstruction, position: Position, singleParameter: boolean, finalRepeats: boolean): number {
 		const closingBracket = instruction.getClosingBracket();
 		if (closingBracket) {
 			const range = closingBracket.getRange();
@@ -915,16 +960,16 @@ export class DockerSignatures {
 			}
 		}
 
-		if (!singleParameter) {
-			const parameter = instruction.getSecondJSONElement();
-			if (parameter && parameter.isBefore(position)) {
+		const jsonStrings = instruction.getJSONStrings();
+		if (!singleParameter && jsonStrings.length > 1 && jsonStrings[1].isBefore(position)) {
+			if (jsonStrings.length === 2) {
 				return 3;
 			}
+			return finalRepeats || Util.isInsideRange(position, jsonStrings[jsonStrings.length - 1].getRange()) ? 3 : 2;
 		}
 
-		const executable = instruction.getFirstJSONElement();
-		if (executable && executable.isBefore(position)) {
-			return 2;
+		if (jsonStrings.length > 0 && jsonStrings[0].isBefore(position)) {
+			return finalRepeats || jsonStrings.length > 2 ? 2 : 3;
 		}
 
 		const openingBracket = instruction.getOpeningBracket();
@@ -941,13 +986,32 @@ export class DockerSignatures {
 		return -1;
 	}
 
-	private getSignatureActiveParameter(instruction: Instruction, position: Position, max: number): number {
+	private getSignatureActiveParameter(instruction: Instruction, position: Position, max: number, finalRepeats): number {
 		const args = instruction.getArguments();
-		for (let i = args.length - 1; i >= 0; i--) {
-			if (args[i].isBefore(position)) {
-				return Math.min(i + 1, max);
-			} else if (Util.isInsideRange(position, args[i].getRange())) {
-				return Math.min(i, max);
+		if (finalRepeats) {
+			for (let i = args.length - 1; i >= 0; i--) {
+				if (args[i].isBefore(position)) {
+					return Math.min(i + 1, max);
+				} else if (Util.isInsideRange(position, args[i].getRange())) {
+					return Math.min(i, max);
+				}
+			}
+		} else {
+			switch (args.length) {
+				case 0:
+					return 0;
+				case 1:
+					if (args[0].isBefore(position)) {
+						return 2;
+					}
+					return 0;
+				default:
+					if (args[args.length - 1].isBefore(position) || Util.isInsideRange(position, args[args.length - 1].getRange())) {
+						return 2;
+					} else if (args[0].isBefore(position)) {
+						return 1;
+					}
+					return 0;
 			}
 		}
 		return 0;

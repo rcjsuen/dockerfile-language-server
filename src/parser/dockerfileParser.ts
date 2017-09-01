@@ -33,6 +33,8 @@ export class DockerfileParser {
 
 	public static createInstruction(document: TextDocument, escapeChar, lineRange: Range, instruction: string, instructionRange: Range) {
 		switch (instruction.toUpperCase()) {
+			case "ADD":
+				return new JSONInstruction(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ARG":
 				return new Arg(document, lineRange, escapeChar, instruction, instructionRange);
 			case "CMD":
