@@ -281,10 +281,12 @@ export class DockerAssist {
 			return items;
 		}
 
+		const flags = copy.getFlags();
 		let copyArgs = copy.getArguments();
-		if (copyArgs.length === 0) {
+		if (copyArgs.length === 0 && copy.getFlags().length === 0) {
 			return [ this.createCOPY_FlagFrom(0, offset) ];
-		} else if (Util.isInsideRange(position, copyArgs[0].getRange()) && prefix !== "--from=" && "--from=".indexOf(prefix) === 0) {
+		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--from=".indexOf(prefix) === 0)
+				|| (flags.length > 0 && "--from=".indexOf(flags[0].toString()) === 0)) {
 			return [ this.createCOPY_FlagFrom(prefix.length, offset) ];
 		}
 

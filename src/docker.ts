@@ -93,9 +93,19 @@ export class Util {
 	}
 
 	public static rangeEquals(range: Range, range2: Range) {
-		return range.start.line === range2.start.line
-			&& range.start.character === range2.start.character
-			&& range.end.line === range2.end.line
-			&& range.end.character === range2.end.character;
+		return Util.positionEquals(range.start, range2.start) && Util.positionEquals(range.end, range2.end);
+	}
+
+	public static positionEquals(position: Position, position2: Position) {
+		return position.line == position2.line && position.character === position2.character;
+	}
+
+	public static positionBefore(origin: Position, other: Position) {
+		if (origin.line < other.line) {
+			return true;
+		} else if (origin.line > other.line) {
+			return false;
+		}
+		return origin.character < other.character;
 	}
 }

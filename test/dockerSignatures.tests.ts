@@ -145,6 +145,70 @@ function assertCopy_FlagFrom(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureCopyFlagFrom_Param"));
 }
 
+function assertCopy_Shell(signature: SignatureInformation) {
+	assert.equal(signature.label, "COPY [flags] source ... dest");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureCopy_Signature0"));
+	assert.equal(signature.parameters.length, 4);
+	assert.equal(signature.parameters[0].label, "[flags]");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureCopy_Signature0_Param0"));
+	assert.equal(signature.parameters[1].label, "source");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureCopy_Signature0_Param1"));
+	assert.equal(signature.parameters[2].label, "...");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureCopy_Signature0_Param2"));
+	assert.equal(signature.parameters[3].label, "dest");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureCopy_Signature0_Param3"));
+}
+
+function assertCopy_JSON(signature: SignatureInformation) {
+	assert.equal(signature.label, "COPY [flags] [ \"source\", ..., \"dest\" ]");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureCopy_Signature1"));
+	assert.equal(signature.parameters.length, 6);
+	assert.equal(signature.parameters[0].label, "[flags]");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureCopy_Signature1_Param0"));
+	assert.equal(signature.parameters[1].label, "[");
+	assert.equal(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[2].label, "\"source\"");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureCopy_Signature1_Param2"));
+	assert.equal(signature.parameters[3].label, "...");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureCopy_Signature1_Param3"));
+	assert.equal(signature.parameters[4].label, "\"dest\"");
+	assert.notEqual(signature.parameters[4].documentation, null);
+	assert.equal(signature.parameters[4].documentation, docs.getDocumentation("signatureCopy_Signature1_Param4"));
+	assert.equal(signature.parameters[5].label, "]");
+	assert.equal(signature.parameters[5].documentation, null);
+}
+
+function assertCopy(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 2);
+	assertCopy_Shell(signatureHelp.signatures[0]);
+	assertCopy_JSON(signatureHelp.signatures[1]);
+}
+
+function assertCopy_JSONOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertCopy_JSON(signatureHelp.signatures[0]);
+}
+
+function assertCopy_ShellOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertCopy_Shell(signatureHelp.signatures[0]);
+}
+
 function assertHealthcheck_FlagInterval(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, 0);
@@ -891,7 +955,9 @@ describe("Dockerfile Signature Tests", function() {
 	});
 
 	function testAdd(trigger: boolean) {
-		testParameterizedInstruction("ADD", trigger, false, false, assertAdd, assertAdd_JSONOnly, assertAdd_ShellOnly);
+		describe("ADD", function() {
+			testParameterizedInstruction("ADD", trigger, false, false, false, assertAdd, assertAdd_JSONOnly, assertAdd_ShellOnly);
+		});
 	}
 
 	testAdd(false);
@@ -969,6 +1035,41 @@ describe("Dockerfile Signature Tests", function() {
 		let triggerOffset = trigger ? 8 : 0;
 
 		describe("COPY", function() {
+			testParameterizedInstruction("COPY", trigger, true, false, false, assertCopy, assertCopy_JSONOnly, assertCopy_ShellOnly);
+
+			describe("flags", function() {
+				it("inside", function() {
+					assertCopy(compute(onbuild + "COPY --f ", 0, triggerOffset + 5), 0);
+					assertCopy(compute(onbuild + "COPY --f ", 0, triggerOffset + 6), 0);
+					assertCopy(compute(onbuild + "COPY --f ", 0, triggerOffset + 7), 0);
+					assertCopy(compute(onbuild + "COPY --f ", 0, triggerOffset + 8), 0);
+				});
+
+				it("outside", function() {
+					assertCopy(compute(onbuild + "COPY --from= ", 0, triggerOffset + 13), 1);
+					assertCopy_ShellOnly(compute(onbuild + "COPY app --from= app ", 0, triggerOffset + 16), 2);
+					assertCopy_ShellOnly(compute(onbuild + "COPY app app --from=", 0, triggerOffset + 20), 3);
+				});
+
+				it("after", function() {
+					assertCopy(compute(onbuild + "COPY --from=dev ", 0, triggerOffset + 16), 1);
+
+					assertCopy_JSONOnly(compute(onbuild + "COPY --from=stage [", 0, triggerOffset + 19), 2);
+					assertCopy_JSONOnly(compute(onbuild + "COPY --from=stage [ ", 0, triggerOffset + 19), 2);
+					assertCopy_JSONOnly(compute(onbuild + "COPY --from=stage [ ", 0, triggerOffset + 20), 2);
+
+					assertCopy_ShellOnly(compute(onbuild + "COPY --from=stage .", 0, triggerOffset + 19), 1);
+					assertCopy_ShellOnly(compute(onbuild + "COPY --from=stage . ", 0, triggerOffset + 19), 1);
+					assertCopy_ShellOnly(compute(onbuild + "COPY --from=stage . ", 0, triggerOffset + 20), 3);
+				});
+
+				it("not a flag", function() {
+					assertCopy_ShellOnly(compute(onbuild + "COPY - ", 0, triggerOffset + 5), 1);
+					assertCopy_ShellOnly(compute(onbuild + "COPY - ", 0, triggerOffset + 6), 1);
+					assertCopy_ShellOnly(compute(onbuild + "COPY - ", 0, triggerOffset + 7), 3);
+				});
+			});
+
 			describe("--from", function() {
 				it("ok", function() {
 					let signatureHelp = compute(onbuild + "COPY --from=", 0, triggerOffset + 12);
@@ -980,200 +1081,190 @@ describe("Dockerfile Signature Tests", function() {
 					signatureHelp = compute(onbuild + "COPY --from=s app app", 0, triggerOffset + 13);
 					assertCopy_FlagFrom(signatureHelp);
 				});
-	
-				it("invalid", function() {
-					let signatureHelp = compute(onbuild + "COPY --from= ", 0, triggerOffset + 13);
-					assertNoSignatures(signatureHelp);
-
-					signatureHelp = compute(onbuild + "COPY app --from= app ", 0, triggerOffset + 16);
-					assertNoSignatures(signatureHelp);
-					
-					signatureHelp = compute(onbuild + "COPY app app --from=", 0, triggerOffset + 20);
-					assertNoSignatures(signatureHelp);
-				});
 			});
 		});
 	}
 
 	testCopy(false);
 
-	function testParameterizedInstruction(instruction, trigger: boolean, singleParameter: boolean, finalRepeats: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
+	function testParameterizedInstruction(instruction, trigger: boolean, hasFlags: boolean, singleParameter: boolean, finalRepeats: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
 		const onbuild = trigger ? "ONBUILD " : "";
 		const prefix = onbuild + instruction;
 		const triggerOffset = onbuild.length;
 		const offset = instruction.length + triggerOffset;
+		const parameterOffset = hasFlags ? 1 : 0;
 
-		describe(instruction, function() {
-			describe("JSON", function() {
-				it("[", function() {
-					assertAll(compute(prefix + " ", 0, offset + 1), 0);
-					assertAll(compute(prefix + "  ", 0, offset + 2), 0);
-				});
-
-				it("executable", function() {
-					assertJSON(compute(prefix + " [", 0, offset + 2), 1);
-					assertJSON(compute(prefix + " [\"", 0, offset + 3), 1);
-					assertJSON(compute(prefix + " [ ", 0, offset + 3), 1);
-					assertJSON(compute(prefix + " [ \"", 0, offset + 4), 1);
-					assertJSON(compute(prefix + " [\"cmd\"", 0, offset + 7), 1);
-					assertJSON(compute(prefix + " [ \"cmd\"", 0, offset + 8), 1);
-					assertJSON(compute(prefix + " [\"cmd\",", 0, offset + 7), 1);
-					assertJSON(compute(prefix + " [ \"cmd\",", 0, offset + 8), 1);
-					assertJSON(compute(prefix + " []", 0, offset + 2), 1);
-					assertJSON(compute(prefix + " [ \"cmd\" ", 0, offset + 9), 1);
-				});
-
-				it("parameter", function() {
-					const activeParameter = finalRepeats ? 2 : 3;
-					assertJSON(compute(prefix + " [\"cmd\",", 0, offset + 8), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\",", 0, offset + 9), activeParameter);
-					assertJSON(compute(prefix + " [\"cmd\" ,", 0, offset + 9), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\" ,", 0, offset + 10), activeParameter);
-					assertJSON(compute(prefix + " [\"cmd\", ", 0, offset + 9), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\", ", 0, offset + 10), activeParameter);
-					assertJSON(compute(prefix + " [\"cmd\" , ", 0, offset + 10), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\" , ", 0, offset + 11), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\" , \"\"", 0, offset + 13), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\" , \"\",", 0, offset + 13), activeParameter);
-				});
-
-				it("...", function() {
-					const activeParameter = singleParameter ? 2 : 3;
-					assertJSON(compute(prefix + " [\"cmd\", \"/C\",", 0, offset + 14), activeParameter);
-					assertJSON(compute(prefix + " [\"cmd\", \"/C\", ", 0, offset + 15), activeParameter);
-					assertJSON(compute(prefix + " [\"cmd\", \"/C\", \"/C\"]", 0, offset + 19), activeParameter);
-
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 3), 1);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 5), 1);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 8), 1);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 10), 2);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 12), 2);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 14), 2);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 16), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 18), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 20), activeParameter);
-
-					const thirdArgument = finalRepeats && !singleParameter ? 3 : 2;
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 3), 1);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 5), 1);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 8), 1);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 10), 2);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 12), 2);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 14), 2);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 16), thirdArgument);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 18), thirdArgument);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 20), thirdArgument);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 22), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 24), activeParameter);
-					assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 26), activeParameter);
-				});
-
-				it("]", function() {
-					const activeParameter = singleParameter ? 3 : 4;
-					assertJSON(compute(prefix + " []", 0, offset + 3), activeParameter);
-					assertJSON(compute(prefix + "  [ ]", 0, offset + 5), activeParameter);
-					assertJSON(compute(prefix + "  [ \"cmd\" ]", 0, offset + 11), activeParameter);
-				});
-
-				it("invalid", function() {
-					const signatureHelp = compute(prefix + " [ \"cmd\" ] ", 0, triggerOffset + 2);
-					if (trigger) {
-						assertOnbuild(signatureHelp);
-					} else {
-						assertNoSignatures(signatureHelp);
-					}
-				});
+		describe("JSON", function() {
+			it("[", function() {
+				assertAll(compute(prefix + " ", 0, offset + 1), parameterOffset + 0);
+				assertAll(compute(prefix + "  ", 0, offset + 2), parameterOffset + 0);
 			});
 
-			describe("shell", function() {
-				it("executable", function() {
-					assertShell(compute(prefix + " node", 0, offset + 1), 0);
-					assertShell(compute(prefix + " node", 0, offset + 2), 0);
-					assertShell(compute(prefix + " node", 0, offset + 5), 0);
+			it("executable", function() {
+				assertJSON(compute(prefix + " [", 0, offset + 2), parameterOffset + 1);
+				assertJSON(compute(prefix + " [\"", 0, offset + 3), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ ", 0, offset + 3), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"", 0, offset + 4), parameterOffset + 1);
+				assertJSON(compute(prefix + " [\"cmd\"", 0, offset + 7), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\"", 0, offset + 8), parameterOffset + 1);
+				assertJSON(compute(prefix + " [\"cmd\",", 0, offset + 7), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\",", 0, offset + 8), parameterOffset + 1);
+				assertJSON(compute(prefix + " []", 0, offset + 2), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\" ", 0, offset + 9), parameterOffset + 1);
+			});
 
-					assertShell(compute(prefix + " node ", 0, offset + 1), 0);
-					assertShell(compute(prefix + " node ", 0, offset + 2), 0);
-					assertShell(compute(prefix + " node ", 0, offset + 5), 0);
+			it("parameter", function() {
+				const activeParameter = finalRepeats ? 2 : 3;
+				assertJSON(compute(prefix + " [\"cmd\",", 0, offset + 8), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\",", 0, offset + 9), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [\"cmd\" ,", 0, offset + 9), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\" ,", 0, offset + 10), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [\"cmd\", ", 0, offset + 9), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\", ", 0, offset + 10), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [\"cmd\" , ", 0, offset + 10), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\" , ", 0, offset + 11), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\" , \"\"", 0, offset + 13), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\" , \"\",", 0, offset + 13), parameterOffset + activeParameter);
+			});
 
-					assertShell(compute(prefix + " node --inspect", 0, offset + 1), 0);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 2), 0);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 5), 0);
+			it("...", function() {
+				const activeParameter = singleParameter ? 2 : 3;
+				assertJSON(compute(prefix + " [\"cmd\", \"/C\",", 0, offset + 14), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [\"cmd\", \"/C\", ", 0, offset + 15), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [\"cmd\", \"/C\", \"/C\"]", 0, offset + 19), parameterOffset + activeParameter);
 
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 1), 0);
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 2), 0);
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 5), 0);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 3), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 5), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 8), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 10), parameterOffset + 2);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 12), parameterOffset + 2);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 14), parameterOffset + 2);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 16), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 18), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\" ]", 0, offset + 20), parameterOffset + activeParameter);
 
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 1), 0);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 2), 0);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 5), 0);
+				const thirdArgument = finalRepeats && !singleParameter ? 3 : 2;
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 3), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 5), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 8), parameterOffset + 1);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 10), parameterOffset + 2);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 12), parameterOffset + 2);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 14), parameterOffset + 2);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 16), parameterOffset + thirdArgument);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 18), parameterOffset + thirdArgument);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 20), parameterOffset + thirdArgument);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 22), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 24), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + " [ \"cmd\", \"/C\", \"/C\", \"/C\" ]", 0, offset + 26), parameterOffset + activeParameter);
+			});
 
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 1), 0);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 2), 0);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 5), 0);
+			it("]", function() {
+				const activeParameter = singleParameter ? 3 : 4;
+				assertJSON(compute(prefix + " []", 0, offset + 3), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + "  [ ]", 0, offset + 5), parameterOffset + activeParameter);
+				assertJSON(compute(prefix + "  [ \"cmd\" ]", 0, offset + 11), parameterOffset + activeParameter);
+			});
 
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 1), 0);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 2), 0);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 5), 0);
-				});
+			it("invalid", function() {
+				const signatureHelp = compute(prefix + " [ \"cmd\" ] ", 0, triggerOffset + 2);
+				if (trigger) {
+					assertOnbuild(signatureHelp);
+				} else {
+					assertNoSignatures(signatureHelp);
+				}
+			});
+		});
 
-				it("parameter", function() {
-					const activeParameter = finalRepeats ? 1 : 2;
-					assertShell(compute(prefix + " node ", 0, offset + 6), activeParameter);
+		describe("shell", function() {
+			it("executable", function() {
+				assertShell(compute(prefix + " node", 0, offset + 1), parameterOffset + 0);
+				assertShell(compute(prefix + " node", 0, offset + 2), parameterOffset + 0);
+				assertShell(compute(prefix + " node", 0, offset + 5), parameterOffset + 0);
 
-					assertShell(compute(prefix + " node --inspect", 0, offset + 6), activeParameter);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 12), activeParameter);
-					assertShell(compute(prefix + " node --inspect", 0, offset + 15), activeParameter);
+				assertShell(compute(prefix + " node ", 0, offset + 1), parameterOffset + 0);
+				assertShell(compute(prefix + " node ", 0, offset + 2), parameterOffset + 0);
+				assertShell(compute(prefix + " node ", 0, offset + 5), parameterOffset + 0);
 
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 6), activeParameter);
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 12), activeParameter);
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 15), activeParameter);
+				assertShell(compute(prefix + " node --inspect", 0, offset + 1), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect", 0, offset + 2), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect", 0, offset + 5), parameterOffset + 0);
 
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 6), 1);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 12), 1);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 15), 1);
+				assertShell(compute(prefix + " node --inspect ", 0, offset + 1), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect ", 0, offset + 2), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect ", 0, offset + 5), parameterOffset + 0);
 
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 6), 1);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 12), 1);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 15), 1);
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 1), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 2), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 5), parameterOffset + 0);
 
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 6), 1);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 12), 1);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 15), 1);
-				});
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 1), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 2), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 5), parameterOffset + 0);
 
-				it("...", function() {
-					let activeParameter = singleParameter ? 1 : 2;
-					assertShell(compute(prefix + " node --inspect ", 0, offset + 16), activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 1), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 2), parameterOffset + 0);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 5), parameterOffset + 0);
+			});
 
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 16), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 20), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js", 0, offset + 25), activeParameter);
+			it("parameter", function() {
+				const activeParameter = finalRepeats ? 1 : 2;
+				assertShell(compute(prefix + " node ", 0, offset + 6), parameterOffset + activeParameter);
 
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 16), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 20), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 25), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 26), activeParameter);
+				assertShell(compute(prefix + " node --inspect", 0, offset + 6), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect", 0, offset + 12), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect", 0, offset + 15), parameterOffset + activeParameter);
 
-					activeParameter = singleParameter || !finalRepeats ? 1 : 2;
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 16), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 20), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 25), activeParameter);
-					activeParameter = singleParameter ? 1 : 2;
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 26), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 30), activeParameter);
-					assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 37), activeParameter);
-				});
+				assertShell(compute(prefix + " node --inspect ", 0, offset + 6), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect ", 0, offset + 12), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect ", 0, offset + 15), parameterOffset + activeParameter);
 
-				it("valid JSON", function() {
-					assertShell(compute(prefix + " [] ", 0, offset + 4), finalRepeats ? 1 : 2);
-					assertShell(compute(prefix + "  [ \"cmd\" ] ", 0, offset + 12), singleParameter ? 1 : 2);
-				});
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 6), parameterOffset + 1);
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 12), parameterOffset + 1);
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 15), parameterOffset + 1);
+
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 6), parameterOffset + 1);
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 12), parameterOffset + 1);
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 15), parameterOffset + 1);
+
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 6), parameterOffset + 1);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 12), parameterOffset + 1);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 15), parameterOffset + 1);
+			});
+
+			it("...", function() {
+				let activeParameter = singleParameter ? 1 : 2;
+				assertShell(compute(prefix + " node --inspect ", 0, offset + 16), parameterOffset + activeParameter);
+
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 16), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 20), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js", 0, offset + 25), parameterOffset + activeParameter);
+
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 16), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 20), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 25), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js ", 0, offset + 26), parameterOffset + activeParameter);
+
+				activeParameter = singleParameter || !finalRepeats ? 1 : 2;
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 16), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 20), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 25), parameterOffset + activeParameter);
+				activeParameter = singleParameter ? 1 : 2;
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 26), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 30), parameterOffset + activeParameter);
+				assertShell(compute(prefix + " node --inspect server.js --port=8000", 0, offset + 37), parameterOffset + activeParameter);
+			});
+
+			it("valid JSON", function() {
+				assertShell(compute(prefix + " [] ", 0, offset + 4), parameterOffset + (finalRepeats ? 1 : 2));
+				assertShell(compute(prefix + "  [ \"cmd\" ] ", 0, offset + 12), parameterOffset + (singleParameter ? 1 : 2));
 			});
 		});
 	}
 
 	function testEntrypoint(trigger: boolean) {
-		testParameterizedInstruction("ENTRYPOINT", trigger, false, true, assertEntrypoint, assertEntrypoint_JSONOnly, assertEntrypoint_ShellOnly);
+		describe("ENTRYPOINT", function() {
+			testParameterizedInstruction("ENTRYPOINT", trigger, false, false, true, assertEntrypoint, assertEntrypoint_JSONOnly, assertEntrypoint_ShellOnly);
+		});
 	}
 
 	testEntrypoint(false);
@@ -1683,7 +1774,9 @@ describe("Dockerfile Signature Tests", function() {
 	});
 
 	function testRun(trigger: boolean) {
-		testParameterizedInstruction("RUN", trigger, false, true, assertRun, assertRun_JSONOnly, assertRun_ShellOnly);
+		describe("RUN", function() {
+			testParameterizedInstruction("RUN", trigger, false, false, true, assertRun, assertRun_JSONOnly, assertRun_ShellOnly);
+		});
 	}
 
 	testRun(false);
@@ -1891,7 +1984,9 @@ describe("Dockerfile Signature Tests", function() {
 	testUser(false);
 
 	function testVolume(trigger: boolean) {
-		testParameterizedInstruction("VOLUME", trigger, true, true, assertVolume, assertVolume_JSONOnly, assertVolume_ShellOnly);
+		describe("VOLUME", function() {
+			testParameterizedInstruction("VOLUME", trigger, false, true, true, assertVolume, assertVolume_JSONOnly, assertVolume_ShellOnly);
+		});
 	}
 
 	testVolume(false);

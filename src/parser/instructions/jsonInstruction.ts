@@ -4,9 +4,9 @@
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
 import { Argument } from '../argument';
-import { Instruction } from '../instruction';
+import { ModifiableInstruction } from './modifiableInstruction';
 
-export class JSONInstruction extends Instruction {
+export class JSONInstruction extends ModifiableInstruction {
 
 	private readonly openingBracket: Argument;
 	private readonly closingBracket: Argument;
@@ -151,6 +151,10 @@ export class JSONInstruction extends Instruction {
 					break;
 			}
 		}
+	}
+
+	protected stopSearchingForFlags(value: string): boolean {
+		return true;
 	}
 
 	public getOpeningBracket(): Argument | null {

@@ -350,7 +350,8 @@ export class Validator {
 					break;
 				case "HEALTHCHECK":
 					let args = instruction.getArguments();
-					if (args.length === 0) {
+					const healthcheckFlags = (instruction as ModifiableInstruction).getFlags();
+					if (args.length === 0 && healthcheckFlags.length === 0) {
 						// all instructions are expected to have at least one argument
 						let range = instruction.getInstructionRange();
 						problems.push(Validator.createMissingArgument(range.start, range.end));
@@ -380,8 +381,7 @@ export class Validator {
 						}
 
 						let validFlags = [ "interval", "retries", "start-period", "timeout" ];
-						let flags = (instruction as ModifiableInstruction).getFlags();
-						for (let flag of flags) {
+						for (let flag of healthcheckFlags) {
 							let flagName = flag.getName();
 							if (validFlags.indexOf(flagName) === -1) {
 								let nameRange = flag.getNameRange();
@@ -401,9 +401,9 @@ export class Validator {
 							}
 						}
 
-						this.checkFlagValue(flags, validFlags, problems);
-						this.checkFlagDuration(flags, [ "interval", "start-period", "timeout" ], problems);
-						this.checkDuplicateFlags(flags, validFlags, problems);
+						this.checkFlagValue(healthcheckFlags, validFlags, problems);
+						this.checkFlagDuration(healthcheckFlags, [ "interval", "start-period", "timeout" ], problems);
+						this.checkDuplicateFlags(healthcheckFlags, validFlags, problems);
 					}
 					break;
 				case "ONBUILD":
@@ -480,13 +480,8 @@ export class Validator {
 							let range = flags[0].getNameRange();
 							problems.push(Validator.createFlagUnknown(range.start, range.end, flags[0].getName()));
 						}
-
-						if (copyArgs.length == 2) {
-							problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(copyArgs[1].getRange()));
-						} else if (copyArgs.length == 1) {
-							problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(instruction.getInstructionRange()));
-						}
-					} else if (copyArgs.length === 1) {
+					}
+					if (copyArgs.length === 1) {
 						problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(copyArgs[0].getRange()));
 					} else if (copyArgs.length === 0) {
 						problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(instruction.getInstructionRange()));

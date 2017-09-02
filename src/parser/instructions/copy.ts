@@ -4,12 +4,21 @@
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range, Position } from 'vscode-languageserver';
 import { Flag } from '../flag';
-import { ModifiableInstruction } from './modifiableInstruction';
+import { JSONInstruction } from './jsonInstruction';
 
-export class Copy extends ModifiableInstruction {
+export class Copy extends JSONInstruction {
 
 	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range, escapeChar, instruction, instructionRange);
+	}
+
+	public getArgumentsContent(): string | null {
+		const args = this.getArguments();
+		const flags = this.getFlags();
+		if (args.length === 0 || flags.length === 0) {
+			return super.getArgumentsContent();
+		}
+		return this.getRangeContent(Range.create(args[0].getRange().start, args[args.length - 1].getRange().end));
 	}
 
 	public stopSearchingForFlags(argument: string): boolean {
@@ -26,17 +35,18 @@ export class Copy extends ModifiableInstruction {
 	}
 
 	public getFromValueRange(): Range | null {
-		let range = this.getFromRange();
-		if (range === null) {
-			return null;
-		}
-		return Range.create(Position.create(range.start.line, range.start.character + 7), range.end);
+		const flag = this.getFromFlag();
+		return flag ? flag.getValueRange() : null;
 	}
 
 	private getFromRange(): Range | null {
-		let args = this.getArguments();
-		if (args.length >= 1 && args[0].getValue().toLowerCase().indexOf("--from=") === 0) {
-			return args[0].getRange();
+		const flag = this.getFromFlag();
+		if (flag) {
+			const valueRange = flag.getValueRange();
+			if (valueRange) {
+				const nameRange = flag.getNameRange();
+				return Range.create(nameRange.start.line, nameRange.start.character - 2, valueRange.end.line, valueRange.end.character);
+			}
 		}
 		return null;
 	}

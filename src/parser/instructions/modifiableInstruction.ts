@@ -29,6 +29,8 @@ export abstract class ModifiableInstruction extends Instruction {
 					let index = value.indexOf('=');
 					if (index === -1) {
 						this.flags.push(new Flag(
+							value,
+							range,
 							value.substring(2),
 							Range.create(range.start.line, range.start.character + 2, range.end.line, range.end.character),
 							null,
@@ -36,6 +38,8 @@ export abstract class ModifiableInstruction extends Instruction {
 						);
 					} else if (index === value.length - 1) {
 						this.flags.push(new Flag(
+							value,
+							range,
 							value.substring(2, index),
 							Range.create(range.start.line, range.start.character + 2, range.end.line, range.end.character - 1),
 							"",
@@ -43,6 +47,8 @@ export abstract class ModifiableInstruction extends Instruction {
 						);
 					} else {
 						this.flags.push(new Flag(
+							value,
+							range,
 							value.substring(2, index),
 							Range.create(range.start.line, range.start.character + 2, range.start.line, range.start.character + index),
 							value.substring(index + 1),
@@ -53,5 +59,17 @@ export abstract class ModifiableInstruction extends Instruction {
 			}
 		}
 		return this.flags;
+	}
+
+	public getArguments(): Argument[] {
+		const args = super.getArguments();
+		const flags = this.getFlags();
+		if (flags.length === 0) {
+			return args;
+		}
+		for (let i = 0; i < flags.length; i++) {
+			args.shift();
+		}
+		return args;
 	}
 }
