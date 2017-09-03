@@ -3,9 +3,9 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range, Position } from 'vscode-languageserver';
-import { Instruction } from '../instruction';
+import { JSONInstruction } from './jsonInstruction';
 
-export class Cmd extends Instruction {
+export class Cmd extends JSONInstruction {
 
 	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range, escapeChar, instruction, instructionRange);

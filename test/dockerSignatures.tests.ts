@@ -132,6 +132,86 @@ function assertEscape(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.signatures[0].parameters[0].documentation, docs.getDocumentation("signatureEscape_Param"));
 }
 
+function assertCmd_JSONExecutable(signature: SignatureInformation) {
+	assert.equal(signature.label, "CMD [ \"executable\", \"parameter\", ... ]");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureCmd_Signature0"));
+	assert.equal(signature.parameters.length, 5);
+	assert.equal(signature.parameters[0].label, "[");
+	assert.equal(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[1].label, "\"executable\"");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureCmd_Signature0_Param1"));
+	assert.equal(signature.parameters[2].label, "\"parameter\"");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureCmd_Signature0_Param2"));
+	assert.equal(signature.parameters[3].label, "...");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureCmd_Signature0_Param3"));
+	assert.equal(signature.parameters[4].label, "]");
+	assert.equal(signature.parameters[4].documentation, null);
+}
+
+function assertCmd_JSONParameters(signature: SignatureInformation) {
+	assert.equal(signature.label, "CMD [ \"parameter\", \"parameter2\", ... ]");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureCmd_Signature1"));
+	assert.equal(signature.parameters.length, 5);
+	assert.equal(signature.parameters[0].label, "[");
+	assert.equal(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[1].label, "\"parameter\"");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureCmd_Signature1_Param1"));
+	assert.equal(signature.parameters[2].label, "\"parameter2\"");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureCmd_Signature1_Param2"));
+	assert.equal(signature.parameters[3].label, "...");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureCmd_Signature1_Param3"));
+	assert.equal(signature.parameters[4].label, "]");
+	assert.equal(signature.parameters[4].documentation, null);
+}
+
+function assertCmd_Shell(signature: SignatureInformation) {
+	assert.equal(signature.label, "CMD executable parameter ...");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureCmd_Signature2"));
+	assert.equal(signature.parameters.length, 3);
+	assert.equal(signature.parameters[0].label, "executable");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureCmd_Signature2_Param0"));
+	assert.equal(signature.parameters[1].label, "parameter");
+	assert.notEqual(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureCmd_Signature2_Param1"));
+	assert.equal(signature.parameters[2].label, "...");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureCmd_Signature2_Param2"));
+}
+
+function assertCmd(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 3);
+	assertCmd_JSONExecutable(signatureHelp.signatures[0]);
+	assertCmd_JSONParameters(signatureHelp.signatures[1]);
+	assertCmd_Shell(signatureHelp.signatures[2]);
+}
+
+function assertCmd_JSONOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 2);
+	assertCmd_JSONExecutable(signatureHelp.signatures[0]);
+	assertCmd_JSONParameters(signatureHelp.signatures[1]);
+}
+
+function assertCmd_ShellOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assert.equal(signatureHelp.signatures.length, 1);
+	assertCmd_Shell(signatureHelp.signatures[0]);
+}
+
 function assertCopy_FlagFrom(signatureHelp: SignatureHelp) {
 	assert.equal(signatureHelp.activeSignature, 0);
 	assert.equal(signatureHelp.activeParameter, 0);
@@ -1029,6 +1109,14 @@ describe("Dockerfile Signature Tests", function() {
 	}
 
 	testArg(false);
+
+	function testCmd(trigger: boolean) {
+		describe("CMD", function() {
+			testParameterizedInstruction("CMD", trigger, false, false, true, assertCmd, assertCmd_JSONOnly, assertCmd_ShellOnly);
+		});
+	}
+
+	testCmd(false);
 
 	function testCopy(trigger: boolean) {
 		let onbuild = trigger ? "ONBUILD " : "";
@@ -2020,6 +2108,7 @@ describe("Dockerfile Signature Tests", function() {
 	describe("ONBUILD triggers", function() {
 		testAdd(true);
 		testArg(true);
+		testCmd(true);
 		testCopy(true);
 		testEntrypoint(true);
 		testEnv(true);

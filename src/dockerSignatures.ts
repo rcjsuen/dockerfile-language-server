@@ -118,7 +118,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(add, position, addJsonSignature, addShellSignature, false, false, false, false);
+					return this.getJSONInstructionSignatureHelp(add, position, [ addJsonSignature ], addShellSignature, false, false, false, false);
 				case "ARG":
 					let argSignatureHelp: SignatureHelp = {
 						signatures: [
@@ -180,6 +180,75 @@ export class DockerSignatures {
 						}
 					}
 					return argSignatureHelp;
+				case "CMD":
+					const cmd = instruction as JSONInstruction;
+					const cmdJsonExecutableSignature = {
+						label: "CMD [ \"executable\", \"parameter\", ... ]",
+						documentation: this.documentation.getDocumentation("signatureCmd_Signature0"),
+						parameters: [
+							{
+								label: "["
+							},
+							{
+								label: "\"executable\"",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature0_Param1")
+							},
+							{
+								label: "\"parameter\"",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature0_Param2")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature0_Param3")
+							},
+							{
+								label: "]"
+							}
+						]
+					};
+					const cmdJsonParameterSignature = {
+						label: "CMD [ \"parameter\", \"parameter2\", ... ]",
+						documentation: this.documentation.getDocumentation("signatureCmd_Signature1"),
+						parameters: [
+							{
+								label: "["
+							},
+							{
+								label: "\"parameter\"",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature1_Param1")
+							},
+							{
+								label: "\"parameter2\"",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature1_Param2")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature1_Param3")
+							},
+							{
+								label: "]"
+							}
+						]
+					};
+					const cmdShellSignature = {
+						label: "CMD executable parameter ...",
+						documentation: this.documentation.getDocumentation("signatureCmd_Signature2"),
+						parameters: [
+							{
+								label: "executable",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature2_Param0")
+							},
+							{
+								label: "parameter",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature2_Param1")
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureCmd_Signature2_Param2")
+							}
+						]
+					};
+					return this.getJSONInstructionSignatureHelp(cmd, position, [ cmdJsonExecutableSignature, cmdJsonParameterSignature ], cmdShellSignature, false, true, false, true);
 				case "COPY":
 					const copy = instruction as Copy;
 					const flag = copy.getFromFlag();
@@ -254,7 +323,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(copy, position, copyJsonSignature, copyShellSignature, true, false, false, false);
+					return this.getJSONInstructionSignatureHelp(copy, position, [ copyJsonSignature ], copyShellSignature, true, false, false, false);
 				case "ENTRYPOINT":
 					const entrypoint = instruction as JSONInstruction;
 					const entrypointJsonSignature = {
@@ -299,7 +368,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(entrypoint, position, entrypointJsonSignature, entrypointShellSignature, false, true, false, true);
+					return this.getJSONInstructionSignatureHelp(entrypoint, position, [ entrypointJsonSignature ], entrypointShellSignature, false, true, false, true);
 				case "ENV":
 					const envSignatures = [
 						{
@@ -596,7 +665,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(run, position, runJsonSignature, runShellSignature, false, false, false, true);
+					return this.getJSONInstructionSignatureHelp(run, position, [ runJsonSignature ], runShellSignature, false, false, false, true);
 				case "SHELL":
 					let shell = instruction as JSONInstruction;
 					let shellSignatureHelp: SignatureHelp = {
@@ -781,7 +850,7 @@ export class DockerSignatures {
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(volume, position, volumeJsonSignature, volumeShellSignature, false, true, true, true);
+					return this.getJSONInstructionSignatureHelp(volume, position, [ volumeJsonSignature ], volumeShellSignature, false, true, true, true);
 				case "WORKDIR":
 					return {
 						signatures: [
@@ -965,7 +1034,7 @@ export class DockerSignatures {
 	}
 
 	private getJSONInstructionSignatureHelp(
-			instruction: JSONInstruction, position: Position, jsonSignature: SignatureInformation,
+			instruction: JSONInstruction, position: Position, jsonSignatures: SignatureInformation[],
 			shellSignature: SignatureInformation,
 			hasFlags: boolean, jsonFirst: boolean, singleParameter: boolean, finalRepeats: boolean
 		): SignatureHelp {
@@ -979,45 +1048,37 @@ export class DockerSignatures {
 			}
 		} else if (activeParameter === 0) {
 			if (jsonFirst) {
+				jsonSignatures.push(shellSignature);
 				return {
-					signatures: [
-						jsonSignature,
-						shellSignature
-					],
+					signatures: jsonSignatures,
 					activeSignature: 0,
 					activeParameter: 0
 				}
 			}
+			jsonSignatures.unshift(shellSignature);
 			return {
-				signatures: [
-					shellSignature,
-					jsonSignature
-				],
+				signatures: jsonSignatures,
 				activeSignature: 0,
 				activeParameter: 0
 			}
 		} else if (activeParameter === 1 && hasFlags) {
 			if (jsonFirst) {
+				jsonSignatures.push(shellSignature);
 				return {
-					signatures: [
-						jsonSignature,
-						shellSignature
-					],
+					signatures: jsonSignatures,
 					activeSignature: 0,
 					activeParameter: 1
 				}
 			}
+			jsonSignatures.unshift(shellSignature);
 			return {
-				signatures: [
-					shellSignature,
-					jsonSignature
-				],
+				signatures: jsonSignatures,
 				activeSignature: 0,
 				activeParameter: 1
 			}
 		}
 		return {
-			signatures: [ jsonSignature ],
+			signatures: jsonSignatures,
 			activeSignature: 0,
 			activeParameter: activeParameter
 		}
