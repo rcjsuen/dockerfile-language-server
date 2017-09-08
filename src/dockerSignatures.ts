@@ -452,7 +452,43 @@ export class DockerSignatures {
 				case "FROM":
 					return this.getFromSignatureHelp(position, instruction as From);
 				case "HEALTHCHECK":
-					let flags = (instruction as Healthcheck).getFlags();
+					const healthcheckCmdEmptySignature = {
+						label: "HEALTHCHECK [flags] CMD ...",
+						documentation: this.documentation.getDocumentation("signatureHealthcheck_Signature0"),
+						parameters: [
+							{
+								label: "CMD"
+							}
+						]
+					};
+					const healthcheckCmdNormalSignature = {
+						label: "HEALTHCHECK [flags] CMD ...",
+						documentation: this.documentation.getDocumentation("signatureHealthcheck_Signature1"),
+						parameters: [
+							{
+								label: "[flags]",
+								documentation: this.documentation.getDocumentation("signatureHealthcheck_Signature1_Param0")
+							},
+							{
+								label: "CMD"
+							},
+							{
+								label: "...",
+								documentation: this.documentation.getDocumentation("signatureHealthcheck_Signature1_Param2")
+							}
+						]
+					};
+					const healthcheckNoneSignature = {
+						label: "HEALTHCHECK NONE",
+						documentation: this.documentation.getDocumentation("signatureHealthcheck_Signature2"),
+						parameters: [
+							{
+								label: "NONE"
+							}
+						]
+					};
+					const healthcheck = (instruction as Healthcheck)
+					const flags = healthcheck.getFlags();
 					for (let flag of flags) {
 						let range = flag.getValueRange();
 						if (range !== null && Util.isInsideRange(position, range)) {
@@ -526,9 +562,55 @@ export class DockerSignatures {
 										activeParameter: 0
 									}
 							}
+							break;
 						}
 					}
-					break;
+					const healthcheckArgs = healthcheck.getArguments();
+					if (flags.length == 0 && healthcheckArgs.length === 0) {
+						// no flags or args, suggest both CMD and NONE
+						return {
+							signatures: [
+								healthcheckCmdEmptySignature,
+								healthcheckNoneSignature
+							],
+							activeSignature: 0,
+							activeParameter: 0
+						}
+					}
+					const subcommand = healthcheck.getSubcommand();
+					if (subcommand === null) {
+						return {
+							signatures: [
+								healthcheckCmdNormalSignature
+							],
+							activeSignature: 0,
+							activeParameter: 0
+						}
+					}
+					const beforeSubcommand = subcommand.isBefore(position);
+					const afterSubcommand = subcommand.isAfter(position);
+					const subcommandValue = subcommand.getValue();
+					if ("NONE".indexOf(subcommandValue.toUpperCase()) === 0) {
+						if (beforeSubcommand) {
+							// after a NONE, nothing to show
+							return null;
+						}
+						return {
+							signatures: [
+								healthcheckNoneSignature
+							],
+							activeSignature: 0,
+							activeParameter: 0
+						}
+					}
+					const activeHealthcheckParameter = beforeSubcommand ? 2 : afterSubcommand ? 0 : 1;
+					return {
+						signatures: [
+							healthcheckCmdNormalSignature
+						],
+						activeSignature: 0,
+						activeParameter: activeHealthcheckParameter
+					}
 				case "LABEL":
 					const labelSignatures = [
 						{

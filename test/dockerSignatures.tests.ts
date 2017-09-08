@@ -664,6 +664,61 @@ function assertFrom_Digests_BuildStages_Only(signatureHelp: SignatureHelp, activ
 	assertFrom_ImageDigest_BuildStage(signatureHelp.signatures[0]);
 }
 
+function assertHealthcheck_Cmd_Empty(signature: SignatureInformation) {
+	assert.equal(signature.label, "HEALTHCHECK [flags] CMD ...");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureHealthcheck_Signature0"));
+	assert.equal(signature.parameters.length, 1);
+	assert.equal(signature.parameters[0].label, "CMD");
+	assert.equal(signature.parameters[0].documentation, null);
+}
+
+function assertHealthcheck_Cmd_Normal(signature: SignatureInformation) {
+	assert.equal(signature.label, "HEALTHCHECK [flags] CMD ...");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureHealthcheck_Signature1"));
+	assert.equal(signature.parameters.length, 3);
+	assert.equal(signature.parameters[0].label, "[flags]");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureHealthcheck_Signature1_Param0"));
+	assert.equal(signature.parameters[1].label, "CMD");
+	assert.equal(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[2].label, "...");
+	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureHealthcheck_Signature1_Param2"));
+}
+
+function assertHealthcheck_None(signature: SignatureInformation) {
+	assert.equal(signature.label, "HEALTHCHECK NONE");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureHealthcheck_Signature2"));
+	assert.equal(signature.parameters.length, 1);
+	assert.equal(signature.parameters[0].label, "NONE");
+	assert.equal(signature.parameters[0].documentation, null);
+}
+
+function assertHealthcheck_Both(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.signatures.length, 2);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assertHealthcheck_Cmd_Empty(signatureHelp.signatures[0]);
+	assertHealthcheck_None(signatureHelp.signatures[1]);
+}
+
+function assertHealthcheck_Cmd_NormalOnly(signatureHelp: SignatureHelp, activeParameter: number) {
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, activeParameter);
+	assertHealthcheck_Cmd_Normal(signatureHelp.signatures[0]);
+}
+
+function assertHealthcheck_NoneOnly(signatureHelp: SignatureHelp) {
+	assert.equal(signatureHelp.signatures.length, 1);
+	assert.equal(signatureHelp.activeSignature, 0);
+	assert.equal(signatureHelp.activeParameter, 0);
+	assertHealthcheck_None(signatureHelp.signatures[0]);
+}
+
 function assertLabel_Space(signature: SignatureInformation) {
 	assertKeyValue_Single(
 		signature,
@@ -1592,6 +1647,44 @@ describe("Dockerfile Signature Tests", function() {
 		let triggerOffset = trigger ? 8 : 0;
 
 		describe("HEALTHCHECK", function() {
+			describe("initial", function() {
+				it("empty", function() {
+					assertHealthcheck_Both(compute(onbuild + "HEALTHCHECK ", 0, triggerOffset + 12));
+				});
+
+				it("prefix", function() {
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK C", 0, triggerOffset + 13), 1);
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK c", 0, triggerOffset + 13), 1);
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK a", 0, triggerOffset + 13), 1);
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK a", 0, triggerOffset + 13), 1);
+					assertHealthcheck_NoneOnly(compute(onbuild + "HEALTHCHECK N", 0, triggerOffset + 13));
+					assertHealthcheck_NoneOnly(compute(onbuild + "HEALTHCHECK n", 0, triggerOffset + 13));
+					assertHealthcheck_NoneOnly(compute(onbuild + "HEALTHCHECK no", 0, triggerOffset + 14));
+					assertHealthcheck_NoneOnly(compute(onbuild + "HEALTHCHECK non", 0, triggerOffset + 15));
+					assertHealthcheck_NoneOnly(compute(onbuild + "HEALTHCHECK none", 0, triggerOffset + 16));
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK nonee", 0, triggerOffset + 17), 1);
+				});
+			});
+
+			describe("CMD", function() {
+				it("args", function() {
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK CMD ", 0, triggerOffset + 16), 2);
+				});
+
+				it("flags", function() {
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK --ab", 0, triggerOffset + 16), 0);
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK  CMD", 0, triggerOffset + 12), 0);
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK --random= CMD", 0, triggerOffset + 21), 0);
+				});
+			});
+
+			describe("NONE", function() {
+				it("no signatures", function() {
+					assertNoSignatures(compute(onbuild + "HEALTHCHECK NONE ", 0, triggerOffset + 17));
+					assertNoSignatures(compute(onbuild + "HEALTHCHECK none ", 0, triggerOffset + 17));
+				});
+			});
+
 			describe("--interval", function() {
 				it("ok", function() {
 					let signatureHelp = compute(onbuild + "HEALTHCHECK --interval=", 0, triggerOffset + 23);

@@ -18,14 +18,8 @@ export class Healthcheck extends ModifiableInstruction {
 		return argument === "CMD" || argument === "NONE";
 	}
 
-	public getSubcommand(): Argument {
+	public getSubcommand(): Argument | null {
 		let args = this.getArguments();
-		for (let arg of args) {
-			let value = arg.getValue().toUpperCase();
-			if (value === "CMD" || value === "NONE") {
-				return arg;
-			}
-		}
-		return null;
+		return args.length !== 0 ? args[0] : null;
 	}
 }

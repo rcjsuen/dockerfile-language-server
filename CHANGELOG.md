@@ -22,23 +22,6 @@ All notable changes to this project will be documented in this file.
     - COPY's --from
     - HEALTHCHECK CMD flags
   - instructions ([#162](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/162))
-    - ADD
-    - ARG
-    - CMD
-    - COPY
-    - ENTRYPOINT
-    - ENV
-    - EXPOSE
-    - FROM
-    - LABEL
-    - MAINTAINER
-    - ONBUILD
-    - RUN
-    - SHELL
-    - STOPSIGNAL
-    - USER
-    - VOLUME
-    - WORKDIR
 
 ### Fixed
 - correct handling of escaped quotes in ENV variables ([#144](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/144))
