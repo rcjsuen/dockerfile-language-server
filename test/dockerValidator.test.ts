@@ -1529,6 +1529,18 @@ describe("Docker Validator Tests", function() {
 
 				diagnostics = validate("FROM node\n" + instruction + " var=\"\\\"\\\"\"");
 				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " x=y \\\n# abc \na=b");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " x=y \\\n# abc \r\na=b");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=value \\\n# comment\n# comment\nvar2=value2");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\n" + instruction + " var=value \\\n# var2=value2");
+				assert.equal(diagnostics.length, 0);
 			});
 
 			it("requires two", function() {

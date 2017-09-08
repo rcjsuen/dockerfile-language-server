@@ -1395,6 +1395,46 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "ab");
 				});
 			});
+
+			describe("comments", function() {
+				it("embedded in escaped line", function() {
+					let document = createDocument("ENV var=value \\\n# comment\nvar2=value2");
+					let hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "value2");
+
+					document = createDocument("ENV var=value \\\nvar2=\"#\" var3=value3\n");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 1, 2);
+					assert.equal(hover.contents, "#");
+					hover = onHover(document, 1, 11);
+					assert.equal(hover.contents, "value3");
+
+					document = createDocument("ENV var=value \\\nvar2=# var3=value3 \\\nvar4=value4");
+					hover = onHover(document, 0, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 1, 2);
+					assert.equal(hover.contents, "#");
+					hover = onHover(document, 1, 10);
+					assert.equal(hover.contents, "value3");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "value4");
+
+					document = createDocument("FROM node\nENV var=value \\\n# comment\n# comment\nvar2=value2");
+					hover = onHover(document, 1, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 4, 2);
+					assert.equal(hover.contents, "value2");
+	
+					document = createDocument("FROM node\nENV var=value \\\n# var2=value2");
+					hover = onHover(document, 1, 6);
+					assert.equal(hover.contents, "value");
+					hover = onHover(document, 2, 4);
+					assert.equal(hover, null);
+				});
+			});
 		});
 
 		function createHealthcheckTest(trigger: boolean) {

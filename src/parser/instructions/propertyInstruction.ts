@@ -103,6 +103,8 @@ export abstract class PropertyInstruction extends Instruction {
 			return [];
 		}
 
+		// records whether the parser has just processed an escaped newline or not
+		let escaped = false;
 		let end = this.findTrailingNonWhitespace(fullArgs);
 		content = fullArgs.substring(start, end + 1);
 		let argStart = 0;
@@ -128,6 +130,7 @@ export abstract class PropertyInstruction extends Instruction {
 									case '\r':
 									case '\n':
 										// whitespace only, safe to skip
+										escaped = true;
 										i = j;
 										continue argumentLoop;
 									case ' ':
@@ -152,6 +155,7 @@ export abstract class PropertyInstruction extends Instruction {
 							}
 						case '\n':
 							// immediately followed by a newline, skip the newline
+							escaped = true;
 							i = i + 1;
 							continue argumentLoop;
 						case this.escapeChar:
@@ -198,7 +202,30 @@ export abstract class PropertyInstruction extends Instruction {
 					}
 					argStart = -1;
 					break;
+				case '#':
+					if (escaped) {
+						// a newline was escaped and now there's a comment
+						for (let j = i + 1; j < content.length; j++) {
+							switch (content.charAt(j)) {
+								case '\r':
+									if (content.charAt(j + 1) === '\n') {
+										j++;
+									}
+								case '\n':
+									i = j;
+									continue argumentLoop;
+							}
+						}
+						// went to the end without finding a newline,
+						// the comment was the last line in the instruction,
+						// just stop parsing
+						break argumentLoop;
+					} else if (argStart === -1) {
+						argStart = i;
+					}
+					break;
 				default:
+					escaped = false;
 					if (argStart === -1) {
 						argStart = i;
 					}
