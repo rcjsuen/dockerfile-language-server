@@ -327,6 +327,18 @@ describe("Dockerfile hover", function() {
 
 					hover = onHoverString(instruction + " a" + delimiter + "\\\\\\\\\\b", 0, 5);
 					assert.equal(hover.contents, "\\\\b");
+
+					hover = onHoverString(instruction + " var" + delimiter + "a\\\n# comment\nbc", 0, 6);
+					assert.equal(hover.contents, "abc");
+
+					hover = onHoverString(instruction + " var" + delimiter + "a\\\r\n# comment\r\nbc", 0, 6);
+					assert.equal(hover.contents, "abc");
+
+					hover = onHoverString(instruction + " var" + delimiter + "\\\n# comment\nabc", 0, 6);
+					assert.equal(hover.contents, "abc");
+
+					hover = onHoverString(instruction + " var" + delimiter + "\\\r\n# comment\r\nabc", 0, 6);
+					assert.equal(hover.contents, "abc");
 				});
 
 				it("escape in literals", function() {
@@ -365,6 +377,27 @@ describe("Dockerfile hover", function() {
 
 					hover = onHoverString(instruction + " a" + delimiter + "'a \\\nx'", 0, 5);
 					assert.equal(hover.contents, "a x");
+
+					hover = onHoverString(instruction + " var" + delimiter + "\"abc\\ #def\"", 0, 6);
+					assert.equal(hover.contents, "abc\\ #def");
+
+					hover = onHoverString(instruction + " var" + delimiter + "\"value \\\n# comment\nvalue2\"", 0, 6);
+					assert.equal(hover.contents, "value value2");
+
+					hover = onHoverString(instruction + " var" + delimiter + "\"value \\ \t\n# comment\nvalue2\"", 0, 6);
+					assert.equal(hover.contents, "value value2");
+
+					hover = onHoverString(instruction + " var" + delimiter + "\"abc\\\n #comment\n #comment\ndef\"", 0, 6);
+					assert.equal(hover.contents, "abcdef");
+
+					hover = onHoverString(instruction + " var" + delimiter + "\"abc\\\r\n #comment\r\n #comment\r\ndef\"", 0, 6);
+					assert.equal(hover.contents, "abcdef");
+
+					hover = onHoverString(instruction + " var" + delimiter + "'abc\\\n #comment\n #comment\ndef'", 0, 6);
+					assert.equal(hover.contents, "abcdef");
+
+					hover = onHoverString(instruction + " var" + delimiter + "'abc\\\r\n #comment\r\n #comment\r\ndef'", 0, 6);
+					assert.equal(hover.contents, "abcdef");
 				});
 
 				it("no variable", function() {

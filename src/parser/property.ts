@@ -134,18 +134,17 @@ export class Property {
 			return null;
 		}
 
-		// trim the leading whitespace of the variable's value
-		let startIndex = index < argValue.length - 1 ? Util.findLeadingNonWhitespace(argValue.substring(index + 1), escapeChar) : 0;
 		return Range.create(
-			document.positionAt(document.offsetAt(arg.getRange().start) + index + startIndex + 1),
+			document.positionAt(document.offsetAt(arg.getRange().start) + index + 1),
 			document.positionAt(document.offsetAt(arg.getRange().end))
 		);
 	}
 
 	/**
-	 * Returns the actual value of this ARG instruction's declared
+	 * Returns the actual value of this instruction's declared
 	 * variable. The value will have its escape characters removed if
-	 * applicable.
+	 * applicable. If the value spans multiple lines and there are
+	 * comments nested within the lines, they too will be removed.
 	 * 
 	 * @return the value that this ARG instruction's declared
 	 *         variable will resolve to, may be null if no value is
@@ -153,6 +152,13 @@ export class Property {
 	 *         consists of whitespace
 	 */
 	private static getValue(value: string, escapeChar: string): string {
+		let escaped = false;
+		const skip = Util.findLeadingNonWhitespace(value, escapeChar);
+		if (skip !== 0 && value.charAt(skip) === '#') {
+			// need to skip over comments
+			escaped = true;
+		}
+		value = value.substring(skip);
 		let first = value.charAt(0);
 		let last = value.charAt(value.length - 1);
 		let literal = first === '\'' || first === '"';
@@ -171,85 +177,133 @@ export class Property {
 			value = value.substring(1, value.length - 1);
 		}
 
+		let commentCheck = -1;
 		let escapedValue = "";
 		parseValue: for (let i = 0; i < value.length; i++) {
 			let char = value.charAt(i);
-			if (char === escapeChar) {
-				if (i + 1 === value.length) {
-					if (literal) {
-						escapedValue = escapedValue + escapeChar;
+			switch (char) {
+				case ' ':
+				case '\t':
+					if (escaped && commentCheck === -1) {
+						commentCheck = i;
 					}
+					escapedValue = escapedValue + char;
 					break;
-				}
+				case escapeChar:
+					if (i + 1 === value.length) {
+						if (literal) {
+							escapedValue = escapedValue + escapeChar;
+						}
+						break;
+					}
 
-				char = value.charAt(i + 1);
-				if (char === ' ' || char === '\t') {
-					whitespaceCheck: for (let j = i + 2; j < value.length; j++) {
-						let char2 = value.charAt(j);
-						switch (char2) {
-							case ' ':
-							case '\t':
-								break;
-							case '\r':
-								if (value.charAt(j + 1) === '\n') {
-									j++;
-								}
-							case '\n':
-								i = j;
-								continue parseValue;
-							default:
-								if (!inDouble && !inSingle && !literal) {
-									if (char2 === escapeChar) {
-										// add the escaped character
-										escapedValue = escapedValue + char
-										// now start parsing from the next escape character
-										i = i + 1;
-									} else {
-										// the expectation is that this j = i + 2 here
-										escapedValue = escapedValue + char + char2;
-										i = j;
+					char = value.charAt(i + 1);
+					if (char === ' ' || char === '\t') {
+						whitespaceCheck: for (let j = i + 2; j < value.length; j++) {
+							let char2 = value.charAt(j);
+							switch (char2) {
+								case ' ':
+								case '\t':
+									break;
+								case '\r':
+									if (value.charAt(j + 1) === '\n') {
+										j++;
 									}
+								case '\n':
+									escaped = true;
+									i = j;
 									continue parseValue;
-								}
-								break whitespaceCheck;
+								default:
+									if (!inDouble && !inSingle && !literal) {
+										if (char2 === escapeChar) {
+											// add the escaped character
+											escapedValue = escapedValue + char
+											// now start parsing from the next escape character
+											i = i + 1;
+										} else {
+											// the expectation is that this j = i + 2 here
+											escapedValue = escapedValue + char + char2;
+											i = j;
+										}
+										continue parseValue;
+									}
+									break whitespaceCheck;
+							}
 						}
 					}
-				}
-				if (inDouble) {
-					if (char === '\n') {
-						i++;
-					} else if (char !== '"') {
-						if (char === escapeChar) {
+					if (inDouble) {
+						if (char === '\r') {
+							escaped = true;
+							i = i + 2;
+						} else if (char === '\n') {
+							escaped = true;
 							i++;
-						}	
+						} else if (char !== '"') {
+							if (char === escapeChar) {
+								i++;
+							}	
+							escapedValue = escapedValue + escapeChar;
+						}
+						continue parseValue;
+					} else if (inSingle || literal) {
+						if (char === '\r') {
+							escaped = true;
+							i = i + 2;
+						} else if (char === '\n') {
+							escaped = true;
+							i++;
+						} else {
+							escapedValue = escapedValue + escapeChar;
+						}
+						continue parseValue;
+					} else if (char === escapeChar) {
+						// double escape, append one and move on
 						escapedValue = escapedValue + escapeChar;
-					}
-					continue parseValue;
-				} else if (inSingle || literal) {
-					if (char === '\n') {
+						i++;
+					} else if (char === '\r') {
+						if (value.charAt(i + 2) === '\n') {
+							i++;
+						}
+						escaped = true;
+						i++;
+					} else if (char === '\n') {
+						escaped = true;
 						i++;
 					} else {
-						escapedValue = escapedValue + escapeChar;
-					}
-					continue parseValue;
-				} else if (char === escapeChar) {
-					// double escape, append one and move on
-					escapedValue = escapedValue + escapeChar;
-					i++;
-				} else if (char === '\r') {
-					if (value.charAt(i + 2) === '\n') {
+						// any other escapes are simply ignored
+						escapedValue = escapedValue + char;
 						i++;
 					}
-					i++;
-				} else if (char === '\n') {
-					i++;
-				} else {
-					// any other escapes are simply ignored
+					break;
+				case '#':
+					// a newline was escaped and now there's a comment
+					if (escaped) {
+						if (commentCheck !== -1) {
+							// rollback and remove the whitespace that was previously appended
+							escapedValue = escapedValue.substring(0, escapedValue.length - (i - commentCheck));
+							commentCheck = -1;
+						}
+						for (let j = i + 1; j < value.length; j++) {
+							switch (value.charAt(j)) {
+								case '\r':
+									j++;
+								case '\n':
+									i = j;
+									continue parseValue;
+							}
+						}
+						// went to the end without finding a newline,
+						// the comment was the last line in the instruction,
+						// just stop parsing
+						break parseValue;
+					}
+				default:
+					if (escaped) {
+						escaped = false;
+						commentCheck = -1;
+					}
 					escapedValue = escapedValue + char;
-					i++;
-				}
-			} else {
-				escapedValue = escapedValue + char;
+					break;
 			}
 		}
 		

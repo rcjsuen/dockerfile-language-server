@@ -32,7 +32,8 @@ All notable changes to this project will be documented in this file.
 - only suggest build stages that come after the current COPY line ([#158](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/158))
 - restrict operations on ARG and ENV variables to a build stage ([#163](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/163))
 - make FROM variables only interact with the initial set of ARG instructions ([#153](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/153))
-- ignore comments nested in escaped newlines for ENV and LABEL instructions ([#167](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/167))
+- skip validation of nested comments in escaped newlines of ENV and LABEL instructions ([#167](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/167))
+- prevent hovers from rendering nested comments for ARG and ENV instructions ([#168](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/168))
 
 ## [0.0.6] - 2017-08-12
 ### Added
