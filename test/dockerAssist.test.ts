@@ -238,6 +238,26 @@ function assertHEALTHCHECK_CMD(item: CompletionItem, line: number, character: nu
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
+function assertHEALTHCHECK_CMD_Subcommand(item: CompletionItem, line: number, character: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "CMD [ \"executable\" ]");
+	} else {
+		assert.equal(item.label, "CMD");
+	}
+	assert.equal(item.kind, CompletionItemKind.Keyword);
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "CMD [ \"${1:executable}\" ]");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "CMD");
+	}
+	assert.equal(item.textEdit.range.start.line, line);
+	assert.equal(item.textEdit.range.start.character, character);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
+}
+
 function assertCOPY_FlagFrom(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.label, "--from=stage");
@@ -347,6 +367,17 @@ function assertHEALTHCHECK_NONE(item: CompletionItem, line: number, character: n
 	assert.equal(item.textEdit.range.start.character, character);
 	assert.equal(item.textEdit.range.end.line, line);
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
+}
+
+function assertHEALTHCHECK_NONE_Subcommand(item: CompletionItem, line: number, character: number, endLine: number, endCharacter: number) {
+	assert.equal(item.label, "NONE");
+	assert.equal(item.kind, CompletionItemKind.Keyword);
+	assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+	assert.equal(item.textEdit.newText, "NONE");
+	assert.equal(item.textEdit.range.start.line, line);
+	assert.equal(item.textEdit.range.start.character, character);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
 }
 
 function assertLABEL(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
@@ -663,12 +694,36 @@ function assertProposals(proposals: CompletionItem[], offset: number, prefix: nu
 }
 
 function assertHealthcheckItems(items: CompletionItem[], startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(items.length, 6);
+	// CMD and NONE first
+	assertHEALTHCHECK_CMD_Subcommand(items[0], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertHEALTHCHECK_NONE_Subcommand(items[1], startLine, startCharacter, endLine, endCharacter);
+	// flags in alphabetical order next
+	assertHEALTHCHECK_FlagInterval(items[2], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertHEALTHCHECK_FlagRetries(items[3], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertHEALTHCHECK_FlagStartPeriod(items[4], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertHEALTHCHECK_FlagTimeout(items[5], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+
+	assert.equal(items[0].sortText, "0");
+	assert.equal(items[1].sortText, "1");
+	assert.equal(items[2].sortText, "2");
+	assert.equal(items[3].sortText, "3");
+	assert.equal(items[4].sortText, "4");
+	assert.equal(items[5].sortText, "5");
+}
+
+function assertHealthcheckFlags(items: CompletionItem[], startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
 	assert.equal(items.length, 4);
 	// alphabetical order
 	assertHEALTHCHECK_FlagInterval(items[0], startLine, startCharacter, endLine, endCharacter, snippetSupport);
 	assertHEALTHCHECK_FlagRetries(items[1], startLine, startCharacter, endLine, endCharacter, snippetSupport);
 	assertHEALTHCHECK_FlagStartPeriod(items[2], startLine, startCharacter, endLine, endCharacter, snippetSupport);
 	assertHEALTHCHECK_FlagTimeout(items[3], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+
+	assert.equal(items[0].sortText, "0");
+	assert.equal(items[1].sortText, "1");
+	assert.equal(items[2].sortText, "2");
+	assert.equal(items[3].sortText, "3");
 }
 
 function assertONBUILDProposals(proposals: CompletionItem[], offset: number, prefix: number, prefixLength: number) {
@@ -1685,10 +1740,26 @@ describe('Docker Content Assist Tests', function() {
 
 					it("prefix", function() {
 						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK -", 1, triggerOffset + 13, snippetSupport);
-						assertHealthcheckItems(items, 1, triggerOffset + 12, 1, triggerOffset + 13, snippetSupport);
+						assertHealthcheckFlags(items, 1, triggerOffset + 12, 1, triggerOffset + 13, snippetSupport);
 
 						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --", 1, triggerOffset + 14, snippetSupport);
-						assertHealthcheckItems(items, 1, triggerOffset + 12, 1, triggerOffset + 14, snippetSupport);
+						assertHealthcheckFlags(items, 1, triggerOffset + 12, 1, triggerOffset + 14, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK c", 1, triggerOffset + 13, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_CMD_Subcommand(items[0], 1, triggerOffset + 12, 1, triggerOffset + 13, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK CM", 1, triggerOffset + 14, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_CMD_Subcommand(items[0], 1, triggerOffset + 12, 1, triggerOffset + 14, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK n", 1, triggerOffset + 13, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_NONE_Subcommand(items[0], 1, triggerOffset + 12, 1, triggerOffset + 13);
+
+						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK NO", 1, triggerOffset + 14, snippetSupport);
+						assert.equal(items.length, 1);
+						assertHEALTHCHECK_NONE_Subcommand(items[0], 1, triggerOffset + 12, 1, triggerOffset + 14);
 
 						items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK --inter", 1, triggerOffset + 19, snippetSupport);
 						assert.equal(items.length, 1);

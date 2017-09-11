@@ -324,6 +324,12 @@ export class DockerAssist {
 
 	private createHealthcheckProposals(dockerfile: Dockerfile, position: Position, offset: number, prefix: string) {
 		let items: CompletionItem[] = [];
+		if (prefix.length < 3 && "CMD".indexOf(prefix.toUpperCase()) === 0) {
+			items.push(this.createHEALTHCHECK_CMD_Subcommand(prefix.length, offset));
+		}
+		if (prefix.length < 4 && "NONE".indexOf(prefix.toUpperCase()) === 0) {
+			items.push(this.createHEALTHCHECK_NONE_Subcommand(prefix.length, offset));
+		}
 		if ("--interval".indexOf(prefix) === 0) {
 			items.push(this.createHEALTHCHECK_FlagInterval(prefix.length, offset));
 		}
@@ -336,6 +342,11 @@ export class DockerAssist {
 		if ("--timeout".indexOf(prefix) === 0) {
 			items.push(this.createHEALTHCHECK_FlagTimeout(prefix.length, offset));
 		}
+
+		for (let i = 0; i < items.length; i++) {
+			items[i].sortText = i.toString();
+		}
+
 		return items;
 	}
 
@@ -491,6 +502,26 @@ export class DockerAssist {
 		};
 	}
 
+	private createHEALTHCHECK_CMD_Subcommand(prefixLength: number, offset: number): CompletionItem {
+		if (this.snippetSupport) {
+			return this.createKeywordCompletionItem("CMD",
+				"CMD [ \"executable\" ]",
+				prefixLength,
+				offset,
+				"CMD [ \"${1:executable}\" ]",
+				"HEALTHCHECK_CMD");
+		}
+
+		const textEdit = this.createTextEdit(prefixLength, offset, "CMD");
+		return {
+			data: "HEALTHCHECK_CMD",
+			textEdit: textEdit,
+			label: "CMD",
+			kind: CompletionItemKind.Keyword,
+			insertTextFormat: InsertTextFormat.PlainText,
+		};
+	}
+
 	private createCOPY_FlagFrom(prefixLength: number, offset: number): CompletionItem {
 		if (this.snippetSupport) {
 			return this.createFlagCompletionItem("--from=stage", prefixLength, offset, "--from=${1:stage}", "COPY_FlagFrom");
@@ -528,6 +559,10 @@ export class DockerAssist {
 
 	createHEALTHCHECK_NONE(prefixLength: number, offset: number): CompletionItem {
 		return this.createPlainTextCompletionItem("HEALTHCHECK NONE", prefixLength, offset, "HEALTHCHECK NONE", "HEALTHCHECK_NONE");
+	}
+
+	private createHEALTHCHECK_NONE_Subcommand(prefixLength: number, offset: number): CompletionItem {
+		return this.createPlainTextCompletionItem("NONE", prefixLength, offset, "NONE", "HEALTHCHECK_NONE");
 	}
 
 	createLABEL(prefixLength: number, offset: number, markdown: string): CompletionItem {
