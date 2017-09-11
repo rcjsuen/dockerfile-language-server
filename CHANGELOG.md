@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 - textDocument/completion
   - HEALTHCHECK's CMD and NONE arguments ([#169](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/169))
 
+### Fixed
+- correct the documentation of HEALTHCHECK's --retries flag's completion item ([#170](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/170))
+
 ## [0.0.7] - 2017-09-09
 ### Added
 - textDocument/completion

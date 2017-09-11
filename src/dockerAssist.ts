@@ -538,9 +538,9 @@ export class DockerAssist {
 
 	private createHEALTHCHECK_FlagRetries(prefixLength: number, offset: number): CompletionItem {
 		if (this.snippetSupport) {
-			return this.createFlagCompletionItem("--retries=3", prefixLength, offset, "--retries=${1:3}", "HEALTHCHECK_FlagInterval");
+			return this.createFlagCompletionItem("--retries=3", prefixLength, offset, "--retries=${1:3}", "HEALTHCHECK_FlagRetries");
 		}
-		return this.createFlagCompletionItem("--retries=", prefixLength, offset, "--retries=", "HEALTHCHECK_FlagInterval");
+		return this.createFlagCompletionItem("--retries=", prefixLength, offset, "--retries=", "HEALTHCHECK_FlagRetries");
 	}
 
 	private createHEALTHCHECK_FlagStartPeriod(prefixLength: number, offset: number): CompletionItem {
