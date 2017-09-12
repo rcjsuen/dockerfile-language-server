@@ -53,7 +53,7 @@ export enum ValidationCode {
 	SYNTAX_MISSING_DOUBLE_QUOTE,
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
-	UNKNOWN_FLAG,
+	UNKNOWN_COPY_FLAG,
 	UNKNOWN_HEALTHCHECK_FLAG,
 	DEPRECATED_MAINTAINER,
 	HEALTHCHECK_CMD_ARGUMENT_MISSING
@@ -479,7 +479,7 @@ export class Validator {
 					if (flags.length > 0) {
 						if (flags[0].getName() !== "from") {
 							let range = flags[0].getNameRange();
-							problems.push(Validator.createFlagUnknown(range.start, range.end, flags[0].getName()));
+							problems.push(Validator.createUnknownCopyFlag(range.start, range.end, flags[0].getName()));
 						}
 					}
 					if (copyArgs.length === 1) {
@@ -1082,8 +1082,8 @@ export class Validator {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagMissingValue(flag), ValidationCode.FLAG_MISSING_VALUE);
 	}
 
-	static createFlagUnknown(start: Position, end: Position, flag: string): Diagnostic {
-		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagUnknown(flag), ValidationCode.UNKNOWN_FLAG);
+	static createUnknownCopyFlag(start: Position, end: Position, flag: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagUnknown(flag), ValidationCode.UNKNOWN_COPY_FLAG);
 	}
 
 	static createUnknownHealthcheckFlag(start: Position, end: Position, flag: string): Diagnostic {

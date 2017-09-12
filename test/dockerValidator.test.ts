@@ -121,8 +121,8 @@ function assertFlagMissingValue(diagnostic: Diagnostic, flag: string, startLine:
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
-function assertFlagUnknown(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_FLAG);
+function assertUnknownCopyFlag(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_COPY_FLAG);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagUnknown(flag));
@@ -1475,22 +1475,22 @@ describe("Docker Validator Tests", function() {
 			it("unknown flag", function() {
 				let diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertFlagUnknown(diagnostics[0], "x", 2, 7, 2, 8);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
 
 				// empty value
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x= . .");
 				assert.equal(diagnostics.length, 1);
-				assertFlagUnknown(diagnostics[0], "x", 2, 7, 2, 8);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
 
 				// no equals sign
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x . .");
 				assert.equal(diagnostics.length, 1);
-				assertFlagUnknown(diagnostics[0], "x", 2, 7, 2, 8);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
 
 				// flags are case-sensitive
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --FROM=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertFlagUnknown(diagnostics[0], "FROM", 2, 7, 2, 11);
+				assertUnknownCopyFlag(diagnostics[0], "FROM", 2, 7, 2, 11);
 			});
 
 			it("flag no value", function() {

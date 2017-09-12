@@ -25,6 +25,10 @@ function createInvalidEscapeDirective(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 }
 
+function createUnknownCopyFlag(): Diagnostic {
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.UNKNOWN_COPY_FLAG);
+}
+
 function createUnknownHealthcheckFlag(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.UNKNOWN_HEALTHCHECK_FLAG);
 }
@@ -166,6 +170,17 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[3].arguments[0], uri);
 		assertRange(commands[3].arguments[1], diagnostic.range);
 	});
+
+	it("unknown COPY flags", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let diagnostic = createUnknownCopyFlag();
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri, range);
+		assert.equal(commands.length, 1);
+		assert.equal(commands[0].command, CommandIds.FLAG_TO_COPY_FROM);
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], diagnostic.range);
+	});
 });
 
 describe("Dockerfile execute commands", function () {
@@ -306,6 +321,20 @@ describe("Dockerfile execute commands", function () {
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
 		assert.equal(edits[0].newText, "timeout");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("COPY flag to --from", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let document = createDocument("");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.FLAG_TO_COPY_FROM,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "from");
 		assert.equal(edits[0].range, range);
 	});
 });

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
     - docker.command.flagToHealthcheckRetries
     - docker.command.flagToHealthcheckStartPeriod
     - docker.command.flagToHealthcheckTimeout
+  - create docker.command.flagToCopyFrom to convert an unknown COPY flag ([#171](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/171))
 - textDocument/completion
   - HEALTHCHECK's CMD and NONE arguments ([#169](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/169))
 

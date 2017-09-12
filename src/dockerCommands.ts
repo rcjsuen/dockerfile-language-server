@@ -16,6 +16,7 @@ export class CommandIds {
 	static readonly EXTRA_ARGUMENT = "docker.command.removeExtraArgument";
 	static readonly DIRECTIVE_TO_BACKTICK = "docker.command.directiveToBacktick";
 	static readonly DIRECTIVE_TO_BACKSLASH = "docker.command.directiveToBackslash";
+	static readonly FLAG_TO_COPY_FROM = "docker.command.flagToCopyFrom";
 	static readonly FLAG_TO_HEALTHCHECK_INTERVAL = "docker.command.flagToHealthcheckInterval";
 	static readonly FLAG_TO_HEALTHCHECK_RETRIES = "docker.command.flagToHealthcheckRetries";
 	static readonly FLAG_TO_HEALTHCHECK_START_PERIOD = "docker.command.flagToHealthcheckStartPeriod";
@@ -92,6 +93,13 @@ export class DockerCommands {
 					commands.push({
 						title: "Convert to --timeout",
 						command: CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
+				case ValidationCode.UNKNOWN_COPY_FLAG:
+					commands.push({
+						title: "Convert to --from",
+						command: CommandIds.FLAG_TO_COPY_FROM,
 						arguments: [ textDocumentURI, diagnostics[i].range ]
 					});
 					break;
@@ -213,6 +221,17 @@ export class DockerCommands {
 						]:
 						[
 							TextEdit.replace(range, "timeout")
+						]
+					}
+				};
+			case CommandIds.FLAG_TO_COPY_FROM:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, "from")
 						]
 					}
 				};
