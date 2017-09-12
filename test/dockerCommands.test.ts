@@ -25,6 +25,10 @@ function createInvalidEscapeDirective(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 }
 
+function createUnknownHealthcheckFlag(): Diagnostic {
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.UNKNOWN_HEALTHCHECK_FLAG);
+}
+
 function createDirectiveUppercase(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.CASING_DIRECTIVE);
 }
@@ -139,6 +143,29 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[0].arguments[0], uri);
 		assertRange(commands[0].arguments[1], diagnostic.range);
 	});
+
+	it("unknown HEALTHCHECK flags", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let diagnostic = createUnknownHealthcheckFlag();
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri, range);
+		assert.equal(commands.length, 4);
+		assert.equal(commands[0].command, CommandIds.FLAG_TO_HEALTHCHECK_INTERVAL);
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], diagnostic.range);
+		assert.equal(commands[1].command, CommandIds.FLAG_TO_HEALTHCHECK_RETRIES);
+		assert.equal(commands[1].arguments.length, 2);
+		assert.equal(commands[1].arguments[0], uri);
+		assertRange(commands[1].arguments[1], diagnostic.range);
+		assert.equal(commands[2].command, CommandIds.FLAG_TO_HEALTHCHECK_START_PERIOD);
+		assert.equal(commands[2].arguments.length, 2);
+		assert.equal(commands[2].arguments[0], uri);
+		assertRange(commands[2].arguments[1], diagnostic.range);
+		assert.equal(commands[3].command, CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT);
+		assert.equal(commands[3].arguments.length, 2);
+		assert.equal(commands[3].arguments[0], uri);
+		assertRange(commands[3].arguments[1], diagnostic.range);
+	});
 });
 
 describe("Dockerfile execute commands", function () {
@@ -223,6 +250,62 @@ describe("Dockerfile execute commands", function () {
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
 		assert.equal(edits[0].newText, "AS");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("HEALTHCHECK flag to --interval", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let document = createDocument("");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.FLAG_TO_HEALTHCHECK_INTERVAL,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "interval");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("HEALTHCHECK flag to --retries", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let document = createDocument("");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.FLAG_TO_HEALTHCHECK_RETRIES,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "retries");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("HEALTHCHECK flag to --start-period", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let document = createDocument("");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.FLAG_TO_HEALTHCHECK_START_PERIOD,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "start-period");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("HEALTHCHECK flag to --timeout", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let document = createDocument("");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "timeout");
 		assert.equal(edits[0].range, range);
 	});
 });

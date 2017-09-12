@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- textDocument/codeAction
+  - create commands for converting unknown HEALTHCHECK flags ([#172](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/172))
+    - docker.command.flagToHealthcheckInterval
+    - docker.command.flagToHealthcheckRetries
+    - docker.command.flagToHealthcheckStartPeriod
+    - docker.command.flagToHealthcheckTimeout
 - textDocument/completion
   - HEALTHCHECK's CMD and NONE arguments ([#169](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/169))
 

@@ -76,6 +76,10 @@ connection.onInitialize((params): InitializeResult => {
 					CommandIds.EXTRA_ARGUMENT,
 					CommandIds.DIRECTIVE_TO_BACKSLASH,
 					CommandIds.DIRECTIVE_TO_BACKTICK,
+					CommandIds.FLAG_TO_HEALTHCHECK_INTERVAL,
+					CommandIds.FLAG_TO_HEALTHCHECK_RETRIES,
+					CommandIds.FLAG_TO_HEALTHCHECK_START_PERIOD,
+					CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT,
 					CommandIds.CONVERT_TO_AS
 				]
 			},

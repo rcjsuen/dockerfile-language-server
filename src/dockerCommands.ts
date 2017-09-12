@@ -16,6 +16,10 @@ export class CommandIds {
 	static readonly EXTRA_ARGUMENT = "docker.command.removeExtraArgument";
 	static readonly DIRECTIVE_TO_BACKTICK = "docker.command.directiveToBacktick";
 	static readonly DIRECTIVE_TO_BACKSLASH = "docker.command.directiveToBackslash";
+	static readonly FLAG_TO_HEALTHCHECK_INTERVAL = "docker.command.flagToHealthcheckInterval";
+	static readonly FLAG_TO_HEALTHCHECK_RETRIES = "docker.command.flagToHealthcheckRetries";
+	static readonly FLAG_TO_HEALTHCHECK_START_PERIOD = "docker.command.flagToHealthcheckStartPeriod";
+	static readonly FLAG_TO_HEALTHCHECK_TIMEOUT = "docker.command.flagToHealthcheckTimeout";
 	static readonly CONVERT_TO_AS = "docker.command.convertToAS";
 }
 
@@ -66,6 +70,28 @@ export class DockerCommands {
 					commands.push({
 						title: "Convert to AS",
 						command: CommandIds.CONVERT_TO_AS,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
+				case ValidationCode.UNKNOWN_HEALTHCHECK_FLAG:
+					commands.push({
+						title: "Convert to --interval",
+						command: CommandIds.FLAG_TO_HEALTHCHECK_INTERVAL,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					commands.push({
+						title: "Convert to --retries",
+						command: CommandIds.FLAG_TO_HEALTHCHECK_RETRIES,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					commands.push({
+						title: "Convert to --start-period",
+						command: CommandIds.FLAG_TO_HEALTHCHECK_START_PERIOD,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					commands.push({
+						title: "Convert to --timeout",
+						command: CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT,
 						arguments: [ textDocumentURI, diagnostics[i].range ]
 					});
 					break;
@@ -143,6 +169,50 @@ export class DockerCommands {
 						]:
 						[
 							TextEdit.replace(range, "AS")
+						]
+					}
+				};
+			case CommandIds.FLAG_TO_HEALTHCHECK_INTERVAL:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, "interval")
+						]
+					}
+				};
+			case CommandIds.FLAG_TO_HEALTHCHECK_RETRIES:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, "retries")
+						]
+					}
+				};
+			case CommandIds.FLAG_TO_HEALTHCHECK_START_PERIOD:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, "start-period")
+						]
+					}
+				};
+			case CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, "timeout")
 						]
 					}
 				};

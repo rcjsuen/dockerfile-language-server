@@ -54,6 +54,7 @@ export enum ValidationCode {
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
 	UNKNOWN_FLAG,
+	UNKNOWN_HEALTHCHECK_FLAG,
 	DEPRECATED_MAINTAINER,
 	HEALTHCHECK_CMD_ARGUMENT_MISSING
 }
@@ -385,7 +386,7 @@ export class Validator {
 							let flagName = flag.getName();
 							if (validFlags.indexOf(flagName) === -1) {
 								let nameRange = flag.getNameRange();
-								problems.push(Validator.createFlagUnknown(nameRange.start, nameRange.end, flag.getName()));
+								problems.push(Validator.createUnknownHealthcheckFlag(nameRange.start, nameRange.end, flag.getName()));
 							} else if (flagName === "retries") {
 								let value = flag.getValue();
 								if (value) {
@@ -1083,6 +1084,10 @@ export class Validator {
 
 	static createFlagUnknown(start: Position, end: Position, flag: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagUnknown(flag), ValidationCode.UNKNOWN_FLAG);
+	}
+
+	static createUnknownHealthcheckFlag(start: Position, end: Position, flag: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagUnknown(flag), ValidationCode.UNKNOWN_HEALTHCHECK_FLAG);
 	}
 
 	private static createFlagUnknownUnit(range: Range, unit: string, duration: string): Diagnostic {
