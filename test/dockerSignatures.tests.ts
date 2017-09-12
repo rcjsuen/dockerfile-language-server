@@ -1241,6 +1241,7 @@ describe("Dockerfile Signature Tests", function() {
 			it("[", function() {
 				assertAll(compute(prefix + " ", 0, offset + 1), parameterOffset + 0);
 				assertAll(compute(prefix + "  ", 0, offset + 2), parameterOffset + 0);
+				assertAll(compute(prefix + "  [", 0, offset + 1), parameterOffset + 0);
 			});
 
 			it("executable", function() {
