@@ -1235,25 +1235,22 @@ export class DockerSignatures {
 					return Math.min(i, max) + flagsOffset;
 				}
 			}
-		} else {
-			switch (args.length) {
-				case 0:
-					return 0 + flagsOffset;
-				case 1:
-					if (args[0].isBefore(position)) {
-						return 2 + flagsOffset;
-					}
-					return 0 + flagsOffset;
-				default:
-					if (args[args.length - 1].isBefore(position) || Util.isInsideRange(position, args[args.length - 1].getRange())) {
-						return 2 + flagsOffset;
-					} else if (args[0].isBefore(position)) {
-						return 1 + flagsOffset;
-					}
-					return 0 + flagsOffset;
-			}
 		}
-		return 0 + flagsOffset;
+
+		switch (args.length) {
+			case 1:
+				if (args[0].isBefore(position)) {
+					return 2 + flagsOffset;
+				}
+				return 0 + flagsOffset;
+			default:
+				if (args[args.length - 1].isBefore(position) || Util.isInsideRange(position, args[args.length - 1].getRange())) {
+					return 2 + flagsOffset;
+				} else if (args[0].isBefore(position)) {
+					return 1 + flagsOffset;
+				}
+				return 0 + flagsOffset;
+		}
 	}
 
 	private getPropertySignatureHelp(document: TextDocument, position: Position, signatures: SignatureInformation[], properties: Property[]): SignatureHelp {
