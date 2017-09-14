@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - correct the documentation of HEALTHCHECK's --retries flag's completion item ([#170](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/170))
+- show correct parameter in HEALTHCHECK's signature help if it has an escaped newline ([#175](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/175))
 
 ## [0.0.7] - 2017-09-09
 ### Added
