@@ -23,6 +23,7 @@ export enum ValidationCode {
 	ARGUMENT_MISSING,
 	ARGUMENT_EXTRA,
 	ARGUMENT_REQUIRES_ONE,
+	ARGUMENT_REQUIRES_AT_LEAST_ONE,
 	ARGUMENT_REQUIRES_TWO,
 	ARGUMENT_REQUIRES_AT_LEAST_TWO,
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
@@ -353,64 +354,60 @@ export class Validator {
 				case "HEALTHCHECK":
 					let args = instruction.getArguments();
 					const healthcheckFlags = (instruction as ModifiableInstruction).getFlags();
-					if (args.length === 0 && healthcheckFlags.length === 0) {
+					if (args.length === 0) {
 						// all instructions are expected to have at least one argument
-						let range = instruction.getInstructionRange();
-						problems.push(Validator.createMissingArgument(range.start, range.end));
+						problems.push(Validator.createHEALTHCHECKRequiresAtLeastOneArgument(instruction.getInstructionRange()));
 					} else {
-						// check the first argument
-						if (args.length > 0) {
-							let value = args[0].getValue();
-							let uppercase = value.toUpperCase();
-							if (uppercase === "NONE") {
-								// check that NONE doesn't have any arguments after it
-								if (args.length > 1) {
-									// get the next argument
-									let start = args[1].getRange().start;
-									// get the last argument
-									let end = args[args.length - 1].getRange().end;
-									// highlight everything after the NONE and warn the user
-									problems.push(Validator.createHealthcheckNoneUnnecessaryArgument(start, end));
-								}
-								// don't need to validate flags of a NONE
-								break;
-							} else if (uppercase === "CMD") {
-								if (args.length === 1) {
-									// this HEALTHCHECK has a CMD with no arguments
-									let range = args[0].getRange();
-									problems.push(Validator.createHealthcheckCmdArgumentMissing(range.start, range.end));
-								}
-							} else {
-								// unknown HEALTHCHECK type
-								problems.push(Validator.createHealthcheckTypeUnknown(args[0].getRange(), uppercase));
+						const value = args[0].getValue();
+						const uppercase = value.toUpperCase();
+						if (uppercase === "NONE") {
+							// check that NONE doesn't have any arguments after it
+							if (args.length > 1) {
+								// get the next argument
+								const start = args[1].getRange().start;
+								// get the last argument
+								const end = args[args.length - 1].getRange().end;
+								// highlight everything after the NONE and warn the user
+								problems.push(Validator.createHealthcheckNoneUnnecessaryArgument(start, end));
 							}
-						}
-
-						let validFlags = [ "interval", "retries", "start-period", "timeout" ];
-						for (let flag of healthcheckFlags) {
-							let flagName = flag.getName();
-							if (validFlags.indexOf(flagName) === -1) {
-								let nameRange = flag.getNameRange();
-								problems.push(Validator.createUnknownHealthcheckFlag(nameRange.start, nameRange.end, flag.getName()));
-							} else if (flagName === "retries") {
-								let value = flag.getValue();
-								if (value) {
-									let valueRange = flag.getValueRange();
-									let integer = parseInt(value);
-									// test for NaN or numbers with decimals
-									if (isNaN(integer) || value.indexOf('.') !== -1) {
-										problems.push(Validator.createInvalidSyntax(valueRange.start, valueRange.end, value));
-									} else if (integer < 1) {
-										problems.push(Validator.createFlagAtLeastOne(valueRange.start, valueRange.end, "--retries", integer.toString()));
-									}
-								}
+							// don't need to validate flags of a NONE
+							break;
+						} else if (uppercase === "CMD") {
+							if (args.length === 1) {
+								// this HEALTHCHECK has a CMD with no arguments
+								const range = args[0].getRange();
+								problems.push(Validator.createHealthcheckCmdArgumentMissing(range.start, range.end));
 							}
+						} else {
+							// unknown HEALTHCHECK type
+							problems.push(Validator.createHealthcheckTypeUnknown(args[0].getRange(), uppercase));
 						}
-
-						this.checkFlagValue(healthcheckFlags, validFlags, problems);
-						this.checkFlagDuration(healthcheckFlags, [ "interval", "start-period", "timeout" ], problems);
-						this.checkDuplicateFlags(healthcheckFlags, validFlags, problems);
 					}
+
+					const validFlags = [ "interval", "retries", "start-period", "timeout" ];
+					for (const flag of healthcheckFlags) {
+						const flagName = flag.getName();
+						if (validFlags.indexOf(flagName) === -1) {
+							const nameRange = flag.getNameRange();
+							problems.push(Validator.createUnknownHealthcheckFlag(nameRange.start, nameRange.end, flag.getName()));
+						} else if (flagName === "retries") {
+							const value = flag.getValue();
+							if (value) {
+								const valueRange = flag.getValueRange();
+								const integer = parseInt(value);
+								// test for NaN or numbers with decimals
+								if (isNaN(integer) || value.indexOf('.') !== -1) {
+									problems.push(Validator.createInvalidSyntax(valueRange.start, valueRange.end, value));
+								} else if (integer < 1) {
+									problems.push(Validator.createFlagAtLeastOne(valueRange.start, valueRange.end, "--retries", integer.toString()));
+								}
+							}
+						}
+					}
+
+					this.checkFlagValue(healthcheckFlags, validFlags, problems);
+					this.checkFlagDuration(healthcheckFlags, [ "interval", "start-period", "timeout" ], problems);
+					this.checkDuplicateFlags(healthcheckFlags, validFlags, problems);
 					break;
 				case "ONBUILD":
 					this.checkArguments(instruction, problems, [ -1 ], function() {
@@ -875,6 +872,7 @@ export class Validator {
 		"instructionMissingArgument": "Instruction has no arguments",
 		"instructionMultiple": "There can only be one ${0} instruction in a Dockerfile",
 		"instructionRequiresOneArgument": "${0} requires exactly one argument",
+		"instructionRequiresAtLeastOneArgument": "${0} requires at least one argument",
 		"instructionRequiresAtLeastTwoArguments": "${0} requires at least two arguments",
 		"instructionRequiresTwoArguments": "${0} must have two arguments",
 		"instructionUnnecessaryArgument": "${0} takes no arguments",
@@ -986,6 +984,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_COPYRequiresAtLeastTwoArguments() {
 		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresAtLeastTwoArguments"], "COPY");
+	}
+
+	public static getDiagnosticMessage_HEALTHCHECKRequiresAtLeastOneArgument() {
+		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresAtLeastOneArgument"], "HEALTHCHECK");
 	}
 
 	public static getDiagnosticMessage_ENVRequiresTwoArguments() {
@@ -1146,6 +1148,10 @@ export class Validator {
 
 	static createENVRequiresTwoArguments(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_ENVRequiresTwoArguments(), ValidationCode.ARGUMENT_REQUIRES_TWO);
+	}
+
+	private static createHEALTHCHECKRequiresAtLeastOneArgument(range: Range): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_HEALTHCHECKRequiresAtLeastOneArgument(), ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE);
 	}
 
 	private static createHealthcheckCmdArgumentMissing(start: Position, end: Position): Diagnostic {

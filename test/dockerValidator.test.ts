@@ -319,6 +319,17 @@ function assertENVRequiresTwoArguments(diagnostic: Diagnostic, startLine: number
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertHEALTHCHECKRequiresAtLeastOneArgument(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_HEALTHCHECKRequiresAtLeastOneArgument());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertInstructionRequiresOneOrThreeArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_ONE_OR_THREE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -932,7 +943,7 @@ describe("Docker Validator Tests", function() {
 			});
 
 			it("HEALTHCHECK", function() {
-				return testMissingArgumentLoop("HEALTHCHECK");
+				return testMissingArgumentLoop("HEALTHCHECK", false, assertHEALTHCHECKRequiresAtLeastOneArgument);
 			});
 
 			it("LABEL", function() {
@@ -2299,18 +2310,30 @@ describe("Docker Validator Tests", function() {
 				it("wrong name", function() {
 					// no equals sign
 					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interva");
-					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 14, 1, 21);
+					assert.equal(diagnostics.length, 2);
+					assertDiagnostics(
+						diagnostics,
+						[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE ],
+						[ assertUnknownHealthcheckFlag, assertHEALTHCHECKRequiresAtLeastOneArgument ],
+						[ [ "interva", 1, 14, 1, 21 ], [ 1, 0, 1, 11 ]]);
 
 					// empty value
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=");
-					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 14, 1, 21);
+					assert.equal(diagnostics.length, 2);
+					assertDiagnostics(
+						diagnostics,
+						[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE ],
+						[ assertUnknownHealthcheckFlag, assertHEALTHCHECKRequiresAtLeastOneArgument ],
+						[ [ "interva", 1, 14, 1, 21 ], [ 1, 0, 1, 11 ]]);
 
 					// value specified
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=30s");
-					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 14, 1, 21);
+					assert.equal(diagnostics.length, 2);
+					assertDiagnostics(
+						diagnostics,
+						[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE ],
+						[ assertUnknownHealthcheckFlag, assertHEALTHCHECKRequiresAtLeastOneArgument ],
+						[ [ "interva", 1, 14, 1, 21 ], [ 1, 0, 1, 11 ]]);
 				});
 			});
 		});
