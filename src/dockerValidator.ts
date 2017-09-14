@@ -55,6 +55,7 @@ export enum ValidationCode {
 	UNKNOWN_INSTRUCTION,
 	UNKNOWN_COPY_FLAG,
 	UNKNOWN_HEALTHCHECK_FLAG,
+	UNKNOWN_TYPE,
 	DEPRECATED_MAINTAINER,
 	HEALTHCHECK_CMD_ARGUMENT_MISSING
 }
@@ -274,7 +275,7 @@ export class Validator {
 				}
 			}
 
-			validateInstruction: switch (keyword) {
+			switch (keyword) {
 				case "CMD":
 					// don't validate CMD instructions
 					break;
@@ -357,27 +358,31 @@ export class Validator {
 						let range = instruction.getInstructionRange();
 						problems.push(Validator.createMissingArgument(range.start, range.end));
 					} else {
-						// check all the args
-						for (let i = 0; i < args.length; i++) {
-							let value = args[i].getValue();
+						// check the first argument
+						if (args.length > 0) {
+							let value = args[0].getValue();
 							let uppercase = value.toUpperCase();
 							if (uppercase === "NONE") {
-								if (i + 1 <= args.length - 1) {
+								// check that NONE doesn't have any arguments after it
+								if (args.length > 1) {
 									// get the next argument
-									let start = args[i + 1].getRange().start;
+									let start = args[1].getRange().start;
 									// get the last argument
 									let end = args[args.length - 1].getRange().end;
 									// highlight everything after the NONE and warn the user
 									problems.push(Validator.createHealthcheckNoneUnnecessaryArgument(start, end));
 								}
 								// don't need to validate flags of a NONE
-								break validateInstruction;
+								break;
 							} else if (uppercase === "CMD") {
-								if (i === args.length - 1) {
-									let range = args[i].getRange();
+								if (args.length === 1) {
+									// this HEALTHCHECK has a CMD with no arguments
+									let range = args[0].getRange();
 									problems.push(Validator.createHealthcheckCmdArgumentMissing(range.start, range.end));
 								}
-								break;
+							} else {
+								// unknown HEALTHCHECK type
+								problems.push(Validator.createHealthcheckTypeUnknown(args[0].getRange(), uppercase));
 							}
 						}
 
@@ -885,6 +890,7 @@ export class Validator {
 		"deprecatedMaintainer": "MAINTAINER has been deprecated",
 
 		"healthcheckCmdArgumentMissing": "Missing command after HEALTHCHECK CMD",
+		"healthcheckTypeUnknown": "Unknown type\"${0}\" in HEALTHCHECK (try CMD)"
 	};
 	
 	private static formatMessage(text: string, ...variables: string[]): string {
@@ -1046,6 +1052,10 @@ export class Validator {
 		return Validator.dockerProblems["healthcheckCmdArgumentMissing"];
 	}
 
+	public static getDiagnosticMessage_HealthcheckTypeUnknown(type: string) {
+		return Validator.formatMessage(Validator.dockerProblems["healthcheckTypeUnknown"], type);
+	}
+
 	static createInvalidEscapeDirective(start: Position, end: Position, value: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveEscapeInvalid(value), ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 	}
@@ -1140,6 +1150,10 @@ export class Validator {
 
 	private static createHealthcheckCmdArgumentMissing(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_HealthcheckCmdArgumentMissing(), ValidationCode.HEALTHCHECK_CMD_ARGUMENT_MISSING);
+	}
+
+	private static createHealthcheckTypeUnknown(range: Range, type: string): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_HealthcheckTypeUnknown(type), ValidationCode.UNKNOWN_TYPE);
 	}
 
 	private static createOnbuildChainingDisallowed(range: Range): Diagnostic {

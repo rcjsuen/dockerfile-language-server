@@ -286,6 +286,17 @@ function assertHealthcheckCmdArgumentMissing(diagnostic: Diagnostic, startLine: 
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertHealthcheckTypeUnknown(diagnostic: Diagnostic, type: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_TYPE);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_HealthcheckTypeUnknown(type));
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertCOPYRequiresAtLeastTwoArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_TWO);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -2248,6 +2259,38 @@ describe("Docker Validator Tests", function() {
 					assert.equal(diagnostics.length, 1);
 					assertInstructionUnnecessaryArgument(diagnostics[0], "HEALTHCHECK NONE", 1, 17, 1, 22);
 				});
+			});
+		});
+
+		describe("unknown type", function() {
+			it("argument only", function() {
+				let diagnostics = validate("FROM alpine\nHEALTHCHECK TEST");
+				assert.equal(diagnostics.length, 1);
+				assertHealthcheckTypeUnknown(diagnostics[0], "TEST", 1, 12, 1, 16);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK test");
+				assert.equal(diagnostics.length, 1);
+				assertHealthcheckTypeUnknown(diagnostics[0], "TEST", 1, 12, 1, 16);
+			});
+
+			it("flags", function() {
+				let diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=10s TEST");
+				assert.equal(diagnostics.length, 1);
+				assertHealthcheckTypeUnknown(diagnostics[0], "TEST", 1, 27, 1, 31);
+
+				diagnostics = validate("FROM alpine\nHEALTHCHECK --interval=10s test");
+				assert.equal(diagnostics.length, 1);
+				assertHealthcheckTypeUnknown(diagnostics[0], "TEST", 1, 27, 1, 31);
+			});
+
+			it("invalid flags", function() {
+				let diagnostics = validate("FROM alpine\nHEALTHCHECK --intervul=10s TEST");
+				assert.equal(diagnostics.length, 2);
+				assertDiagnostics(
+					diagnostics,
+					[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.UNKNOWN_TYPE ],
+					[ assertUnknownHealthcheckFlag, assertHealthcheckTypeUnknown ],
+					[ [ "intervul", 1, 14, 1, 22 ], [ "TEST", 1, 27, 1, 31 ]]);
 			});
 		});
 
