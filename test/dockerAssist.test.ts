@@ -1778,6 +1778,11 @@ describe('Docker Content Assist Tests', function() {
 						assertHEALTHCHECK_FlagTimeout(items[0], 1, triggerOffset + 12, 1, triggerOffset + 18, snippetSupport);
 					});
 
+					it("before command", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK  \\\nCMD", 1, triggerOffset + 12, snippetSupport);
+						assertHealthcheckItems(items, 1, triggerOffset + 12, 1, triggerOffset + 12, snippetSupport);
+					});
+
 					it("after command", function() {
 						var items = computePosition("FROM busybox\n" + onbuild + "HEALTHCHECK CMD", 1, triggerOffset + 15, snippetSupport);
 						assert.equal(items.length, 0);

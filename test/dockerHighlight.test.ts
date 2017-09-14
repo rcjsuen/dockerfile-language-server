@@ -1301,6 +1301,14 @@ describe("Dockerfile Document Highlight tests", function() {
 				ranges = computeHighlightRanges(document, 2, 8);
 				assertHighlightRanges(ranges, [ from, from2 ]);
 
+				from = DocumentHighlight.create(Range.create(1, 6, 1, 11), DocumentHighlightKind.Read);
+				from2 = DocumentHighlight.create(Range.create(2, 6, 2, 12), DocumentHighlightKind.Read);
+				document = createDocument("ARG\nFROM $image\nFROM $image2");
+				ranges = computeHighlightRanges(document, 1, 8);
+				assertHighlightRanges(ranges, [ from ]);
+				ranges = computeHighlightRanges(document, 2, 8);
+				assertHighlightRanges(ranges, [ from2 ]);
+
 				arg = DocumentHighlight.create(Range.create(0, 4, 0, 9), DocumentHighlightKind.Write);
 				from = DocumentHighlight.create(Range.create(1, 6, 1, 12), DocumentHighlightKind.Read);
 				let arg2 = DocumentHighlight.create(Range.create(2, 4, 2, 10), DocumentHighlightKind.Write);

@@ -1670,6 +1670,7 @@ describe("Dockerfile Signature Tests", function() {
 			describe("CMD", function() {
 				it("args", function() {
 					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK CMD ", 0, triggerOffset + 16), 2);
+					assertHealthcheck_Cmd_NormalOnly(compute(onbuild + "HEALTHCHECK CMD \\\n", 1, 0), 2);
 				});
 
 				it("flags", function() {
