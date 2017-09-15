@@ -38,16 +38,4 @@ export class Copy extends JSONInstruction {
 		const flag = this.getFromFlag();
 		return flag ? flag.getValueRange() : null;
 	}
-
-	private getFromRange(): Range | null {
-		const flag = this.getFromFlag();
-		if (flag) {
-			const valueRange = flag.getValueRange();
-			if (valueRange) {
-				const nameRange = flag.getNameRange();
-				return Range.create(nameRange.start.line, nameRange.start.character - 2, valueRange.end.line, valueRange.end.character);
-			}
-		}
-		return null;
-	}
 }
