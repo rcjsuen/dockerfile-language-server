@@ -77,8 +77,13 @@ export class Property {
 			return false;
 		} else if (this.valueRange.start.line < position.line) {
 			return true;
+		} else if (this.valueRange.start.line === position.line) {
+			if (this.valueRange.start.line === this.valueRange.end.line) {
+				return this.valueRange.end.character < position.character;
+			}
+			return this.valueRange.start.character < position.character;
 		}
-		return this.valueRange.start.line === position.line ? this.valueRange.end.character < position.character : false;
+		return false;
 	}
 
 	public isInValue(position: Position): boolean {

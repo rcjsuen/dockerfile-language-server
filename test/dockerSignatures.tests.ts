@@ -1805,6 +1805,11 @@ describe("Dockerfile Signature Tests", function() {
 
 				assertAll(compute(prefix + " key ", 0, offset + 1));
 				assertAll(compute(prefix + " key ", 0, offset + 3));
+
+				assertAll(compute(prefix + " key \\\n", 0, offset + 1));
+				assertAll(compute(prefix + " key \\\n", 0, offset + 2));
+				assertAll(compute(prefix + " key \\\n", 0, offset + 3));
+				assertAll(compute(prefix + " key \\\n", 0, offset + 4));
 			});
 
 			it("space", function() {
@@ -1833,6 +1838,11 @@ describe("Dockerfile Signature Tests", function() {
 				assertSpaceOnly(compute(prefix + " key value spaced", 0, offset + 11), 1);
 				assertSpaceOnly(compute(prefix + " key value spaced", 0, offset + 13), 1);
 				assertSpaceOnly(compute(prefix + " key value spaced", 0, offset + 17), 1);
+
+				assertSpaceOnly(compute(prefix + " key \\\nvalue", 0, offset + 1), 0);
+				assertSpaceOnly(compute(prefix + " key \\\nvalue", 0, offset + 2), 0);
+				assertSpaceOnly(compute(prefix + " key \\\nvalue", 0, offset + 3), 0);
+				assertSpaceOnly(compute(prefix + " key \\\nvalue", 0, offset + 4), 0);
 			});
 
 			it("equals", function() {
@@ -1846,6 +1856,16 @@ describe("Dockerfile Signature Tests", function() {
 				assertEquals(compute(prefix + " key=value", 0, offset + 5), 1);
 				assertEquals(compute(prefix + " key=value", 0, offset + 7), 1);
 				assertEquals(compute(prefix + " key=value", 0, offset + 10), 1);
+
+				assertEquals(compute(prefix + " key=\\\n", 0, offset + 1), 0);
+				assertEquals(compute(prefix + " key=\\\n", 0, offset + 2), 0);
+				assertEquals(compute(prefix + " key=\\\n", 0, offset + 3), 0);
+				assertEquals(compute(prefix + " key=\\\n", 0, offset + 4), 0);
+
+				assertEquals(compute(prefix + " key=\\\nvalue", 0, offset + 1), 0);
+				assertEquals(compute(prefix + " key=\\\nvalue", 0, offset + 2), 0);
+				assertEquals(compute(prefix + " key=\\\nvalue", 0, offset + 3), 0);
+				assertEquals(compute(prefix + " key=\\\nvalue", 0, offset + 4), 0);
 			});
 
 			it("equals multiples", function() {
