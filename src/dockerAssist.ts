@@ -162,17 +162,15 @@ export class DockerAssist {
 							break instructionsCheck;
 						} else {
 							let trigger = (instruction as Onbuild).getTriggerInstruction();
-							if (trigger !== null) {
-								switch (trigger.getKeyword()) {
-									case "COPY":
-										return this.createCopyProposals(dockerfile, trigger as Copy, position, offset, prefix);
-									case "HEALTHCHECK":
-										let subcommand = (trigger as Healthcheck).getSubcommand();
-										if (subcommand && subcommand.isBefore(position)) {
-											return [];
-										}
-										return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
-								}
+							switch (trigger.getKeyword()) {
+								case "COPY":
+									return this.createCopyProposals(dockerfile, trigger as Copy, position, offset, prefix);
+								case "HEALTHCHECK":
+									let subcommand = (trigger as Healthcheck).getSubcommand();
+									if (subcommand && subcommand.isBefore(position)) {
+										return [];
+									}
+									return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
 							}
 						}
 						return [];

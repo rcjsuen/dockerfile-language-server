@@ -208,9 +208,7 @@ export abstract class PropertyInstruction extends Instruction {
 						for (let j = i + 1; j < content.length; j++) {
 							switch (content.charAt(j)) {
 								case '\r':
-									if (content.charAt(j + 1) === '\n') {
-										j++;
-									}
+									j++;
 								case '\n':
 									i = j;
 									continue argumentLoop;
