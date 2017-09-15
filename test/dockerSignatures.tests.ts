@@ -1194,8 +1194,13 @@ describe("Dockerfile Signature Tests", function() {
 					assertCopy_ShellOnly(compute(onbuild + "COPY app app --from=", 0, triggerOffset + 20), 3);
 				});
 
+				it("before", function() {
+					assertCopy(compute(onbuild + "COPY  \\\n--from=stage . .", 0, triggerOffset + 5), 0);
+				});
+
 				it("after", function() {
 					assertCopy(compute(onbuild + "COPY --from=dev ", 0, triggerOffset + 16), 1);
+					assertCopy(compute(onbuild + "COPY --from=dev \\\n ", 1, 1), 1);
 
 					assertCopy_JSONOnly(compute(onbuild + "COPY --from=stage [", 0, triggerOffset + 19), 2);
 					assertCopy_JSONOnly(compute(onbuild + "COPY --from=stage [ ", 0, triggerOffset + 19), 2);
