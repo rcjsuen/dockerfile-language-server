@@ -1663,32 +1663,42 @@ describe('Docker Content Assist Tests', function() {
 			});
 	
 			describe("arguments", function() {
-				it("full", function() {
-					let items = computePosition("FROM busybox\n" + onbuild + "COPY ", 1, triggerOffset + 5);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5);
-	
-					items = computePosition("FROM busybox\n" + onbuild + "COPY  ", 1, triggerOffset + 5);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5);
+				function testCOPY_FlagFrom(snippetSupport: boolean) {
+					it("full", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "COPY ", 1, triggerOffset + 5, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY  ", 1, triggerOffset + 5, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5, snippetSupport);
+					});
+
+					it("prefix", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "COPY -", 1, triggerOffset + 6, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 6, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --", 1, triggerOffset + 7, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 7, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --f", 1, triggerOffset + 8, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 8, snippetSupport);
+		
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --fr", 1, triggerOffset + 9, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 9, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --fro", 1, triggerOffset + 10, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 10, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --from", 1, triggerOffset + 11, snippetSupport);
+						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 11, snippetSupport);
+					});
+				}
+
+				describe("snippets", function() {
+					testCOPY_FlagFrom(true);
 				});
-	
-				it("prefix", function() {
-					let items = computePosition("FROM busybox\n" + onbuild + "COPY -", 1, triggerOffset + 6);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 6);
-	
-					items = computePosition("FROM busybox\n" + onbuild + "COPY --", 1, triggerOffset + 7);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 7);
-	
-					items = computePosition("FROM busybox\n" + onbuild + "COPY --f", 1, triggerOffset + 8);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 8);
-	
-					items = computePosition("FROM busybox\n" + onbuild + "COPY --fr", 1, triggerOffset + 9);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 9);
-	
-					items = computePosition("FROM busybox\n" + onbuild + "COPY --fro", 1, triggerOffset + 10);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 10);
-	
-					items = computePosition("FROM busybox\n" + onbuild + "COPY --from", 1, triggerOffset + 11);
-					assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 11);
+
+				describe("plain text", function() {
+					testCOPY_FlagFrom(false);
 				});
 	
 				it("none", function() {
