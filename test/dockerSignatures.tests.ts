@@ -1843,6 +1843,12 @@ describe("Dockerfile Signature Tests", function() {
 				assertSpaceOnly(compute(prefix + " key \\\nvalue", 0, offset + 2), 0);
 				assertSpaceOnly(compute(prefix + " key \\\nvalue", 0, offset + 3), 0);
 				assertSpaceOnly(compute(prefix + " key \\\nvalue", 0, offset + 4), 0);
+
+				assertSpaceOnly(compute(prefix + " key val\\\nue ", 1, 3), 1);
+
+				assertSpaceOnly(compute(prefix + " key\\\n ", 1, 1), 1);
+
+				assertSpaceOnly(compute(prefix + " \\\n \\\nkey value", 1, 1), 0);
 			});
 
 			it("equals", function() {
@@ -1866,10 +1872,17 @@ describe("Dockerfile Signature Tests", function() {
 				assertEquals(compute(prefix + " key=\\\nvalue", 0, offset + 2), 0);
 				assertEquals(compute(prefix + " key=\\\nvalue", 0, offset + 3), 0);
 				assertEquals(compute(prefix + " key=\\\nvalue", 0, offset + 4), 0);
+
+				assertEquals(compute(prefix + " key\\\n=", 1, 0), 0);
+				assertEquals(compute(prefix + " key\\\n=", 1, 1), 1);
+
+				assertEquals(compute(prefix + " \\\n \\\nkey=value", 1, 1), 0);
 			});
 
 			it("equals multiples", function() {
 				assertEqualsMultiOnly(compute(prefix + " key=value ", 0, offset + 11), 2);
+
+				assertEqualsMultiOnly(compute(prefix + " key=val\\\nue ", 1, 3), 2);
 
 				assertEqualsMultiOnly(compute(prefix + " key=value key2", 0, offset + 1), 0);
 				assertEqualsMultiOnly(compute(prefix + " key=value key2", 0, offset + 4), 0);
