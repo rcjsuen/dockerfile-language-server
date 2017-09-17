@@ -19,6 +19,9 @@ Supported features:
 - rename
 - signature help
 
+Projects that use this language server:
+- [vscode-docker](https://github.com/Microsoft/vscode-docker)
+
 ## Development Instructions
 
 To build and compile this language server, please run the following
