@@ -7,7 +7,6 @@ import * as assert from "assert";
 import { TextDocument, Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
 import { Validator, ValidationCode, ValidationSeverity } from '../src/dockerValidator';
 import { ValidatorSettings } from '../src/dockerValidatorSettings';
-import { KEYWORDS } from '../src/docker';
 
 let source = "dockerfile-lsp";
 
@@ -27,7 +26,7 @@ function validate(content: string, settings?: ValidatorSettings) {
 		};
 	}
 	let validator = new Validator(settings);
-	return validator.validate(KEYWORDS, createDocument(content));
+	return validator.validate(createDocument(content));
 }
 
 function assertDiagnostics(diagnostics: Diagnostic[], codes: ValidationCode[], functions: Function[], args: any[][]) {
@@ -810,7 +809,7 @@ describe("Docker Validator Tests", function() {
 
 			it("default", function() {
 				let validator = new Validator();
-				let diagnostics = validator.validate(KEYWORDS, createDocument("from busybox"));
+				let diagnostics = validator.validate(createDocument("from busybox"));
 				assert.equal(diagnostics.length, 1);
 				assertInstructionCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 0, 0, 4);
 			});
@@ -1073,7 +1072,7 @@ describe("Docker Validator Tests", function() {
 
 				it("default", function() {
 					let validator = new Validator();
-					let diagnostics = validator.validate(KEYWORDS, createDocument(content));
+					let diagnostics = validator.validate(createDocument(content));
 					assert.equal(diagnostics.length, 2);
 					assertInstructionMultiple(diagnostics[0], DiagnosticSeverity.Warning, instruction, 1, 0, 1, instructionLength);
 					assertInstructionMultiple(diagnostics[1], DiagnosticSeverity.Warning, instruction, 2, 0, 2, instructionLength);
@@ -1374,7 +1373,7 @@ describe("Docker Validator Tests", function() {
 
 			it("default", function() {
 				let validator = new Validator();
-				let diagnostics = validator.validate(KEYWORDS, createDocument("# esCAPe=`\nFROM node"));
+				let diagnostics = validator.validate(createDocument("# esCAPe=`\nFROM node"));
 				assert.equal(diagnostics.length, 1);
 				assertDirectiveCasing(diagnostics[0], DiagnosticSeverity.Warning, 0, 2, 0, 8);
 			});
@@ -2348,7 +2347,7 @@ describe("Docker Validator Tests", function() {
 		describe("MAINTAINER", function() {
 			it("default", function() {
 				let validator = new Validator();
-				let diagnostics = validator.validate(KEYWORDS, createDocument("FROM node\n" + onbuild + "MAINTAINER author"));
+				let diagnostics = validator.validate(createDocument("FROM node\n" + onbuild + "MAINTAINER author"));
 				if (onbuild) {
 					assert.equal(diagnostics.length, 2);
 					assertDiagnostics(diagnostics,

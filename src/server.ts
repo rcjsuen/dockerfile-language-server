@@ -27,7 +27,6 @@ import { DockerHighlight } from './dockerHighlight';
 import { DockerRename } from './dockerRename';
 import { DockerDefinition } from './dockerDefinition';
 import { DockerRegistryClient } from './dockerRegistryClient';
-import { KEYWORDS } from './docker';
 
 let markdown = new MarkdownDocumentation();
 let hoverProvider = new DockerHover(markdown);
@@ -110,7 +109,7 @@ connection.onInitialize((params): InitializeResult => {
 
 function validateTextDocument(textDocument: TextDocument): void {
 	var validator = new Validator(validatorSettings);
-	let diagnostics = validator.validate(KEYWORDS, textDocument);
+	let diagnostics = validator.validate(textDocument);
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 

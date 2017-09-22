@@ -167,7 +167,7 @@ export class Validator {
 		}
 	}
 
-	validate(keywords: string[], document: TextDocument): Diagnostic[] {
+	validate(document: TextDocument): Diagnostic[] {
 		this.document = document;
 		let problems: Diagnostic[] = [];
 		let parser = new DockerfileParser();
@@ -244,17 +244,17 @@ export class Validator {
 				problems.push(Validator.createNoSourceImage(range.start, range.end));
 				hasFrom = true;
 			}
-			this.validateInstruction(keywords, escapeChar, instruction, keyword, problems);
+			this.validateInstruction(escapeChar, instruction, keyword, problems);
 		}
 
 		for (let instruction of dockerfile.getOnbuildTriggers()) {
-			this.validateInstruction(keywords, escapeChar, instruction, instruction.getKeyword(), problems);
+			this.validateInstruction(escapeChar, instruction, instruction.getKeyword(), problems);
 		}
 		return problems;
 	}
 
-	private validateInstruction(keywords: string[], escapeChar: string, instruction: Instruction, keyword: string, problems: Diagnostic[]): void {
-		if (keywords.indexOf(keyword) === -1) {
+	private validateInstruction(escapeChar: string, instruction: Instruction, keyword: string, problems: Diagnostic[]): void {
+		if (KEYWORDS.indexOf(keyword) === -1) {
 			let range = instruction.getInstructionRange();
 			// invalid instruction found
 			problems.push(Validator.createUnknownInstruction(range.start, range.end, keyword));
