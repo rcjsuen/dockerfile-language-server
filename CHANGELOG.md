@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
   - create docker.command.flagToCopyFrom to convert an unknown COPY flag ([#171](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/171))
 - textDocument/completion
   - HEALTHCHECK's CMD and NONE arguments ([#169](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/169))
+  - COPY's --chown flag ([#166](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/166))
 - textDocument/publishDiagnostics
   - warn if HEALTHCHECK's argument is not CMD or NONE ([#173](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/173))
   - warn if HEALTHCHECK has a flag but no arguments ([#174](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/174))

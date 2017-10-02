@@ -282,7 +282,14 @@ export class DockerAssist {
 		const flags = copy.getFlags();
 		let copyArgs = copy.getArguments();
 		if (copyArgs.length === 0 && copy.getFlags().length === 0) {
-			return [ this.createCOPY_FlagFrom(0, offset) ];
+			return [ this.createCOPY_FlagChown(0, offset), this.createCOPY_FlagFrom(0, offset) ];
+		} else if (copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && prefix === "-") {
+			return [ this.createCOPY_FlagChown(prefix.length, offset), this.createCOPY_FlagFrom(prefix.length, offset) ];
+		} else if (flags.length > 0 && flags[0].toString() === "--") {
+			return [ this.createCOPY_FlagChown(prefix.length, offset), this.createCOPY_FlagFrom(prefix.length, offset) ];
+		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--chown=".indexOf(prefix) === 0)
+				|| (flags.length > 0 && "--chown=".indexOf(flags[0].toString()) === 0)) {
+			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
 		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--from=".indexOf(prefix) === 0)
 				|| (flags.length > 0 && "--from=".indexOf(flags[0].toString()) === 0)) {
 			return [ this.createCOPY_FlagFrom(prefix.length, offset) ];
@@ -518,6 +525,13 @@ export class DockerAssist {
 			kind: CompletionItemKind.Keyword,
 			insertTextFormat: InsertTextFormat.PlainText,
 		};
+	}
+
+	private createCOPY_FlagChown(prefixLength: number, offset: number): CompletionItem {
+		if (this.snippetSupport) {
+			return this.createFlagCompletionItem("--chown=user:group", prefixLength, offset, "--chown=${1:user\:group}", "COPY_FlagChown");
+		}
+		return this.createFlagCompletionItem("--chown=", prefixLength, offset, "--chown=", "COPY_FlagChown");
 	}
 
 	private createCOPY_FlagFrom(prefixLength: number, offset: number): CompletionItem {

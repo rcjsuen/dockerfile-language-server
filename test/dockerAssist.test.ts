@@ -258,6 +258,26 @@ function assertHEALTHCHECK_CMD_Subcommand(item: CompletionItem, line: number, ch
 	assert.equal(item.textEdit.range.end.character, endCharacter);
 }
 
+function assertCOPY_FlagChown(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.label, "--chown=user:group");
+	} else {
+		assert.equal(item.label, "--chown=");
+	}
+	assert.equal(item.kind, CompletionItemKind.Field);
+	if (snippetSupport === undefined || snippetSupport) {
+		assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
+		assert.equal(item.textEdit.newText, "--chown=${1:user\:group}");
+	} else {
+		assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
+		assert.equal(item.textEdit.newText, "--chown=");
+	}
+	assert.equal(item.textEdit.range.start.line, startLine);
+	assert.equal(item.textEdit.range.start.character, startCharacter);
+	assert.equal(item.textEdit.range.end.line, endLine);
+	assert.equal(item.textEdit.range.end.character, endCharacter);
+}
+
 function assertCOPY_FlagFrom(item: CompletionItem, startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
 	if (snippetSupport === undefined || snippetSupport) {
 		assert.equal(item.label, "--from=stage");
@@ -693,6 +713,12 @@ function assertProposals(proposals: CompletionItem[], offset: number, prefix: nu
 	}
 }
 
+function assertCopyFlags(items: CompletionItem[], startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(items.length, 2);
+	assertCOPY_FlagChown(items[0], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+	assertCOPY_FlagFrom(items[1], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+}
+
 function assertHealthcheckItems(items: CompletionItem[], startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
 	assert.equal(items.length, 6);
 	// CMD and NONE first
@@ -928,8 +954,7 @@ describe('Docker Content Assist Tests', function() {
 			let lastLine = split.length - 1;
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
@@ -945,8 +970,7 @@ describe('Docker Content Assist Tests', function() {
 			proposals = compute(content, content.length);
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
@@ -962,8 +986,7 @@ describe('Docker Content Assist Tests', function() {
 			proposals = compute(content, content.length);
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
@@ -979,8 +1002,7 @@ describe('Docker Content Assist Tests', function() {
 			proposals = compute(content, content.length);
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 0, lastLine, 0);
+					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 0, lastLine, 0);
@@ -996,8 +1018,7 @@ describe('Docker Content Assist Tests', function() {
 			proposals = compute(content, content.length);
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
@@ -1013,8 +1034,7 @@ describe('Docker Content Assist Tests', function() {
 			proposals = compute(content, content.length);
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
@@ -1030,8 +1050,7 @@ describe('Docker Content Assist Tests', function() {
 			proposals = compute(content, content.length);
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
@@ -1047,8 +1066,7 @@ describe('Docker Content Assist Tests', function() {
 			proposals = compute(content, content.length);
 			switch (instruction) {
 				case "COPY":
-					assert.equal(proposals.length, 1);
-					assertCOPY_FlagFrom(proposals[0], lastLine, 1, lastLine, 1);
+					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
 				case "HEALTHCHECK":
 					assertHealthcheckItems(proposals, lastLine, 1, lastLine, 1);
@@ -1666,30 +1684,58 @@ describe('Docker Content Assist Tests', function() {
 				function testCOPY_FlagFrom(snippetSupport: boolean) {
 					it("full", function() {
 						let items = computePosition("FROM busybox\n" + onbuild + "COPY ", 1, triggerOffset + 5, snippetSupport);
-						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5, snippetSupport);
+						assertCopyFlags(items, 1, triggerOffset + 5, 1, triggerOffset + 5, snippetSupport);
 
 						items = computePosition("FROM busybox\n" + onbuild + "COPY  ", 1, triggerOffset + 5, snippetSupport);
-						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 5, snippetSupport);
+						assertCopyFlags(items, 1, triggerOffset + 5, 1, triggerOffset + 5, snippetSupport);
 					});
 
 					it("prefix", function() {
 						let items = computePosition("FROM busybox\n" + onbuild + "COPY -", 1, triggerOffset + 6, snippetSupport);
-						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 6, snippetSupport);
+						assertCopyFlags(items, 1, triggerOffset + 5, 1, triggerOffset + 6, snippetSupport);
 
 						items = computePosition("FROM busybox\n" + onbuild + "COPY --", 1, triggerOffset + 7, snippetSupport);
-						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 7, snippetSupport);
+						assertCopyFlags(items, 1, triggerOffset + 5, 1, triggerOffset + 7, snippetSupport);
+					});
 
-						items = computePosition("FROM busybox\n" + onbuild + "COPY --f", 1, triggerOffset + 8, snippetSupport);
+					it("prefix --from", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "COPY --f", 1, triggerOffset + 8, snippetSupport);
+						assert.equal(items.length, 1);
 						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 8, snippetSupport);
 		
 						items = computePosition("FROM busybox\n" + onbuild + "COPY --fr", 1, triggerOffset + 9, snippetSupport);
+						assert.equal(items.length, 1);
 						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 9, snippetSupport);
 
 						items = computePosition("FROM busybox\n" + onbuild + "COPY --fro", 1, triggerOffset + 10, snippetSupport);
+						assert.equal(items.length, 1);
 						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 10, snippetSupport);
 
 						items = computePosition("FROM busybox\n" + onbuild + "COPY --from", 1, triggerOffset + 11, snippetSupport);
+						assert.equal(items.length, 1);
 						assertCOPY_FlagFrom(items[0], 1, triggerOffset + 5, 1, triggerOffset + 11, snippetSupport);
+					});
+
+					it("prefix --chown", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "COPY --c", 1, triggerOffset + 8, snippetSupport);
+						assert.equal(items.length, 1);
+						assertCOPY_FlagChown(items[0], 1, triggerOffset + 5, 1, triggerOffset + 8, snippetSupport);
+		
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --ch", 1, triggerOffset + 9, snippetSupport);
+						assert.equal(items.length, 1);
+						assertCOPY_FlagChown(items[0], 1, triggerOffset + 5, 1, triggerOffset + 9, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --cho", 1, triggerOffset + 10, snippetSupport);
+						assert.equal(items.length, 1);
+						assertCOPY_FlagChown(items[0], 1, triggerOffset + 5, 1, triggerOffset + 10, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --chow", 1, triggerOffset + 11, snippetSupport);
+						assert.equal(items.length, 1);
+						assertCOPY_FlagChown(items[0], 1, triggerOffset + 5, 1, triggerOffset + 11, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "COPY --chown", 1, triggerOffset + 12, snippetSupport);
+						assert.equal(items.length, 1);
+						assertCOPY_FlagChown(items[0], 1, triggerOffset + 5, 1, triggerOffset + 12, snippetSupport);
 					});
 				}
 
