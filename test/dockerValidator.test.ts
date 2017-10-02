@@ -120,8 +120,7 @@ function assertFlagMissingValue(diagnostic: Diagnostic, flag: string, startLine:
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
-function assertUnknownCopyFlag(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
-	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_COPY_FLAG);
+function assertUnknownFlag(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
 	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagUnknown(flag));
@@ -129,6 +128,16 @@ function assertUnknownCopyFlag(diagnostic: Diagnostic, flag: string, startLine: 
 	assert.equal(diagnostic.range.start.character, startCharacter);
 	assert.equal(diagnostic.range.end.line, endLine);
 	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
+function assertUnknownAddFlag(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_ADD_FLAG);
+	assertUnknownFlag(diagnostic, flag, startLine, startCharacter, endLine, endCharacter);
+}
+
+function assertUnknownCopyFlag(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_COPY_FLAG);
+	assertUnknownFlag(diagnostic, flag, startLine, startCharacter, endLine, endCharacter);
 }
 
 function assertFlagUnknownUnit(diagnostic: Diagnostic, unit: string, duration: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
@@ -144,13 +153,7 @@ function assertFlagUnknownUnit(diagnostic: Diagnostic, unit: string, duration: s
 
 function assertUnknownHealthcheckFlag(diagnostic: Diagnostic, flag: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.UNKNOWN_HEALTHCHECK_FLAG);
-	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
-	assert.equal(diagnostic.source, source);
-	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_FlagUnknown(flag));
-	assert.equal(diagnostic.range.start.line, startLine);
-	assert.equal(diagnostic.range.start.character, startCharacter);
-	assert.equal(diagnostic.range.end.line, endLine);
-	assert.equal(diagnostic.range.end.character, endCharacter);
+	assertUnknownFlag(diagnostic, flag, startLine, startCharacter, endLine, endCharacter);
 }
 
 function assertInvalidAs(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
@@ -1398,6 +1401,57 @@ describe("Docker Validator Tests", function() {
 			it("ignored on second line", function() {
 				let diagnostics = validate("\n# esCAPe=a\nFROM node");
 				assert.equal(diagnostics.length, 0);
+			});
+		});
+	});
+
+	describe("ADD", function() {
+		describe("flags", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM node\nADD --chown=node:node . .");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("unknown flag", function() {
+				let diagnostics = validate("FROM alpine\nADD --x=bb . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+
+				diagnostics = validate("FROM alpine\nADD --chown=bb --x . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 17, 1, 18);
+
+				diagnostics = validate("FROM alpine\nADD --x --chown=bb . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+
+				// empty value
+				diagnostics = validate("FROM alpine\nADD --x= . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+
+				// no equals sign
+				diagnostics = validate("FROM alpine\nADD --x . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+
+				// flags are case-sensitive
+				diagnostics = validate("FROM alpine\nADD --CHOWN=bb . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownAddFlag(diagnostics[0], "CHOWN", 1, 6, 1, 11);
+			});
+
+			it("flag no value", function() {
+				let diagnostics = validate("FROM alpine\nADD --chown . .");
+				assert.equal(diagnostics.length, 1);
+				assertFlagMissingValue(diagnostics[0], "chown", 1, 6, 1, 11);
+			});
+
+			it("duplicate flag", function() {
+				let diagnostics = validate("FROM alpine\nADD --chown=x --chown=y . .");
+				assert.equal(diagnostics.length, 2);
+				assertFlagDuplicate(diagnostics[0], "chown", 1, 6, 1, 11);
+				assertFlagDuplicate(diagnostics[1], "chown", 1, 16, 1, 21);
 			});
 		});
 	});

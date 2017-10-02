@@ -10,6 +10,7 @@ import { Directive } from './directive';
 import { Instruction } from './instruction';
 import { Line } from './line';
 import { JSONInstruction } from './instructions/jsonInstruction';
+import { Add } from './instructions/add';
 import { Arg } from './instructions/arg';
 import { Cmd } from './instructions/cmd';
 import { Copy } from './instructions/copy';
@@ -34,7 +35,7 @@ export class DockerfileParser {
 	public static createInstruction(document: TextDocument, escapeChar, lineRange: Range, instruction: string, instructionRange: Range) {
 		switch (instruction.toUpperCase()) {
 			case "ADD":
-				return new JSONInstruction(document, lineRange, escapeChar, instruction, instructionRange);
+				return new Add(document, lineRange, escapeChar, instruction, instructionRange);
 			case "ARG":
 				return new Arg(document, lineRange, escapeChar, instruction, instructionRange);
 			case "CMD":

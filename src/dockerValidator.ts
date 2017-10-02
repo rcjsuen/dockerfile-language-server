@@ -54,6 +54,7 @@ export enum ValidationCode {
 	SYNTAX_MISSING_DOUBLE_QUOTE,
 	MULTIPLE_INSTRUCTIONS,
 	UNKNOWN_INSTRUCTION,
+	UNKNOWN_ADD_FLAG,
 	UNKNOWN_COPY_FLAG,
 	UNKNOWN_HEALTHCHECK_FLAG,
 	UNKNOWN_TYPE,
@@ -474,6 +475,21 @@ export class Validator {
 							}
 						}
 					}
+					break;
+				case "ADD":
+					this.checkArguments(instruction, problems, [ -1 ], function() {
+						return null;
+					});
+					const addFlags = (instruction as ModifiableInstruction).getFlags();
+					for (let flag of addFlags) {
+						const name = flag.getName();
+						if (name !== "chown") {
+							let range = flag.getNameRange();
+							problems.push(Validator.createUnknownAddFlag(range.start, range.end, name));
+						}
+					}
+					this.checkFlagValue(addFlags, [ "chown" ], problems);
+					this.checkDuplicateFlags(addFlags, [ "chown" ], problems);
 					break;
 				case "COPY":
 					let copyArgs = instruction.getArguments();
@@ -1095,6 +1111,10 @@ export class Validator {
 
 	static createFlagMissingValue(start: Position, end: Position, flag: string): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagMissingValue(flag), ValidationCode.FLAG_MISSING_VALUE);
+	}
+
+	static createUnknownAddFlag(start: Position, end: Position, flag: string): Diagnostic {
+		return Validator.createError(start, end, Validator.getDiagnosticMessage_FlagUnknown(flag), ValidationCode.UNKNOWN_ADD_FLAG);
 	}
 
 	static createUnknownCopyFlag(start: Position, end: Position, flag: string): Diagnostic {
