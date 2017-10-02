@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/publishDiagnostics
   - warn if HEALTHCHECK's argument is not CMD or NONE ([#173](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/173))
   - warn if HEALTHCHECK has a flag but no arguments ([#174](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/174))
+  - validate --chown flag in ADD and COPY ([#166](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/166))
 
 ### Fixed
 - correct the documentation of HEALTHCHECK's --retries flag's completion item ([#170](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/170))

@@ -1487,14 +1487,28 @@ describe("Docker Validator Tests", function() {
 			});
 		});
 
-		describe("build stages", function() {
+		describe("flags", function() {
 			it("ok", function() {
 				let diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --from=bb . .");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nCOPY --chown=node:node . .");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node AS bb\nFROM alpine\nCOPY --from=bb --chown=node:node . .");
 				assert.equal(diagnostics.length, 0);
 			});
 
 			it("unknown flag", function() {
 				let diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x=bb . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
+
+				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --from=bb --x . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 17, 2, 18);
+
+				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x --from=bb . .");
 				assert.equal(diagnostics.length, 1);
 				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
 
@@ -1512,12 +1526,20 @@ describe("Docker Validator Tests", function() {
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --FROM=bb . .");
 				assert.equal(diagnostics.length, 1);
 				assertUnknownCopyFlag(diagnostics[0], "FROM", 2, 7, 2, 11);
+
+				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --CHOWN=bb . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownCopyFlag(diagnostics[0], "CHOWN", 2, 7, 2, 12);
 			});
 
 			it("flag no value", function() {
 				let diagnostics = validate("FROM alpine\nCOPY --from . .");
 				assert.equal(diagnostics.length, 1);
 				assertFlagMissingValue(diagnostics[0], "from", 1, 7, 1, 11);
+
+				diagnostics = validate("FROM alpine\nCOPY --chown . .");
+				assert.equal(diagnostics.length, 1);
+				assertFlagMissingValue(diagnostics[0], "chown", 1, 7, 1, 12);
 			});
 
 			it("duplicate flag", function() {
@@ -1525,6 +1547,11 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 2);
 				assertFlagDuplicate(diagnostics[0], "from", 1, 7, 1, 11);
 				assertFlagDuplicate(diagnostics[1], "from", 1, 16, 1, 20);
+
+				diagnostics = validate("FROM alpine\nCOPY --chown=x --chown=y . .");
+				assert.equal(diagnostics.length, 2);
+				assertFlagDuplicate(diagnostics[0], "chown", 1, 7, 1, 12);
+				assertFlagDuplicate(diagnostics[1], "chown", 1, 17, 1, 22);
 			});
 		});
 	});

@@ -479,9 +479,12 @@ export class Validator {
 					let copyArgs = instruction.getArguments();
 					let flags = (instruction as ModifiableInstruction).getFlags();
 					if (flags.length > 0) {
-						if (flags[0].getName() !== "from") {
-							let range = flags[0].getNameRange();
-							problems.push(Validator.createUnknownCopyFlag(range.start, range.end, flags[0].getName()));
+						for (let flag of flags) {
+							const name = flag.getName();
+							if (name !== "from" && name !== "chown") {
+								let range = flag.getNameRange();
+								problems.push(Validator.createUnknownCopyFlag(range.start, range.end, name));
+							}
 						}
 					}
 					if (copyArgs.length === 1) {
@@ -489,8 +492,8 @@ export class Validator {
 					} else if (copyArgs.length === 0) {
 						problems.push(Validator.createCOPYRequiresAtLeastTwoArguments(instruction.getInstructionRange()));
 					}
-					this.checkFlagValue(flags, [ "from" ], problems);
-					this.checkDuplicateFlags(flags, [ "from" ], problems);
+					this.checkFlagValue(flags, [ "chown", "from" ], problems);
+					this.checkDuplicateFlags(flags, [ "chown", "from" ], problems);
 					break;
 				default:
 					this.checkArguments(instruction, problems, [ -1 ], function() {
