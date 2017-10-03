@@ -62,39 +62,45 @@ function assertKeyValue_EqualsMulti(signature: SignatureInformation, label: stri
 }
 
 function assertAdd_Shell(signature: SignatureInformation) {
-	assert.equal(signature.label, "ADD source ... dest");
+	assert.equal(signature.label, "ADD [flags] source ... dest");
 	assert.notEqual(signature.documentation, null);
 	assert.equal(signature.documentation, docs.getDocumentation("signatureAdd_Signature0"));
-	assert.equal(signature.parameters.length, 3);
-	assert.equal(signature.parameters[0].label, "source");
+	assert.equal(signature.parameters.length, 4);
+	assert.equal(signature.parameters[0].label, "[flags]");
 	assert.notEqual(signature.parameters[0].documentation, null);
 	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureAdd_Signature0_Param0"));
-	assert.equal(signature.parameters[1].label, "...");
-	assert.notEqual(signature.parameters[1].documentation, null);
-	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureAdd_Signature0_Param1"));
-	assert.equal(signature.parameters[2].label, "dest");
-	assert.notEqual(signature.parameters[2].documentation, null);
-	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureAdd_Signature0_Param2"));
-}
-
-function assertAdd_JSON(signature: SignatureInformation) {
-	assert.equal(signature.label, "ADD [ \"source\", ..., \"dest\" ]");
-	assert.notEqual(signature.documentation, null);
-	assert.equal(signature.documentation, docs.getDocumentation("signatureAdd_Signature1"));
-	assert.equal(signature.parameters.length, 5);
-	assert.equal(signature.parameters[0].label, "[");
-	assert.equal(signature.parameters[0].documentation, null);
-	assert.equal(signature.parameters[1].label, "\"source\"");
+	assert.equal(signature.parameters[1].label, "source");
 	assert.notEqual(signature.parameters[1].documentation, null);
 	assert.equal(signature.parameters[1].documentation, docs.getDocumentation("signatureAdd_Signature0_Param1"));
 	assert.equal(signature.parameters[2].label, "...");
 	assert.notEqual(signature.parameters[2].documentation, null);
+	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureAdd_Signature0_Param2"));
+	assert.equal(signature.parameters[3].label, "dest");
+	assert.notEqual(signature.parameters[3].documentation, null);
+	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureAdd_Signature0_Param3"));
+}
+
+function assertAdd_JSON(signature: SignatureInformation) {
+	assert.equal(signature.label, "ADD [flags] [ \"source\", ..., \"dest\" ]");
+	assert.notEqual(signature.documentation, null);
+	assert.equal(signature.documentation, docs.getDocumentation("signatureAdd_Signature1"));
+	assert.equal(signature.parameters.length, 6);
+	assert.equal(signature.parameters[0].label, "[flags]");
+	assert.notEqual(signature.parameters[0].documentation, null);
+	assert.equal(signature.parameters[0].documentation, docs.getDocumentation("signatureAdd_Signature1_Param0"));
+	assert.equal(signature.parameters[1].label, "[");
+	assert.equal(signature.parameters[1].documentation, null);
+	assert.equal(signature.parameters[2].label, "\"source\"");
+	assert.notEqual(signature.parameters[2].documentation, null);
 	assert.equal(signature.parameters[2].documentation, docs.getDocumentation("signatureAdd_Signature1_Param2"));
-	assert.equal(signature.parameters[3].label, "\"dest\"");
+	assert.equal(signature.parameters[3].label, "...");
 	assert.notEqual(signature.parameters[3].documentation, null);
 	assert.equal(signature.parameters[3].documentation, docs.getDocumentation("signatureAdd_Signature1_Param3"));
-	assert.equal(signature.parameters[4].label, "]");
-	assert.equal(signature.parameters[4].documentation, null);
+	assert.equal(signature.parameters[4].label, "\"dest\"");
+	assert.notEqual(signature.parameters[4].documentation, null);
+	assert.equal(signature.parameters[4].documentation, docs.getDocumentation("signatureAdd_Signature1_Param4"));
+	assert.equal(signature.parameters[5].label, "]");
+	assert.equal(signature.parameters[5].documentation, null);
 }
 
 function assertAdd(signatureHelp: SignatureHelp, activeParameter: number) {
@@ -1090,8 +1096,49 @@ describe("Dockerfile Signature Tests", function() {
 	});
 
 	function testAdd(trigger: boolean) {
+		let onbuild = trigger ? "ONBUILD " : "";
+		let triggerOffset = trigger ? 8 : 0;
+
 		describe("ADD", function() {
-			testParameterizedInstruction("ADD", trigger, false, false, false, assertAdd, assertAdd_JSONOnly, assertAdd_ShellOnly);
+			testParameterizedInstruction("ADD", trigger, true, false, false, assertAdd, assertAdd_JSONOnly, assertAdd_ShellOnly);
+
+			describe("flags", function() {
+				it("inside", function() {
+					assertAdd(compute(onbuild + "ADD --f ", 0, triggerOffset + 4), 0);
+					assertAdd(compute(onbuild + "ADD --f ", 0, triggerOffset + 5), 0);
+					assertAdd(compute(onbuild + "ADD --f ", 0, triggerOffset + 6), 0);
+					assertAdd(compute(onbuild + "ADD --f ", 0, triggerOffset + 7), 0);
+				});
+
+				it("outside", function() {
+					assertAdd(compute(onbuild + "ADD --chown= ", 0, triggerOffset + 13), 1);
+					assertAdd_ShellOnly(compute(onbuild + "ADD app --chown= app ", 0, triggerOffset + 16), 2);
+					assertAdd_ShellOnly(compute(onbuild + "ADD app app --chown=", 0, triggerOffset + 20), 3);
+				});
+
+				it("before", function() {
+					assertAdd(compute(onbuild + "ADD  \\\n--chown=node:node . .", 0, triggerOffset + 4), 0);
+				});
+
+				it("after", function() {
+					assertAdd(compute(onbuild + "ADD --chown=node:node ", 0, triggerOffset + 22), 1);
+					assertAdd(compute(onbuild + "ADD --chown=node:node \\\n ", 1, 1), 1);
+
+					assertAdd_JSONOnly(compute(onbuild + "ADD --chown=node:node [", 0, triggerOffset + 23), 2);
+					assertAdd_JSONOnly(compute(onbuild + "ADD --chown=node:node [ ", 0, triggerOffset + 23), 2);
+					assertAdd_JSONOnly(compute(onbuild + "ADD --chown=node:node [ ", 0, triggerOffset + 24), 2);
+
+					assertAdd_ShellOnly(compute(onbuild + "ADD --chown=node:node .", 0, triggerOffset + 23), 1);
+					assertAdd_ShellOnly(compute(onbuild + "ADD --chown=node:node . ", 0, triggerOffset + 23), 1);
+					assertAdd_ShellOnly(compute(onbuild + "ADD --chown=node:node . ", 0, triggerOffset + 24), 3);
+				});
+
+				it("not a flag", function() {
+					assertAdd_ShellOnly(compute(onbuild + "ADD - ", 0, triggerOffset + 4), 1);
+					assertAdd_ShellOnly(compute(onbuild + "ADD - ", 0, triggerOffset + 5), 1);
+					assertAdd_ShellOnly(compute(onbuild + "ADD - ", 0, triggerOffset + 6), 3);
+				});
+			});
 		});
 	}
 

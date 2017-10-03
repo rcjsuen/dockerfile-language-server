@@ -77,48 +77,56 @@ export class DockerSignatures {
 				case "ADD":
 					const add = instruction as JSONInstruction;
 					const addShellSignature = {
-						label: "ADD source ... dest",
+						label: "ADD [flags] source ... dest",
 						documentation: this.documentation.getDocumentation("signatureAdd_Signature0"),
 						parameters: [
 							{
-								label: "source",
+								label: "[flags]",
 								documentation: this.documentation.getDocumentation("signatureAdd_Signature0_Param0")
 							},
 							{
-								label: "...",
+								label: "source",
 								documentation: this.documentation.getDocumentation("signatureAdd_Signature0_Param1")
 							},
 							{
-								label: "dest",
+								label: "...",
 								documentation: this.documentation.getDocumentation("signatureAdd_Signature0_Param2")
+							},
+							{
+								label: "dest",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature0_Param3")
 							}
 						]
 					};
 					const addJsonSignature = {
-						label: "ADD [ \"source\", ..., \"dest\" ]",
+						label: "ADD [flags] [ \"source\", ..., \"dest\" ]",
 						documentation: this.documentation.getDocumentation("signatureAdd_Signature1"),
 						parameters: [
+							{
+								label: "[flags]",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param0")
+							},
 							{
 								label: "["
 							},
 							{
 								label: "\"source\"",
-								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param1")
-							},
-							{
-								label: "...",
 								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param2")
 							},
 							{
-								label: "\"dest\"",
+								label: "...",
 								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param3")
+							},
+							{
+								label: "\"dest\"",
+								documentation: this.documentation.getDocumentation("signatureAdd_Signature1_Param4")
 							},
 							{
 								label: "]"
 							}
 						]
 					};
-					return this.getJSONInstructionSignatureHelp(add, position, [ addJsonSignature ], addShellSignature, false, false, false, false);
+					return this.getJSONInstructionSignatureHelp(add, position, [ addJsonSignature ], addShellSignature, true, false, false, false);
 				case "ARG":
 					let argSignatureHelp: SignatureHelp = {
 						signatures: [
