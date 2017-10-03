@@ -17,6 +17,7 @@ import { Copy } from './parser/instructions/copy';
 import { From } from './parser/instructions/from';
 import { Healthcheck } from './parser/instructions/healthcheck';
 import { Onbuild } from './parser/instructions/onbuild';
+import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { Instruction } from './parser/instruction';
 
 export class DockerAssist {
@@ -144,6 +145,8 @@ export class DockerAssist {
 				break;
 			} else if (Util.isInsideRange(position, instruction.getRange())) {
 				switch (instruction.getKeyword()) {
+					case "ADD":
+						return this.createAddProposals(dockerfile, instruction as ModifiableInstruction, position, offset, prefix);
 					case "COPY":
 						return this.createCopyProposals(dockerfile, instruction as Copy, position, offset, prefix);
 					case "FROM":
@@ -163,6 +166,8 @@ export class DockerAssist {
 						} else {
 							let trigger = (instruction as Onbuild).getTriggerInstruction();
 							switch (trigger.getKeyword()) {
+								case "ADD":
+									return this.createAddProposals(dockerfile, trigger as ModifiableInstruction, position, offset, prefix);
 								case "COPY":
 									return this.createCopyProposals(dockerfile, trigger as Copy, position, offset, prefix);
 								case "HEALTHCHECK":
@@ -237,6 +242,23 @@ export class DockerAssist {
 			}
 		}
 		return proposals;
+	}
+
+	private createAddProposals(dockerfile: Dockerfile, add: ModifiableInstruction, position: Position, offset: number, prefix: string) {
+		const flags = add.getFlags();
+		let copyArgs = add.getArguments();
+		if (copyArgs.length === 0 && add.getFlags().length === 0) {
+			return [ this.createCOPY_FlagChown(0, offset) ];
+		} else if (copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && prefix === "-") {
+			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
+		} else if (flags.length > 0 && flags[0].toString() === "--") {
+			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
+		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--chown=".indexOf(prefix) === 0)
+				|| (flags.length > 0 && "--chown=".indexOf(flags[0].toString()) === 0)) {
+			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
+		}
+
+		return [];
 	}
 
 	private createCopyProposals(dockerfile: Dockerfile, copy: Copy, position: Position, offset: number, prefix: string) {

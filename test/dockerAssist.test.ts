@@ -713,6 +713,11 @@ function assertProposals(proposals: CompletionItem[], offset: number, prefix: nu
 	}
 }
 
+function assertAddFlags(items: CompletionItem[], startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
+	assert.equal(items.length, 1);
+	assertCOPY_FlagChown(items[0], startLine, startCharacter, endLine, endCharacter, snippetSupport);
+}
+
 function assertCopyFlags(items: CompletionItem[], startLine: number, startCharacter: number, endLine: number, endCharacter: number, snippetSupport?: boolean) {
 	assert.equal(items.length, 2);
 	assertCOPY_FlagChown(items[0], startLine, startCharacter, endLine, endCharacter, snippetSupport);
@@ -953,6 +958,9 @@ describe('Docker Content Assist Tests', function() {
 			let split = content.split("\n");
 			let lastLine = split.length - 1;
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 0, lastLine, 0);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
@@ -969,6 +977,9 @@ describe('Docker Content Assist Tests', function() {
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\r\n";
 			proposals = compute(content, content.length);
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 0, lastLine, 0);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
@@ -985,6 +996,9 @@ describe('Docker Content Assist Tests', function() {
 			content = header + "FROM node\n" + instruction + " " + escapeChar + " \n";
 			proposals = compute(content, content.length);
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 0, lastLine, 0);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
@@ -1001,6 +1015,9 @@ describe('Docker Content Assist Tests', function() {
 			content = header + "FROM node\n" + instruction + " " + escapeChar + " \r\n";
 			proposals = compute(content, content.length);
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 0, lastLine, 0);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 0, lastLine, 0);
 					break;
@@ -1017,6 +1034,9 @@ describe('Docker Content Assist Tests', function() {
 			content = header + "FROM node\n" + instruction + escapeChar + "\n ";
 			proposals = compute(content, content.length);
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 1, lastLine, 1);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
@@ -1033,6 +1053,9 @@ describe('Docker Content Assist Tests', function() {
 			content = header + "FROM node\n" + instruction + escapeChar + "\r\n ";
 			proposals = compute(content, content.length);
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 1, lastLine, 1);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
@@ -1049,6 +1072,9 @@ describe('Docker Content Assist Tests', function() {
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\n ";
 			proposals = compute(content, content.length);
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 1, lastLine, 1);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
@@ -1065,6 +1091,9 @@ describe('Docker Content Assist Tests', function() {
 			content = header + "FROM node\n" + instruction + " " + escapeChar + "\r\n ";
 			proposals = compute(content, content.length);
 			switch (instruction) {
+				case "ADD":
+					assertAddFlags(proposals, lastLine, 1, lastLine, 1);
+					break;
 				case "COPY":
 					assertCopyFlags(proposals, lastLine, 1, lastLine, 1);
 					break;
@@ -1611,6 +1640,77 @@ describe('Docker Content Assist Tests', function() {
 		});
 	})
 
+	function testAdd(trigger: boolean) {
+		describe("ADD", function() {
+			let onbuild = trigger ? "ONBUILD " : "";
+			let triggerOffset = onbuild.length;
+
+			describe("arguments", function() {
+				function testADD_FlagFrom(snippetSupport: boolean) {
+					it("full", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "ADD ", 1, triggerOffset + 4, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 4, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "ADD  ", 1, triggerOffset + 4, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 4, snippetSupport);
+					});
+
+					it("prefix", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "ADD -", 1, triggerOffset + 5, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 5, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "ADD --", 1, triggerOffset + 6, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 6, snippetSupport);
+					});
+
+					it("prefix --chown", function() {
+						let items = computePosition("FROM busybox\n" + onbuild + "ADD --c", 1, triggerOffset + 7, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 7, snippetSupport);
+		
+						items = computePosition("FROM busybox\n" + onbuild + "ADD --ch", 1, triggerOffset + 8, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 8, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "ADD --cho", 1, triggerOffset + 9, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 9, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "ADD --chow", 1, triggerOffset + 10, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 10, snippetSupport);
+
+						items = computePosition("FROM busybox\n" + onbuild + "ADD --chown", 1, triggerOffset + 11, snippetSupport);
+						assertAddFlags(items, 1, triggerOffset + 4, 1, triggerOffset + 11, snippetSupport);
+					});
+				}
+
+				describe("snippets", function() {
+					testADD_FlagFrom(true);
+				});
+
+				describe("plain text", function() {
+					testADD_FlagFrom(false);
+				});
+	
+				it("none", function() {
+					let items = computePosition("FROM busybox\n" + onbuild + "ADD --from=", 1, triggerOffset + 12);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "ADD app app", 1, triggerOffset + 6);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "ADD app app", 1, triggerOffset + 10);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "ADD app  app", 1, triggerOffset + 9);
+					assert.equal(items.length, 0);
+	
+					items = computePosition("FROM busybox\n" + onbuild + "ADD app --fr app", 1, triggerOffset + 13);
+					assert.equal(items.length, 0);
+				});
+			});
+		});
+	}
+
+	testAdd(false);
+
 	function testCopy(trigger: boolean) {
 		describe("COPY", function() {
 			let onbuild = trigger ? "ONBUILD " : "";
@@ -2003,11 +2103,6 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(proposals.length, 0);
 			});
 
-			it('ONBUILD ADD', function() {
-				let items = computePosition("FROM node\nONBUILD ADD ", 1, 12);
-				assert.equal(items.length, 0);
-			});
-
 			it('false ONBUILD instruction', function() {
 				var proposals = compute("FROM node\nRUN echo \"ONBUILD W", 29);
 				assert.equal(proposals.length, 0);
@@ -2035,6 +2130,7 @@ describe('Docker Content Assist Tests', function() {
 			});
 		});
 
+		testAdd(true);
 		testCopy(true);
 		testHealthcheck(true);
 	});
