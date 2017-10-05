@@ -11,7 +11,8 @@ import {
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
-	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent
+	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
+	DidChangeConfigurationNotification, ProposedFeatures
 } from 'vscode-languageserver';
 import { Validator, ValidationSeverity } from './dockerValidator';
 import { ValidatorSettings } from './dockerValidatorSettings';
@@ -37,12 +38,27 @@ let definitionProvider = new DockerDefinition();
 let documentationResolver = new PlainTextDocumentation();
 let signatureHelp = new DockerSignatures();
 
+/**
+ * The settings to use for the validator if the client doesn't support
+ * workspace/configuration requests.
+ */
 let validatorSettings = null;
 
-let connection: IConnection = createConnection();
+/**
+ * The validator settings that correspond to an individual file retrieved via
+ * the workspace/configuration request.
+ */
+let validatorConfigurations: Map<string, Thenable<ValidatorConfiguration>> = new Map();
+
+let connection = createConnection(ProposedFeatures.all);
 let dockerRegistryClient = new DockerRegistryClient(connection);
 
 let snippetSupport: boolean = false;
+
+/**
+ * Whether the client supports the workspace/configuration request.
+ */
+let configurationSupport: boolean = false;
 
 let documents: any = {};
 
@@ -53,8 +69,16 @@ function supportsSnippets(capabilities: ClientCapabilities): boolean {
 		&& capabilities.textDocument.completion.completionItem.snippetSupport;
 }
 
+connection.onInitialized(() => {
+	if (configurationSupport) {
+		// listen for notification changes if the client supports workspace/configuration
+		connection.client.register(DidChangeConfigurationNotification.type);
+	}
+});
+
 connection.onInitialize((params): InitializeResult => {
 	snippetSupport = supportsSnippets(params.capabilities);
+	configurationSupport = params.capabilities.workspace && (params.capabilities.workspace as any).configuration === true;
 	return {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
@@ -108,22 +132,54 @@ connection.onInitialize((params): InitializeResult => {
 });
 
 function validateTextDocument(textDocument: TextDocument): void {
-	var validator = new Validator(validatorSettings);
-	let diagnostics = validator.validate(textDocument);
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+	if (configurationSupport) {
+		getConfiguration(textDocument.uri).then((config: ValidatorConfiguration) => {
+			let maintainer = ValidationSeverity.WARNING;
+			let directiveCasing = ValidationSeverity.WARNING;
+			let instructionCasing = ValidationSeverity.WARNING;
+			let instructionCmdMultiple = ValidationSeverity.WARNING;
+			let instructionEntrypointMultiple = ValidationSeverity.WARNING;
+			let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
+			if (config) {
+				maintainer = getSeverity(config.deprecatedMaintainer);
+				directiveCasing = getSeverity(config.directiveCasing);
+				instructionCasing = getSeverity(config.instructionCasing);
+				instructionCmdMultiple = getSeverity(config.instructionCmdMultiple);
+				instructionEntrypointMultiple = getSeverity(config.instructionEntrypointMultiple);
+				instructionHealthcheckMultiple = getSeverity(config.instructionHealthcheckMultiple);
+			}
+			const fileSettings = {
+				deprecatedMaintainer: maintainer,
+				directiveCasing: directiveCasing,
+				instructionCasing: instructionCasing,
+				instructionCmdMultiple: instructionCmdMultiple,
+				instructionEntrypointMultiple: instructionEntrypointMultiple,
+				instructionHealthcheckMultiple: instructionHealthcheckMultiple
+			};
+			const validator = new Validator(fileSettings);
+			const diagnostics = validator.validate(textDocument);
+			connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+		});
+	} else {
+		const validator = new Validator(validatorSettings);
+		const diagnostics = validator.validate(textDocument);
+		connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+	}
+}
+
+interface ValidatorConfiguration {
+	deprecatedMaintainer?: string,
+	directiveCasing?: string,
+	instructionCasing?: string,
+	instructionCmdMultiple?: string,
+	instructionEntrypointMultiple?: string,
+	instructionHealthcheckMultiple?: string
 }
 
 interface Settings {
 	docker: {
 		languageserver: {
-			diagnostics?: {
-				deprecatedMaintainer?: string,
-				directiveCasing?: string,
-				instructionCasing?: string,
-				instructionCmdMultiple?: string,
-				instructionEntrypointMultiple?: string,
-				instructionHealthcheckMultiple?: string
-			}
+			diagnostics?: ValidatorConfiguration
 		}
 	}
 }
@@ -140,34 +196,88 @@ function getSeverity(severity: string): ValidationSeverity {
 	return null;
 }
 
-connection.onDidChangeConfiguration((change) => {
-	let settings = <Settings>change.settings;
-	let maintainer = ValidationSeverity.WARNING;
-	let directiveCasing = ValidationSeverity.WARNING;
-	let instructionCasing = ValidationSeverity.WARNING;
-	let instructionCmdMultiple = ValidationSeverity.WARNING;
-	let instructionEntrypointMultiple = ValidationSeverity.WARNING;
-	let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
-	if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
-		maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
-		directiveCasing = getSeverity(settings.docker.languageserver.diagnostics.directiveCasing);
-		instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
-		instructionCmdMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionCmdMultiple);
-		instructionEntrypointMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionEntrypointMultiple);
-		instructionHealthcheckMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionHealthcheckMultiple);
+/**
+ * Gets the validation configuration that pertains to the specified resource.
+ * 
+ * @param resource the interested resource
+ * @return the configuration to use to validate the interested resource
+ */
+function getConfiguration(resource: string): Thenable<ValidatorConfiguration> {
+	let result = validatorConfigurations.get(resource);
+	if (!result) {
+		result = connection.workspace.getConfiguration({ section: '', scopeUri: resource });
+		validatorConfigurations.set(resource, result);
 	}
-	validatorSettings = {
-		deprecatedMaintainer: maintainer,
-		directiveCasing: directiveCasing,
-		instructionCasing: instructionCasing,
-		instructionCmdMultiple: instructionCmdMultiple,
-		instructionEntrypointMultiple: instructionEntrypointMultiple,
-		instructionHealthcheckMultiple: instructionHealthcheckMultiple
-	};
-	// validate all the documents again
-	Object.keys(documents).forEach((key) => {
-		validateTextDocument(documents[key]);
+	return result;
+}
+
+// listen for notifications when the client's configuration has changed
+connection.onNotification(DidChangeConfigurationNotification.type, () => {
+	refreshConfigurations();
+});
+
+/**
+ * Wipes and reloads the internal cache of validator configurations.
+ */
+function refreshConfigurations() {
+	// store all the URIs that need to be refreshed
+	const settingsRequest = [];
+	for (let uri in documents) {
+		settingsRequest.push({ section: "", scopeUri: uri });
+	}
+	// clear the cache
+	validatorConfigurations.clear();
+
+	// ask the workspace for the configurations
+	connection.workspace.getConfiguration(settingsRequest).then((values: ValidatorConfiguration[]) => {
+		const toRevalidate: string[] = [];
+		for (let i = 0; i < values.length; i++) {
+			const resource = settingsRequest[i].scopeUri;
+			// a value might have been stored already, use it instead and ignore this one if so
+			if (values[i] && !validatorConfigurations.has(resource)) {
+				validatorConfigurations.set(resource, Promise.resolve(values[i]));
+				toRevalidate.push(resource);
+			}
+		}
+
+		for (const resource of toRevalidate) {
+			validateTextDocument(documents[resource]);
+		}
 	});
+}
+
+connection.onDidChangeConfiguration((change) => {
+	if (configurationSupport) {
+		refreshConfigurations();
+	} else {
+		let settings = <Settings>change.settings;
+		let maintainer = ValidationSeverity.WARNING;
+		let directiveCasing = ValidationSeverity.WARNING;
+		let instructionCasing = ValidationSeverity.WARNING;
+		let instructionCmdMultiple = ValidationSeverity.WARNING;
+		let instructionEntrypointMultiple = ValidationSeverity.WARNING;
+		let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
+		if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
+			maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
+			directiveCasing = getSeverity(settings.docker.languageserver.diagnostics.directiveCasing);
+			instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
+			instructionCmdMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionCmdMultiple);
+			instructionEntrypointMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionEntrypointMultiple);
+			instructionHealthcheckMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionHealthcheckMultiple);
+		}
+		validatorSettings = {
+			deprecatedMaintainer: maintainer,
+			directiveCasing: directiveCasing,
+			instructionCasing: instructionCasing,
+			instructionCmdMultiple: instructionCmdMultiple,
+			instructionEntrypointMultiple: instructionEntrypointMultiple,
+			instructionHealthcheckMultiple: instructionHealthcheckMultiple
+		};
+		// validate all the documents again
+		Object.keys(documents).forEach((key) => {
+			validateTextDocument(documents[key]);
+		});
+	}
 });
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] | PromiseLike<CompletionItem[]> => {
@@ -353,6 +463,7 @@ connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDo
 });
 
 connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
+	validatorConfigurations.delete(didCloseTextDocumentParams.textDocument.uri);
 	delete documents[didCloseTextDocumentParams.textDocument.uri];
 });
 

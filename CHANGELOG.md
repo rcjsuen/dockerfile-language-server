@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
   - validate --chown flag in ADD and COPY ([#166](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/166))
 - textDocument/signatureHelp
   - update ADD's signature to support the new --chown flag ([#166](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/166))
+- workspace/configuration
+  - implemented support to allow validator settings to not be global ([#179](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/179))
 
 ### Fixed
 - correct the documentation of HEALTHCHECK's --retries flag's completion item ([#170](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/170))

@@ -31,6 +31,8 @@ function initialize(id: number) {
 						snippetSupport: true
 					}
 				}
+			},
+			workspace: {
 			}
 		}
 	});
