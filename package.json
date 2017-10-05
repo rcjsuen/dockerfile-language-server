@@ -8,7 +8,7 @@
     "dockerfile",
     "moby"
   ],
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "Remy Suen",
   "license": "MIT",
   "bugs": "https://github.com/rcjsuen/dockerfile-language-server-nodejs/",
@@ -20,7 +20,7 @@
     "node": "*"
   },
   "dependencies": {
-    "vscode-languageserver": "^3.1.0"
+    "vscode-languageserver": "^3.4.2"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.33",

@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.0.8] - 2017-10-05
 ### Added
 - textDocument/codeAction
   - create commands for converting unknown HEALTHCHECK flags ([#172](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/172))
@@ -215,7 +217,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.4...v0.0.5
