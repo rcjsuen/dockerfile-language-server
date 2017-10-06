@@ -5,7 +5,7 @@
 'use strict';
 
 import {
-	createConnection, IConnection, InitializeResult, ClientCapabilities,
+	createConnection, IConnection, InitializeParams, InitializeResult, ClientCapabilities,
 	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams, 
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
@@ -76,7 +76,7 @@ connection.onInitialized(() => {
 	}
 });
 
-connection.onInitialize((params): InitializeResult => {
+connection.onInitialize((params: InitializeParams): InitializeResult => {
 	snippetSupport = supportsSnippets(params.capabilities);
 	configurationSupport = params.capabilities.workspace && (params.capabilities.workspace as any).configuration === true;
 	return {
