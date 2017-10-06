@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 - textDocument/publishDiagnostics
   - warn about empty continuation lines ([#177](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/177))
 
+### Fixed
+- allow parameters to be suggested even if an ARG has no variables defined ([#184](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/184))
+
 ## [0.0.8] - 2017-10-05
 ### Added
 - textDocument/codeAction

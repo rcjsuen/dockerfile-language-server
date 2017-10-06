@@ -79,9 +79,12 @@ export class Dockerfile extends ImageTemplate {
 
 		for (let arg of this.getARGs()) {
 			if (arg.isBefore(currentLine)) {
-				let variable = arg.getProperty().getName();
-				if (variables.indexOf(variable) === -1) {
-					variables.push(variable);
+				const property = arg.getProperty();
+				if (property) {
+					const variable = property.getName();
+					if (variables.indexOf(variable) === -1) {
+						variables.push(variable);
+					}
 				}
 			}
 		}
