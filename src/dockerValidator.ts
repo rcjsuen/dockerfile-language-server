@@ -369,7 +369,7 @@ export class Validator {
 					}
 					break;
 				case "FROM":
-					this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string, range: Range) {
+					this.checkArguments(instruction, problems, [ 1, 3 ], function(index: number, argument: string, range: Range): Diagnostic | Function {
 						switch (index) {
 							case 1:
 								return argument.toUpperCase() === "AS" ? null : Validator.createInvalidAs;
