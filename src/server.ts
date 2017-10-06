@@ -136,6 +136,7 @@ function validateTextDocument(textDocument: TextDocument): void {
 		getConfiguration(textDocument.uri).then((config: ValidatorConfiguration) => {
 			let maintainer = ValidationSeverity.WARNING;
 			let directiveCasing = ValidationSeverity.WARNING;
+			let emptyContinuationLine = ValidationSeverity.WARNING;
 			let instructionCasing = ValidationSeverity.WARNING;
 			let instructionCmdMultiple = ValidationSeverity.WARNING;
 			let instructionEntrypointMultiple = ValidationSeverity.WARNING;
@@ -143,6 +144,7 @@ function validateTextDocument(textDocument: TextDocument): void {
 			if (config) {
 				maintainer = getSeverity(config.deprecatedMaintainer);
 				directiveCasing = getSeverity(config.directiveCasing);
+				emptyContinuationLine = getSeverity(config.emptyContinuationLine);
 				instructionCasing = getSeverity(config.instructionCasing);
 				instructionCmdMultiple = getSeverity(config.instructionCmdMultiple);
 				instructionEntrypointMultiple = getSeverity(config.instructionEntrypointMultiple);
@@ -151,6 +153,7 @@ function validateTextDocument(textDocument: TextDocument): void {
 			const fileSettings = {
 				deprecatedMaintainer: maintainer,
 				directiveCasing: directiveCasing,
+				emptyContinuationLine: emptyContinuationLine,
 				instructionCasing: instructionCasing,
 				instructionCmdMultiple: instructionCmdMultiple,
 				instructionEntrypointMultiple: instructionEntrypointMultiple,
@@ -170,6 +173,7 @@ function validateTextDocument(textDocument: TextDocument): void {
 interface ValidatorConfiguration {
 	deprecatedMaintainer?: string,
 	directiveCasing?: string,
+	emptyContinuationLine?: string,
 	instructionCasing?: string,
 	instructionCmdMultiple?: string,
 	instructionEntrypointMultiple?: string,
@@ -253,6 +257,7 @@ connection.onDidChangeConfiguration((change) => {
 		let settings = <Settings>change.settings;
 		let maintainer = ValidationSeverity.WARNING;
 		let directiveCasing = ValidationSeverity.WARNING;
+		let emptyContinuationLine = ValidationSeverity.WARNING;
 		let instructionCasing = ValidationSeverity.WARNING;
 		let instructionCmdMultiple = ValidationSeverity.WARNING;
 		let instructionEntrypointMultiple = ValidationSeverity.WARNING;
@@ -260,6 +265,7 @@ connection.onDidChangeConfiguration((change) => {
 		if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
 			maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
 			directiveCasing = getSeverity(settings.docker.languageserver.diagnostics.directiveCasing);
+			emptyContinuationLine = getSeverity(settings.docker.languageserver.diagnostics.emptyContinuationLine);
 			instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
 			instructionCmdMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionCmdMultiple);
 			instructionEntrypointMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionEntrypointMultiple);
@@ -268,6 +274,7 @@ connection.onDidChangeConfiguration((change) => {
 		validatorSettings = {
 			deprecatedMaintainer: maintainer,
 			directiveCasing: directiveCasing,
+			emptyContinuationLine: emptyContinuationLine,
 			instructionCasing: instructionCasing,
 			instructionCmdMultiple: instructionCmdMultiple,
 			instructionEntrypointMultiple: instructionEntrypointMultiple,

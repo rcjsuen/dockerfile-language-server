@@ -54,6 +54,17 @@ function assertNoSourceImage(diagnostic: Diagnostic, startLine: number, startCha
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertEmptyContinuationLine(diagnostic: Diagnostic, severity: DiagnosticSeverity, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.EMPTY_CONTINUATION_LINE);
+	assert.equal(diagnostic.severity, severity);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_EmptyContinuationLine());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertFlagAtLeastOne(diagnostic: Diagnostic, flagName: string, flagValue: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.FLAG_AT_LEAST_ONE);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -1262,6 +1273,83 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("ARG x\nARG y\nARG z");
 				assert.equal(diagnostics.length, 1);
 				assertNoSourceImage(diagnostics[0], 0, 0, 0, 0);
+			});
+		});
+
+		describe("empty continuation lines", function() {
+			describe("simple", function() {
+				it("default", function() {
+					let validator = new Validator();
+					let diagnostics = validator.validate(createDocument("FROM busybox\nRUN echo hello && \\\n    \necho world"));
+					assert.equal(diagnostics.length, 1);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Warning, 2, 0, 3, 0);
+				});
+
+				it("ignore", function() {
+					let diagnostics = validate("FROM busybox\nRUN echo hello && \\\n    \necho world", { emptyContinuationLine: ValidationSeverity.IGNORE });
+					assert.equal(diagnostics.length, 0);
+				});
+
+				it("warning", function() {
+					let diagnostics = validate("FROM busybox\nRUN echo hello && \\\n    \necho world", { emptyContinuationLine: ValidationSeverity.WARNING });
+					assert.equal(diagnostics.length, 1);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Warning, 2, 0, 3, 0);
+				});
+
+				it("error", function() {
+					let diagnostics = validate("FROM busybox\nRUN echo hello && \\\n    \necho world", { emptyContinuationLine: ValidationSeverity.ERROR });
+					assert.equal(diagnostics.length, 1);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Error, 2, 0, 3, 0);
+				});
+
+				it("multiline", function() {
+					let diagnostics = validate("FROM busybox\nEXPOSE 8080 \\\n\n\n8081", { emptyContinuationLine: ValidationSeverity.ERROR });
+					assert.equal(diagnostics.length, 1);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Error, 2, 0, 4, 0);
+
+					diagnostics = validate("FROM busybox\nEXPOSE 8080 \\\n\n\n", { emptyContinuationLine: ValidationSeverity.ERROR });
+					assert.equal(diagnostics.length, 1);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Error, 2, 0, 5, 0);
+				});
+			});
+
+			describe("onbuild", function() {
+				it("default", function() {
+					let validator = new Validator();
+					let diagnostics = validator.validate(createDocument("FROM busybox\nONBUILD \\\n    \nRUN echo hello && \\\n    \necho world"));
+					assert.equal(diagnostics.length, 2);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Warning, 2, 0, 3, 0);
+					assertEmptyContinuationLine(diagnostics[1], DiagnosticSeverity.Warning, 4, 0, 5, 0);
+				});
+
+				it("ignore", function() {
+					let diagnostics = validate("FROM busybox\nONBUILD \\\n    \nRUN echo hello && \\\n    \necho world", { emptyContinuationLine: ValidationSeverity.IGNORE });
+					assert.equal(diagnostics.length, 0);
+				});
+
+				it("warning", function() {
+					let diagnostics = validate("FROM busybox\nONBUILD \\\n    \nRUN echo hello && \\\n    \necho world", { emptyContinuationLine: ValidationSeverity.WARNING });
+					assert.equal(diagnostics.length, 2);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Warning, 2, 0, 3, 0);
+					assertEmptyContinuationLine(diagnostics[1], DiagnosticSeverity.Warning, 4, 0, 5, 0);
+				});
+
+				it("error", function() {
+					let diagnostics = validate("FROM busybox\nONBUILD \\\n    \nRUN echo hello && \\\n    \necho world", { emptyContinuationLine: ValidationSeverity.ERROR });
+					assert.equal(diagnostics.length, 2);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Error, 2, 0, 3, 0);
+					assertEmptyContinuationLine(diagnostics[1], DiagnosticSeverity.Error, 4, 0, 5, 0);
+				});
+
+				it("multiline", function() {
+					let diagnostics = validate("FROM busybox\nONBUILD EXPOSE 8080 \\\n\n\n8081", { emptyContinuationLine: ValidationSeverity.ERROR });
+					assert.equal(diagnostics.length, 1);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Error, 2, 0, 4, 0);
+
+					diagnostics = validate("FROM busybox\nONBUILD EXPOSE 8080 \\\n\n\n", { emptyContinuationLine: ValidationSeverity.ERROR });
+					assert.equal(diagnostics.length, 1);
+					assertEmptyContinuationLine(diagnostics[0], DiagnosticSeverity.Error, 2, 0, 5, 0);
+				});
 			});
 		});
 	});

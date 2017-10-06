@@ -29,6 +29,7 @@ export enum ValidationCode {
 	ARGUMENT_REQUIRES_ONE_OR_THREE,
 	ARGUMENT_UNNECESSARY,
 	DUPLICATE_BUILD_STAGE_NAME,
+	EMPTY_CONTINUATION_LINE,
 	INVALID_BUILD_STAGE_NAME,
 	FLAG_AT_LEAST_ONE,
 	FLAG_DUPLICATE,
@@ -71,6 +72,7 @@ export enum ValidationSeverity {
 export const ValidatorSettingsDefaults: ValidatorSettings = {
 	deprecatedMaintainer: ValidationSeverity.WARNING,
 	directiveCasing: ValidationSeverity.WARNING,
+	emptyContinuationLine: ValidationSeverity.WARNING,
 	instructionCasing: ValidationSeverity.WARNING,
 	instructionCmdMultiple: ValidationSeverity.WARNING,
 	instructionEntrypointMultiple: ValidationSeverity.WARNING,
@@ -245,16 +247,16 @@ export class Validator {
 				problems.push(Validator.createNoSourceImage(range.start, range.end));
 				hasFrom = true;
 			}
-			this.validateInstruction(escapeChar, instruction, keyword, problems);
+			this.validateInstruction(document, escapeChar, instruction, keyword, false, problems);
 		}
 
 		for (let instruction of dockerfile.getOnbuildTriggers()) {
-			this.validateInstruction(escapeChar, instruction, instruction.getKeyword(), problems);
+			this.validateInstruction(document, escapeChar, instruction, instruction.getKeyword(), true, problems);
 		}
 		return problems;
 	}
 
-	private validateInstruction(escapeChar: string, instruction: Instruction, keyword: string, problems: Diagnostic[]): void {
+	private validateInstruction(document: TextDocument, escapeChar: string, instruction: Instruction, keyword: string, isTrigger: boolean, problems: Diagnostic[]): void {
 		if (KEYWORDS.indexOf(keyword) === -1) {
 			let range = instruction.getInstructionRange();
 			// invalid instruction found
@@ -274,6 +276,37 @@ export class Validator {
 				let diagnostic = this.createMaintainerDeprecated(range.start, range.end);
 				if (diagnostic) {
 					problems.push(diagnostic);
+				}
+			}
+
+			const fullRange = instruction.getRange();
+			if (fullRange.start.line !== fullRange.end.line && !isTrigger) {
+				// if the instruction spans multiple lines, check for empty newlines
+				const content = document.getText();
+				const endingLine = fullRange.end.line;
+				let start = -1;
+				for (let i = fullRange.start.line; i <= endingLine; i++) {
+					const lineContent = content.substring(document.offsetAt(Position.create(i, 0)), document.offsetAt(Position.create(i + 1, 0)));
+					if (lineContent.trim().length === 0) {
+						if (start === -1) {
+							start = i;
+							continue;
+						}
+					} else if (start !== -1) {
+						const diagnostic = Validator.createEmptyContinuationLine(Position.create(start, 0), Position.create(i, 0), this.settings.emptyContinuationLine);
+						if (diagnostic) {
+							problems.push(diagnostic);
+						}
+						start = -1;
+					}
+				}
+
+				if (start !== -1) {
+					const diagnostic = Validator.createEmptyContinuationLine(Position.create(start, 0), Position.create(endingLine + 1, 0), this.settings.emptyContinuationLine);
+					if (diagnostic) {
+						problems.push(diagnostic);
+					}
+					start = -1;
 				}
 			}
 
@@ -862,6 +895,8 @@ export class Validator {
 
 		"noSourceImage": "No source image provided with `FROM`",
 
+		"emptyContinuationLine": "Empty continuation line",
+
 		"fromRequiresOneOrThreeArguments": "FROM requires either one or three arguments",
 
 		"invalidAs": "Second argument should be AS",
@@ -927,6 +962,10 @@ export class Validator {
 
 	public static getDiagnosticMessage_NoSourceImage() {
 		return Validator.dockerProblems["noSourceImage"];
+	}
+
+	public static getDiagnosticMessage_EmptyContinuationLine() {
+		return Validator.dockerProblems["emptyContinuationLine"];
 	}
 
 	public static getDiagnosticMessage_DuplicateBuildStageName(name: string) {
@@ -1231,6 +1270,15 @@ export class Validator {
 
 	static createError(start: Position, end: Position, description: string, code?: ValidationCode): Diagnostic {
 		return Validator.createDiagnostic(DiagnosticSeverity.Error, start, end, description, code);
+	}
+
+	private static createEmptyContinuationLine(start: Position, end: Position, severity: ValidationSeverity): Diagnostic {
+		if (severity === ValidationSeverity.ERROR) {
+			return Validator.createError(start, end, Validator.getDiagnosticMessage_EmptyContinuationLine(), ValidationCode.EMPTY_CONTINUATION_LINE);
+		} else if (severity  === ValidationSeverity.WARNING) {
+			return Validator.createWarning(start, end, Validator.getDiagnosticMessage_EmptyContinuationLine(), ValidationCode.EMPTY_CONTINUATION_LINE);
+		}
+		return null;
 	}
 
 	private createMultipleInstructions(range: Range, severity: ValidationSeverity, instruction: string): Diagnostic {

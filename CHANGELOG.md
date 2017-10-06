@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- settings
+  - docker.languageserver.diagnostics.emptyContinuationLine? ([#177](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/177))
+    - value = ( "ignore" | "warning" | "error" )
+    - toggles the diagnostic severity if empty continuation lines are found
+- textDocument/publishDiagnostics
+  - warn about empty continuation lines ([#177](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/177))
 
 ## [0.0.8] - 2017-10-05
 ### Added
