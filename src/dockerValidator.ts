@@ -10,7 +10,6 @@ import { Flag } from './parser/flag';
 import { Instruction } from './parser/instruction';
 import { Env } from './parser/instructions/env';
 import { Label } from './parser/instructions/label';
-import { Healthcheck } from './parser/instructions/healthcheck';
 import { Onbuild } from './parser/instructions/onbuild';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
 import { DockerfileParser } from './parser/dockerfileParser';
@@ -92,7 +91,7 @@ export class Validator {
 		this.settings = settings;
 	}
 
-	parseDirective(dockerfile: Dockerfile, document: TextDocument, problems: Diagnostic[]) {
+	parseDirective(dockerfile: Dockerfile, problems: Diagnostic[]) {
 		let directive = dockerfile.getDirective();
 		if (directive === null) {
 			return;
@@ -175,7 +174,7 @@ export class Validator {
 		let problems: Diagnostic[] = [];
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
-		this.parseDirective(dockerfile, document, problems);
+		this.parseDirective(dockerfile, problems);
 		let instructions = dockerfile.getInstructions();
 		if (instructions.length === 0 || dockerfile.getARGs().length === instructions.length) {
 			// no instructions in this file, or only ARGs
@@ -315,7 +314,7 @@ export class Validator {
 					// don't validate CMD instructions
 					break;
 				case "ARG":
-					this.checkArguments(instruction, problems, [ -1 ], function(index: number, argument: string) {
+					this.checkArguments(instruction, problems, [ -1 ], function(index: number) {
 						if (index > 0) {
 							return  Validator.createARGRequiresOneArgument;
 						}
@@ -777,7 +776,7 @@ export class Validator {
 			return;
 		}
 
-		let last = "";
+		let last: string | null = "";
 		let quoted = false;
 		argsCheck: for (let i = 0; i < argsContent.length; i++) {
 			switch (argsContent.charAt(i)) {
@@ -1272,7 +1271,7 @@ export class Validator {
 		return Validator.createDiagnostic(DiagnosticSeverity.Error, start, end, description, code);
 	}
 
-	private static createEmptyContinuationLine(start: Position, end: Position, severity: ValidationSeverity): Diagnostic {
+	private static createEmptyContinuationLine(start: Position, end: Position, severity: ValidationSeverity | undefined): Diagnostic | null {
 		if (severity === ValidationSeverity.ERROR) {
 			return Validator.createError(start, end, Validator.getDiagnosticMessage_EmptyContinuationLine(), ValidationCode.EMPTY_CONTINUATION_LINE);
 		} else if (severity  === ValidationSeverity.WARNING) {
@@ -1281,7 +1280,7 @@ export class Validator {
 		return null;
 	}
 
-	private createMultipleInstructions(range: Range, severity: ValidationSeverity, instruction: string): Diagnostic {
+	private createMultipleInstructions(range: Range, severity: ValidationSeverity | undefined, instruction: string): Diagnostic | null {
 		if (severity === ValidationSeverity.ERROR) {
 			return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_InstructionMultiple(instruction), ValidationCode.MULTIPLE_INSTRUCTIONS);
 		} else if (severity  === ValidationSeverity.WARNING) {
@@ -1290,7 +1289,7 @@ export class Validator {
 		return null;
 	}
 
-	private createLowercaseDirective(start: Position, end: Position): Diagnostic {
+	private createLowercaseDirective(start: Position, end: Position): Diagnostic | null {
 		if (this.settings.directiveCasing === ValidationSeverity.ERROR) {
 			return Validator.createError(start, end, Validator.getDiagnosticMessage_DirectiveCasing(), ValidationCode.CASING_DIRECTIVE);
 		} else if (this.settings.directiveCasing === ValidationSeverity.WARNING) {
@@ -1299,7 +1298,7 @@ export class Validator {
 		return null;
 	}
 
-	createUppercaseInstruction(start: Position, end: Position): Diagnostic {
+	createUppercaseInstruction(start: Position, end: Position): Diagnostic | null {
 		if (this.settings.instructionCasing === ValidationSeverity.ERROR) {
 			return Validator.createError(start, end, Validator.getDiagnosticMessage_InstructionCasing(), ValidationCode.CASING_INSTRUCTION);
 		} else if (this.settings.instructionCasing === ValidationSeverity.WARNING) {

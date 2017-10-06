@@ -10,7 +10,7 @@ import { Util } from '../../docker';
 
 export abstract class PropertyInstruction extends Instruction {
 
-	private properties: Property[] = undefined;
+	private properties: Property[] | undefined = undefined;
 
 	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range, escapeChar, instruction, instructionRange);
@@ -90,7 +90,7 @@ export abstract class PropertyInstruction extends Instruction {
 	}
 
 	public getArguments(): Argument[] {
-		let args = [];
+		const args: Argument[] = [];
 		let range = this.getInstructionRange();
 		let instructionNameEndOffset = this.document.offsetAt(range.end);
 		let extra = instructionNameEndOffset - this.document.offsetAt(range.start);

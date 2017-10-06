@@ -10,7 +10,6 @@ import {
 } from 'vscode-languageserver';
 import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
 import { Dockerfile } from './parser/dockerfile';
-import { DockerHover } from './dockerHover';
 import { DockerRegistryClient } from './dockerRegistryClient';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Copy } from './parser/instructions/copy';
@@ -18,7 +17,6 @@ import { From } from './parser/instructions/from';
 import { Healthcheck } from './parser/instructions/healthcheck';
 import { Onbuild } from './parser/instructions/onbuild';
 import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
-import { Instruction } from './parser/instruction';
 
 export class DockerAssist {
 
@@ -114,10 +112,10 @@ export class DockerAssist {
 					let prefixLength = variablePrefix.length + 1;
 					if (variablePrefix === "") {
 						// empty prefix, return all variables
-						let items = [];
+						const items: CompletionItem[] = [];
 						for (let variable of dockerfile.getVariableNames(position.line)) {
 							let doc = dockerfile.getVariableValue(variable, position.line);
-							items.push(this.createVariableCompletionItem("${" + variable + '}', prefixLength, offset, true, doc));
+							items.push(this.createVariableCompletionItem(variable, prefixLength, offset, true, doc));
 						}
 						return items;
 					} else {
@@ -126,11 +124,11 @@ export class DockerAssist {
 							brace = true;
 							variablePrefix = variablePrefix.substring(1);
 						}
-						let items = [];
+						const items: CompletionItem[] = [];
 						for (let variable of dockerfile.getVariableNames(position.line)) {
 							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
 							let doc = dockerfile.getVariableValue(variable, position.line);
-								items.push(this.createVariableCompletionItem(brace ? "${" + variable + '}' : '$' + variable, prefixLength, offset, brace, doc));
+							items.push(this.createVariableCompletionItem(variable, prefixLength, offset, brace, doc));
 							}
 						}
 						return items;
@@ -146,7 +144,7 @@ export class DockerAssist {
 			} else if (Util.isInsideRange(position, instruction.getRange())) {
 				switch (instruction.getKeyword()) {
 					case "ADD":
-						return this.createAddProposals(dockerfile, instruction as ModifiableInstruction, position, offset, prefix);
+						return this.createAddProposals(instruction as ModifiableInstruction, position, offset, prefix);
 					case "COPY":
 						return this.createCopyProposals(dockerfile, instruction as Copy, position, offset, prefix);
 					case "FROM":
@@ -156,7 +154,7 @@ export class DockerAssist {
 						if (subcommand && subcommand.isBefore(position)) {
 							return [];
 						}
-						return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
+						return this.createHealthcheckProposals(offset, prefix);
 					case "ONBUILD":
 						let onbuildArgs = instruction.getArguments();
 						if (onbuildArgs.length === 0 || Util.isInsideRange(position, onbuildArgs[0].getRange())) {
@@ -167,7 +165,7 @@ export class DockerAssist {
 							let trigger = (instruction as Onbuild).getTriggerInstruction();
 							switch (trigger.getKeyword()) {
 								case "ADD":
-									return this.createAddProposals(dockerfile, trigger as ModifiableInstruction, position, offset, prefix);
+									return this.createAddProposals(trigger as ModifiableInstruction, position, offset, prefix);
 								case "COPY":
 									return this.createCopyProposals(dockerfile, trigger as Copy, position, offset, prefix);
 								case "HEALTHCHECK":
@@ -175,7 +173,7 @@ export class DockerAssist {
 									if (subcommand && subcommand.isBefore(position)) {
 										return [];
 									}
-									return this.createHealthcheckProposals(dockerfile, position, offset, prefix);
+									return this.createHealthcheckProposals(offset, prefix);
 							}
 						}
 						return [];
@@ -194,7 +192,7 @@ export class DockerAssist {
 			return this.createProposals(KEYWORDS, previousWord, 0, offset);
 		}
 
-		var suggestions = [];
+		const suggestions: string[] = [];
 		var uppercasePrefix = prefix.toUpperCase();
 		for (let i = 0; i < KEYWORDS.length; i++) {
 			if (KEYWORDS[i] === uppercasePrefix) {
@@ -244,7 +242,7 @@ export class DockerAssist {
 		return proposals;
 	}
 
-	private createAddProposals(dockerfile: Dockerfile, add: ModifiableInstruction, position: Position, offset: number, prefix: string) {
+	private createAddProposals(add: ModifiableInstruction, position: Position, offset: number, prefix: string) {
 		const flags = add.getFlags();
 		let copyArgs = add.getArguments();
 		if (copyArgs.length === 0 && add.getFlags().length === 0) {
@@ -264,7 +262,7 @@ export class DockerAssist {
 	private createCopyProposals(dockerfile: Dockerfile, copy: Copy, position: Position, offset: number, prefix: string) {
 		let range = copy.getFromValueRange();
 		// is the user in the --from= area
-		if (range && Util.isInsideRange(position, copy.getFromValueRange())) {
+		if (range && Util.isInsideRange(position, range)) {
 			const names: { [key: string]: boolean; } = {};
 			const items: CompletionItem[] = [];
 			let stageIndex = 0;
@@ -331,8 +329,8 @@ export class DockerAssist {
 				prefix = prefix.substring(index + 1, lastIndex);
 			}
 			const client = this.dockerRegistryClient;
-			return new Promise<CompletionItem[]>(async (resolve, reject) => {
-				const items = [];
+			return new Promise<CompletionItem[]>(async (resolve) => {
+				const items: CompletionItem[] = [];
 				const tags = await client.getTags(from.getImageName());
 				for (const tag of tags) {
 					if (tag.indexOf(prefix) === 0) {
@@ -349,7 +347,7 @@ export class DockerAssist {
 		return [];
 	}
 
-	private createHealthcheckProposals(dockerfile: Dockerfile, position: Position, offset: number, prefix: string) {
+	private createHealthcheckProposals(offset: number, prefix: string) {
 		let items: CompletionItem[] = [];
 		if (prefix.length < 3 && "CMD".indexOf(prefix.toUpperCase()) === 0) {
 			items.push(this.createHEALTHCHECK_CMD_Subcommand(prefix.length, offset));
@@ -691,6 +689,7 @@ export class DockerAssist {
 	}
 
 	private createVariableCompletionItem(text: string, prefixLength: number, offset: number, brace: boolean, documentation: string): CompletionItem {
+		text = brace ? "${" + text + '}' : '$' + text
 		return {
 			textEdit: this.createTextEdit(prefixLength, offset, text),
 			label: text,

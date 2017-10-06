@@ -3,14 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import {
-	TextDocument, Range, Position, SignatureHelp, SignatureInformation
+	TextDocument, Position, SignatureHelp, SignatureInformation
 } from 'vscode-languageserver';
-import { Dockerfile } from './parser/dockerfile';
 import { Argument } from './parser/argument';
 import { Instruction } from './parser/instruction';
 import { Property } from './parser/property';
 import { JSONInstruction } from './parser/instructions/jsonInstruction';
-import { Arg } from './parser/instructions/arg';
 import { Copy } from './parser/instructions/copy';
 import { Env } from './parser/instructions/env';
 import { From } from './parser/instructions/from';
@@ -19,7 +17,6 @@ import { Label } from './parser/instructions/label';
 import { PlainTextDocumentation } from './dockerPlainText';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Util, DIRECTIVE_ESCAPE } from './docker';
-import { ValidatorSettings } from './dockerValidatorSettings';
 
 export class DockerSignatures {
 
@@ -65,7 +62,7 @@ export class DockerSignatures {
 		return signatureHelp;
 	}
 
-	private getInstructionSignatures(document: TextDocument, instructions: Instruction[], position: Position): SignatureHelp {
+	private getInstructionSignatures(document: TextDocument, instructions: Instruction[], position: Position): SignatureHelp | null {
 		for (let instruction of instructions) {
 			if (!Util.isInsideRange(position, instruction.getRange())) {
 				continue;
@@ -963,7 +960,7 @@ export class DockerSignatures {
 		return null;
 	}
 
-	private getFromSignatureHelp(position: Position, from: From): SignatureHelp {
+	private getFromSignatureHelp(position: Position, from: From): SignatureHelp | null {
 		let baseImage = {
 			label: "FROM baseImage",
 			documentation: this.documentation.getDocumentation("signatureFrom_Signature0"),
@@ -1084,7 +1081,7 @@ export class DockerSignatures {
 		return {
 			signatures: this.getFromSignatures(fromSignatures, tag, digest, stagesOnly),
 			activeSignature: 0,
-			activeParameter: this.getFromActiveParameter(position, from, image, tag, digest, args)
+			activeParameter: this.getFromActiveParameter(position, from, tag, digest, args)
 		};
 	}
 
@@ -1097,10 +1094,9 @@ export class DockerSignatures {
 		return stagesOnly ? [ fromSignatures[3], fromSignatures[4], fromSignatures[5] ] : fromSignatures;
 	}
 
-	private getFromActiveParameter(position: Position, from: From, image: string, tag: boolean, digest: boolean, args: Argument[]): number {
+	private getFromActiveParameter(position: Position, from: From, tag: boolean, digest: boolean, args: Argument[]): number {
 		const inTag = tag && Util.isInsideRange(position, from.getImageTagRange());
 		const inDigest = digest && Util.isInsideRange(position, from.getImageDigestRange());
-		const inImage = !inTag && !inDigest && Util.isInsideRange(position, args[0].getRange());
 		if (args.length === 1) {
 			if (args[0].isBefore(position)) {
 				return tag || digest ? 2 : 1;
@@ -1232,7 +1228,7 @@ export class DockerSignatures {
 		return -1;
 	}
 
-	private getSignatureActiveParameter(instruction: Instruction, position: Position, hasFlags: boolean, max: number, finalRepeats): number {
+	private getSignatureActiveParameter(instruction: Instruction, position: Position, hasFlags: boolean, max: number, finalRepeats: boolean): number {
 		const flagsOffset = hasFlags ? 1 : 0;
 		const args = instruction.getArguments();
 		if (finalRepeats) {
@@ -1265,7 +1261,7 @@ export class DockerSignatures {
 		return {
 			signatures: this.getPropertySignatures(document, position, signatures, properties),
 			activeSignature: 0,
-			activeParameter: this.getPropertySignatureActiveParameter(document, position, signatures, properties)
+			activeParameter: this.getPropertySignatureActiveParameter(document, position, properties)
 		};
 	}
 
@@ -1290,7 +1286,7 @@ export class DockerSignatures {
 		return [ signatures[1], signatures[2] ];
 	}
 
-	private getPropertySignatureActiveParameter(document: TextDocument, position: Position, signatures: SignatureInformation[], properties: Property[]): number {
+	private getPropertySignatureActiveParameter(document: TextDocument, position: Position, properties: Property[]): number {
 		if (properties.length === 0) {
 			return 0;
 		}

@@ -27,7 +27,7 @@ export class CommandIds {
 export class DockerCommands {
 
 	public analyzeDiagnostics(diagnostics: Diagnostic[], textDocumentURI: string, range: Range): Command[] {
-		let commands = [];
+		let commands: Command[] = [];
 		for (let i = 0; i < diagnostics.length; i++) {
 			// Diagnostic's code is (number | string), convert it if necessary
 			if (typeof diagnostics[i].code === "string") {

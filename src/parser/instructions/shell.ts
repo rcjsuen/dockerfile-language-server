@@ -3,7 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
-import { Argument } from '../argument';
 import { JSONInstruction } from './jsonInstruction';
 
 export class Shell extends JSONInstruction {

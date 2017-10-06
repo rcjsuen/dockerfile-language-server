@@ -29,7 +29,7 @@ export class Directive extends Line {
 		return this.document.getText().substring(this.document.offsetAt(this.nameRange.start), this.document.offsetAt(this.nameRange.end));
 	}
 
-	public getValue(): string | null {
+	public getValue(): string {
 		return this.document.getText().substring(this.document.offsetAt(this.valueRange.start), this.document.offsetAt(this.valueRange.end));
 	}
 

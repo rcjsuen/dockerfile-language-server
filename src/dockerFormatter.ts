@@ -7,9 +7,7 @@
 import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
-import { Dockerfile } from './parser/dockerfile';
 import { DockerfileParser } from './parser/dockerfileParser';
-import { Util } from './docker';
 
 export class DockerFormatter {
 
@@ -81,7 +79,7 @@ export class DockerFormatter {
 			}
 
 			const lines = [ position.line + 1 ];
-			const indentedLines = [];
+			const indentedLines: boolean[] = [];
 			indentedLines[lines[0]] = true;
 			return this.formatLines(document, document.getText(), lines, indentedLines, options);
 		}
@@ -89,7 +87,7 @@ export class DockerFormatter {
 	}
 
 	public formatRange(document: TextDocument, range: Range, options?: FormattingOptions): TextEdit[] {
-		let lines = [];
+		const lines: number[] = [];
 		for (let i = range.start.line; i <= range.end.line; i++) {
 			lines.push(i);
 		}
@@ -97,7 +95,7 @@ export class DockerFormatter {
 	}
 
 	public formatDocument(document: TextDocument, options?: FormattingOptions): TextEdit[] {
-		let lines = [];
+		const lines: number[] = [];
 		for (let i = 0; i < document.lineCount; i++) {
 			lines.push(i);
 		}
@@ -117,7 +115,7 @@ export class DockerFormatter {
 		let parser = new DockerfileParser();
 		let dockerfile = parser.parse(document);
 		let content = document.getText();
-		let indentedLines = [];
+		const indentedLines: boolean[] = [];
 		for (let i = 0; i < document.lineCount; i++) {
 			indentedLines[i] = false;
 		}
@@ -131,9 +129,9 @@ export class DockerFormatter {
 		return this.formatLines(document, content, lines, indentedLines, options);
 	}
 
-	private formatLines(document: TextDocument, content: string, lines: number[], indentedLines: boolean[], options: FormattingOptions) {
+	private formatLines(document: TextDocument, content: string, lines: number[], indentedLines: boolean[], options?: FormattingOptions): TextEdit[] {
 		const indentation = this.getIndentation(options);
-		const edits = [];
+		const edits: TextEdit[] = [];
 		lineCheck: for (let line of lines) {
 			let startOffset = document.offsetAt(Position.create(line, 0));
 			for (let i = startOffset; i < content.length; i++) {

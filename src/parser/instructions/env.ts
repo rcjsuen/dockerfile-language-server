@@ -3,11 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
-import { Instruction } from '../instruction';
 import { Property } from '../property';
-import { Argument } from '../argument';
 import { PropertyInstruction } from './propertyInstruction';
-import { Util } from '../../docker';
 
 export class Env extends PropertyInstruction {
 

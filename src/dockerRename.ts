@@ -4,13 +4,13 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
-import { TextDocument, Position, Range, TextEdit } from 'vscode-languageserver';
+import { TextDocument, Position, TextEdit } from 'vscode-languageserver';
 import { DockerHighlight } from './dockerHighlight';
 
 export class DockerRename {
 
 	public rename(document: TextDocument, position: Position, newName: string): TextEdit[] {
-		let edits = [];
+		let edits: TextEdit[] = [];
 		let highlighter = new DockerHighlight();
 		let highlightRanges = highlighter.computeHighlightRanges(document, position);
 		for (let highlightRange of highlightRanges) {

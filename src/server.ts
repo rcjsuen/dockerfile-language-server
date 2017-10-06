@@ -42,7 +42,7 @@ let signatureHelp = new DockerSignatures();
  * The settings to use for the validator if the client doesn't support
  * workspace/configuration requests.
  */
-let validatorSettings = null;
+let validatorSettings: ValidatorSettings | null = null;
 
 /**
  * The validator settings that correspond to an individual file retrieved via
@@ -188,7 +188,7 @@ interface Settings {
 	}
 }
 
-function getSeverity(severity: string): ValidationSeverity {
+function getSeverity(severity: string | undefined): ValidationSeverity | null {
 	switch (severity) {
 		case "ignore":
 			return ValidationSeverity.IGNORE;
