@@ -32,7 +32,7 @@ export class DockerfileParser {
 
 	private escapeChar: string;
 
-	public static createInstruction(document: TextDocument, escapeChar, lineRange: Range, instruction: string, instructionRange: Range) {
+	public static createInstruction(document: TextDocument, escapeChar: string, lineRange: Range, instruction: string, instructionRange: Range) {
 		switch (instruction.toUpperCase()) {
 			case "ADD":
 				return new Add(document, lineRange, escapeChar, instruction, instructionRange);
@@ -217,8 +217,8 @@ export class DockerfileParser {
 					let instruction = char;
 					let instructionStart = i;
 					let instructionEnd = -1;
-					let lineRange = null;
-					let instructionRange = null;
+					let lineRange: Range | null = null;
+					let instructionRange: Range | null = null;
 					for (let j = i + 1; j < buffer.length; j++) {
 						char = buffer.charAt(j);
 						switch (char) {

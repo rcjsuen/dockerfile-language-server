@@ -354,7 +354,7 @@ function assertInstructionRequiresOneOrThreeArguments(diagnostic: Diagnostic, st
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
-function assertInstructionUnnecessaryArgument(diagnostic: Diagnostic, instruction: string, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+function assertInstructionUnnecessaryArgument(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_UNNECESSARY);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
 	assert.equal(diagnostic.source, source);
@@ -1093,14 +1093,14 @@ describe("Docker Validator Tests", function() {
 				});
 
 				it("ignore", function() {
-					let settings = {};
+					let settings: any = {};
 					settings[settingsName] = ValidationSeverity.IGNORE;
 					let diagnostics = validate(content, settings);
 					assert.equal(diagnostics.length, 0);
 				});
 
 				it("warning", function() {
-					let settings = {};
+					let settings: any = {};
 					settings[settingsName] = ValidationSeverity.WARNING;
 					let diagnostics = validate(content, settings);
 					assert.equal(diagnostics.length, 2);
@@ -1109,7 +1109,7 @@ describe("Docker Validator Tests", function() {
 				});
 
 				it("error", function() {
-					let settings = {};
+					let settings: any = {};
 					settings[settingsName] = ValidationSeverity.ERROR;
 					let diagnostics = validate(content, settings);
 					assert.equal(diagnostics.length, 2);
@@ -2431,12 +2431,12 @@ describe("Docker Validator Tests", function() {
 					// single argument
 					let diagnostics = validate("FROM alpine\nHEALTHCHECK NONE --interval=10s");
 					assert.equal(diagnostics.length, 1);
-					assertInstructionUnnecessaryArgument(diagnostics[0], "HEALTHCHECK NONE", 1, 17, 1, 31);
+					assertInstructionUnnecessaryArgument(diagnostics[0], 1, 17, 1, 31);
 
 					// multiple arguments
 					diagnostics = validate("FROM alpine\nHEALTHCHECK NONE a b c");
 					assert.equal(diagnostics.length, 1);
-					assertInstructionUnnecessaryArgument(diagnostics[0], "HEALTHCHECK NONE", 1, 17, 1, 22);
+					assertInstructionUnnecessaryArgument(diagnostics[0], 1, 17, 1, 22);
 				});
 			});
 		});

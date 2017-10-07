@@ -23,16 +23,16 @@ function computePromise(content: string, line: number, character: number): Promi
 	return proposals as PromiseLike<CompletionItem[]>;
 }
 
-function assertImageTag(tag: string, item: CompletionItem, line: number, character: number, prefixLength: number) {
+function assertImageTag(tag: string, item: CompletionItem) {
 	assert.equal(item.label, tag);
 	assert.equal(item.kind, CompletionItemKind.Property);
 	assert.equal(item.insertTextFormat, InsertTextFormat.PlainText);
 }
 
-function assertImageTags(tags: string[], items: CompletionItem[], line: number, character: number, prefixLength: number) {
+function assertImageTags(tags: string[], items: CompletionItem[]) {
 	assert.equal(items.length, tags.length);
 	for (let i = 0; i < tags.length; i++) {
-		assertImageTag(tags[i], items[i], line, character, prefixLength);
+		assertImageTag(tags[i], items[i]);
 	}
 }
 
@@ -43,21 +43,21 @@ describe("Docker Content Assist Registry Tests", () => {
 				this.timeout(10000);
 				const tags = await dockerRegistryClient.getTags("alpine");
 				const items = await computePromise("FROM alpine:", 0, 12);
-				assertImageTags(tags, items, 0, 12, 0);
+				assertImageTags(tags, items);
 			});
 
 			it("all ignore prefix", async function() {
 				this.timeout(10000);
 				const tags = await dockerRegistryClient.getTags("alpine");
 				const items = await computePromise("FROM alpine:lat", 0, 12);
-				assertImageTags(tags, items, 0, 12, 0);
+				assertImageTags(tags, items);
 			});
 
 			it("prefix", async function() {
 				this.timeout(10000);
 				const tags = await dockerRegistryClient.getTags("alpine", "lat");
 				const items = await computePromise("FROM alpine:lat", 0, 15);
-				assertImageTags(tags, items, 0, 15, 0);
+				assertImageTags(tags, items);
 			});
 
 			it("invalid", async function() {
@@ -72,21 +72,21 @@ describe("Docker Content Assist Registry Tests", () => {
 				this.timeout(10000);
 				const tags = await dockerRegistryClient.getTags("library/alpine");
 				const items = await computePromise("FROM library/alpine:", 0, 20);
-				assertImageTags(tags, items, 0, 12, 0);
+				assertImageTags(tags, items);
 			});
 
 			it("all ignore prefix", async function() {
 				this.timeout(10000);
 				const tags = await dockerRegistryClient.getTags("library/alpine");
 				const items = await computePromise("FROM library/alpine:lat", 0, 20);
-				assertImageTags(tags, items, 0, 12, 0);
+				assertImageTags(tags, items);
 			});
 
 			it("prefix", async function() {
 				this.timeout(10000);
 				const tags = await dockerRegistryClient.getTags("library/alpine", "lat");
 				const items = await computePromise("FROM library/alpine:lat", 0, 23);
-				assertImageTags(tags, items, 0, 15, 0);
+				assertImageTags(tags, items);
 			});
 
 			it("invalid", async function() {

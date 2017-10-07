@@ -2,7 +2,7 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import { TextDocument, Range, Position } from 'vscode-languageserver';
+import { TextDocument, Range } from 'vscode-languageserver';
 import { Util } from '../docker';
 import { Line } from './line';
 import { Argument } from './argument';
@@ -23,7 +23,7 @@ export class Instruction extends Line {
 		this.instructionRange = instructionRange;
 	}
 
-	protected getRangeContent(range: Range) {
+	protected getRangeContent(range: Range): string | null {
 		if (range === null) {
 			return null;
 		}
@@ -169,7 +169,6 @@ export class Instruction extends Line {
 					}
 					break;
 				case '$':
-					let start = i;
 					if (arg.charAt(i + 1) === '{') {
 						for (let j = i + 2; j < arg.length; j++) {
 							if (arg.charAt(j) === '}') {

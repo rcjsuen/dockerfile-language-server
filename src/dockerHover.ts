@@ -5,7 +5,7 @@
 'use strict';
 
 import {
-	TextDocument, TextDocumentPositionParams, Hover, Range, Position
+	TextDocument, TextDocumentPositionParams, Hover, Position
 } from 'vscode-languageserver';
 import { DockerfileParser } from './parser/dockerfileParser';
 import { Arg } from './parser/instructions/arg';

@@ -5,10 +5,9 @@
 import * as assert from "assert";
 
 import {
-	TextDocument, Position, Range, SignatureHelp, SignatureInformation
+	TextDocument, Position, SignatureHelp, SignatureInformation
 } from 'vscode-languageserver';
 import { PlainTextDocumentation } from '../src/dockerPlainText';
-import { KEYWORDS, DIRECTIVE_ESCAPE } from '../src/docker';
 import { DockerSignatures } from '../src/dockerSignatures';
 
 let docs = new PlainTextDocumentation();

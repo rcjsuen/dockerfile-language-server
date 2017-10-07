@@ -20,7 +20,7 @@ export class DockerHighlight {
 		let provider = new DockerDefinition();
 		let location = provider.computeDefinition(document, position);
 		let image = location === null ? dockerfile.getContainingImage(position) : dockerfile.getContainingImage(location.range.start);
-		let highlights = [];
+		const highlights: DocumentHighlight[] = [];
 		if (location === null) {
 			for (let instruction of dockerfile.getCOPYs()) {
 				let range = instruction.getFromValueRange();
