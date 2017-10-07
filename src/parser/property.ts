@@ -30,7 +30,7 @@ export class Property {
 		} else {
 			this.nameRange = Property.getNameRange(document, arg);
 			this.name = document.getText().substring(document.offsetAt(this.nameRange.start), document.offsetAt(this.nameRange.end));
-			this.valueRange = Property.getValueRange(document, escapeChar, arg);
+			this.valueRange = Property.getValueRange(document, arg);
 			if (this.valueRange) {
 				let value = document.getText().substring(document.offsetAt(this.valueRange.start), document.offsetAt(this.valueRange.end));
 				this.value = Property.getValue(value, escapeChar);
@@ -131,7 +131,7 @@ export class Property {
 		return arg.getRange();
 	}
 
-	private static getValueRange(document: TextDocument, escapeChar: string, arg: Argument): Range | null {
+	private static getValueRange(document: TextDocument, arg: Argument): Range | null {
 		let argValue = arg.getValue();
 		let index = argValue.indexOf('=');
 		if (index === -1) {

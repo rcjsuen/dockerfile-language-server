@@ -87,7 +87,7 @@ function assertARG_NameOnly(item: CompletionItem, line: number, character: numbe
 	assert.equal(item.textEdit.range.end.character, character + prefixLength);
 }
 
-function assertARG_DefaultValue(item: CompletionItem, line: number, character: number, prefixLength: number, snippetSupport?: boolean) {
+function assertARG_DefaultValue(item: CompletionItem, line: number, character: number, prefixLength: number) {
 	assert.equal(item.label, "ARG name=defaultValue");
 	assert.equal(item.kind, CompletionItemKind.Keyword);
 	assert.equal(item.insertTextFormat, InsertTextFormat.Snippet);
@@ -651,7 +651,7 @@ function assertProposals(proposals: CompletionItem[], offset: number, prefix: nu
 				assertARG(proposals[i], offset, prefix, prefixLength);
 				break;
 			case "ARG_DefaultValue":
-				assertARG_DefaultValue(proposals[i], offset, prefix, prefixLength, snippetSupport);
+				assertARG_DefaultValue(proposals[i], offset, prefix, prefixLength);
 				break;
 			case "ARG_NameOnly":
 				assertARG_NameOnly(proposals[i++], offset, prefix, prefixLength, snippetSupport);

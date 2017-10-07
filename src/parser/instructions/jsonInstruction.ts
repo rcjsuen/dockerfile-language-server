@@ -10,7 +10,7 @@ export class JSONInstruction extends ModifiableInstruction {
 
 	private readonly openingBracket: Argument;
 	private readonly closingBracket: Argument;
-	private readonly jsonStrings = [];
+	private readonly jsonStrings: Argument[] = [];
 
 	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range, escapeChar, instruction, instructionRange);
@@ -153,7 +153,7 @@ export class JSONInstruction extends ModifiableInstruction {
 		}
 	}
 
-	protected stopSearchingForFlags(value: string): boolean {
+	protected stopSearchingForFlags(_value: string): boolean {
 		return true;
 	}
 

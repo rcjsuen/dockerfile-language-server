@@ -1281,7 +1281,7 @@ describe("Dockerfile Signature Tests", function() {
 
 	testCopy(false);
 
-	function testParameterizedInstruction(instruction, trigger: boolean, hasFlags: boolean, singleParameter: boolean, finalRepeats: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
+	function testParameterizedInstruction(instruction: string, trigger: boolean, hasFlags: boolean, singleParameter: boolean, finalRepeats: boolean, assertAll: Function, assertJSON: Function, assertShell: Function) {
 		const onbuild = trigger ? "ONBUILD " : "";
 		const prefix = onbuild + instruction;
 		const triggerOffset = onbuild.length;

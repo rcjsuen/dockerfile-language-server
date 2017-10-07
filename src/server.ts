@@ -5,7 +5,7 @@
 'use strict';
 
 import {
-	createConnection, IConnection, InitializeParams, InitializeResult, ClientCapabilities,
+	createConnection, InitializeParams, InitializeResult, ClientCapabilities,
 	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams, 
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
@@ -14,6 +14,7 @@ import {
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
 	DidChangeConfigurationNotification, ProposedFeatures
 } from 'vscode-languageserver';
+import { ConfigurationItem } from 'vscode-languageserver-protocol/lib/protocol.configuration.proposed';
 import { Validator, ValidationSeverity } from './dockerValidator';
 import { ValidatorSettings } from './dockerValidatorSettings';
 import { DockerAssist } from './dockerAssist';
@@ -225,7 +226,7 @@ connection.onNotification(DidChangeConfigurationNotification.type, () => {
  */
 function refreshConfigurations() {
 	// store all the URIs that need to be refreshed
-	const settingsRequest = [];
+	const settingsRequest: ConfigurationItem[] = [];
 	for (let uri in documents) {
 		settingsRequest.push({ section: "", scopeUri: uri });
 	}
@@ -335,7 +336,7 @@ connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams
 connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {
 	if (codeActionParams.context.diagnostics.length > 0) {
 		return commandsProvider.analyzeDiagnostics(
-			codeActionParams.context.diagnostics, codeActionParams.textDocument.uri, codeActionParams.range
+			codeActionParams.context.diagnostics, codeActionParams.textDocument.uri
 		);
 	}
 	return [];
@@ -424,7 +425,7 @@ function getLaterChange(changes: TextDocumentContentChangeEvent[], i: number, j:
 }
 
 function sortChanges(changes: TextDocumentContentChangeEvent[]): TextDocumentContentChangeEvent[] {
-	let sorted = [];
+	let sorted: TextDocumentContentChangeEvent[] = [];
 	let length = changes.length;
 	for (let i = 0; i < length; i++) {
 		let candidate = 0;
@@ -445,7 +446,7 @@ function handleChanges(document: TextDocument, content: string, changes: TextDoc
 		changes = sortChanges(changes);
 		for (let i = 0; i < changes.length; i++) {
 			let offset = document.offsetAt(changes[i].range.start);
-			let end = null;
+			let end: number = null;
 			if (changes[i].range.end) {
 				end = document.offsetAt(changes[i].range.end);
 			} else {

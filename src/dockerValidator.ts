@@ -323,7 +323,7 @@ export class Validator {
 					break;
 				case "ENV":
 				case "LABEL":
-					this.checkArguments(instruction, problems, [ -1 ], function() {
+					this.checkArguments(instruction, problems, [ -1 ], function(): any {
 						return null;
 					});
 					let properties = instruction instanceof Env ? (instruction as Env).getProperties() : (instruction as Label).getProperties();
@@ -443,7 +443,7 @@ export class Validator {
 					this.checkDuplicateFlags(healthcheckFlags, validFlags, problems);
 					break;
 				case "ONBUILD":
-					this.checkArguments(instruction, problems, [ -1 ], function() {
+					this.checkArguments(instruction, problems, [ -1 ], function(): any {
 						return null;
 					});
 					let onbuild = instruction as Onbuild;
@@ -459,13 +459,13 @@ export class Validator {
 					}
 					break;
 				case "SHELL":
-					this.checkArguments(instruction, problems, [ -1 ], function() {
+					this.checkArguments(instruction, problems, [ -1 ], function(): any {
 						return null;
 					});
 					this.checkJSON(instruction, problems);
 					break;
 				case "STOPSIGNAL":
-					this.checkArguments(instruction, problems, [ 1 ], function(index: number, argument: string) {
+					this.checkArguments(instruction, problems, [ 1 ], function(_index: number, argument: string) {
 						if (argument.indexOf("SIG") === 0 || argument.indexOf('$') != -1) {
 							return null;
 						}
@@ -509,7 +509,7 @@ export class Validator {
 					}
 					break;
 				case "ADD":
-					this.checkArguments(instruction, problems, [ -1 ], function() {
+					this.checkArguments(instruction, problems, [ -1 ], function(): any {
 						return null;
 					});
 					const addFlags = (instruction as ModifiableInstruction).getFlags();
@@ -544,7 +544,7 @@ export class Validator {
 					this.checkDuplicateFlags(flags, [ "chown", "from" ], problems);
 					break;
 				default:
-					this.checkArguments(instruction, problems, [ -1 ], function() {
+					this.checkArguments(instruction, problems, [ -1 ], function(): any {
 						return null;
 					});
 					break;
