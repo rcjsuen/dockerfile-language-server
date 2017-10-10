@@ -509,9 +509,12 @@ export class Validator {
 					}
 					break;
 				case "ADD":
-					this.checkArguments(instruction, problems, [ -1 ], function(): any {
-						return null;
-					});
+					const addArgs = instruction.getArguments();
+					if (addArgs.length === 1) {
+						problems.push(Validator.createADDRequiresAtLeastTwoArguments(addArgs[0].getRange()));
+					} else if (addArgs.length === 0) {
+						problems.push(Validator.createADDRequiresAtLeastTwoArguments(instruction.getInstructionRange()));
+					}
 					const addFlags = (instruction as ModifiableInstruction).getFlags();
 					for (let flag of addFlags) {
 						const name = flag.getName();
@@ -1035,6 +1038,10 @@ export class Validator {
 		return Validator.dockerProblems["instructionMissingArgument"];
 	}
 
+	public static getDiagnosticMessage_ADDRequiresAtLeastTwoArguments() {
+		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresAtLeastTwoArguments"], "ADD");
+	}
+
 	public static getDiagnosticMessage_ARGRequiresOneArgument() {
 		return Validator.formatMessage(Validator.dockerProblems["instructionRequiresOneArgument"], "ARG");
 	}
@@ -1201,6 +1208,10 @@ export class Validator {
 
 	static createARGRequiresOneArgument(start: Position, end: Position): Diagnostic {
 		return Validator.createError(start, end, Validator.getDiagnosticMessage_ARGRequiresOneArgument(), ValidationCode.ARGUMENT_REQUIRES_ONE);
+	}
+
+	private static createADDRequiresAtLeastTwoArguments(range: Range): Diagnostic {
+		return Validator.createError(range.start, range.end, Validator.getDiagnosticMessage_ADDRequiresAtLeastTwoArguments(), ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_TWO);
 	}
 
 	private static createCOPYRequiresAtLeastTwoArguments(range: Range): Diagnostic {

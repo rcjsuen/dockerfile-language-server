@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
     - toggles the diagnostic severity if empty continuation lines are found
 - textDocument/publishDiagnostics
   - warn about empty continuation lines ([#177](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/177))
+  - warn if ADD does not have two arguments ([#185](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/185))
 
 ### Fixed
 - allow parameters to be suggested even if an ARG has no variables defined ([#184](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/184))

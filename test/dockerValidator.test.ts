@@ -310,6 +310,17 @@ function assertHealthcheckTypeUnknown(diagnostic: Diagnostic, type: string, star
 	assert.equal(diagnostic.range.end.character, endCharacter);
 }
 
+function assertADDRequiresAtLeastTwoArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_TWO);
+	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
+	assert.equal(diagnostic.source, source);
+	assert.equal(diagnostic.message, Validator.getDiagnosticMessage_ADDRequiresAtLeastTwoArguments());
+	assert.equal(diagnostic.range.start.line, startLine);
+	assert.equal(diagnostic.range.start.character, startCharacter);
+	assert.equal(diagnostic.range.end.line, endLine);
+	assert.equal(diagnostic.range.end.character, endCharacter);
+}
+
 function assertCOPYRequiresAtLeastTwoArguments(diagnostic: Diagnostic, startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
 	assert.equal(diagnostic.code, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_TWO);
 	assert.equal(diagnostic.severity, DiagnosticSeverity.Error);
@@ -924,7 +935,7 @@ describe("Docker Validator Tests", function() {
 			}
 
 			it("ADD", function() {
-				return testMissingArgumentLoop("ADD");
+				return testMissingArgumentLoop("ADD", false, assertADDRequiresAtLeastTwoArguments);
 			});
 
 			it("ARG", function() {
@@ -1494,6 +1505,31 @@ describe("Docker Validator Tests", function() {
 	});
 
 	describe("ADD", function() {
+		describe("arguments", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM alpine\nADD . .");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("requires at least two", function() {
+				let diagnostics = validate("FROM alpine\nADD ");
+				assert.equal(diagnostics.length, 1);
+				assertADDRequiresAtLeastTwoArguments(diagnostics[0], 1, 0, 1, 3);
+
+				diagnostics = validate("FROM alpine\nADD .");
+				assert.equal(diagnostics.length, 1);
+				assertADDRequiresAtLeastTwoArguments(diagnostics[0], 1, 4, 1, 5);
+
+				diagnostics = validate("FROM alpine\nADD --chown=root:root");
+				assert.equal(diagnostics.length, 1);
+				assertADDRequiresAtLeastTwoArguments(diagnostics[0], 1, 0, 1, 3);
+
+				diagnostics = validate("FROM alpine\nADD --chown=root:root .");
+				assert.equal(diagnostics.length, 1);
+				assertADDRequiresAtLeastTwoArguments(diagnostics[0], 1, 22, 1, 23);
+			});
+		});
+
 		describe("flags", function() {
 			it("ok", function() {
 				let diagnostics = validate("FROM node\nADD --chown=node:node . .");
