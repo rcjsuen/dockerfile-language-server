@@ -57,6 +57,11 @@ let dockerRegistryClient = new DockerRegistryClient(connection);
 let snippetSupport: boolean = false;
 
 /**
+ * Whether the client supports the workspace/applyEdit request.
+ */
+let applyEditSupport: boolean = false;
+
+/**
  * Whether the client supports the workspace/configuration request.
  */
 let configurationSupport: boolean = false;
@@ -79,11 +84,12 @@ connection.onInitialized(() => {
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	snippetSupport = supportsSnippets(params.capabilities);
+	applyEditSupport = params.capabilities.workspace && params.capabilities.workspace.applyEdit === true;
 	configurationSupport = params.capabilities.workspace && (params.capabilities.workspace as any).configuration === true;
 	return {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
-			codeActionProvider: true,
+			codeActionProvider: applyEditSupport,
 			completionProvider: {
 				resolveProvider: true,
 				triggerCharacters: [
@@ -93,7 +99,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 					'-',
 				]
 			},
-			executeCommandProvider: {
+			executeCommandProvider: applyEditSupport ? {
 				commands: [
 					CommandIds.LOWERCASE,
 					CommandIds.UPPERCASE,
@@ -107,7 +113,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 					CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT,
 					CommandIds.CONVERT_TO_AS
 				]
-			},
+			} : undefined,
 			documentFormattingProvider: true,
 			documentRangeFormattingProvider: true,
 			documentOnTypeFormattingProvider: {
@@ -334,7 +340,7 @@ connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams
 });
 
 connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {
-	if (codeActionParams.context.diagnostics.length > 0) {
+	if (applyEditSupport && codeActionParams.context.diagnostics.length > 0) {
 		return commandsProvider.analyzeDiagnostics(
 			codeActionParams.context.diagnostics, codeActionParams.textDocument.uri
 		);
@@ -343,12 +349,14 @@ connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {
 });
 
 connection.onExecuteCommand((params: ExecuteCommandParams): void => {
-	let uri: string = params.arguments[0];
-	let document = documents[uri];
-	if (document) {
-		let edit = commandsProvider.createWorkspaceEdit(document, params);
-		if (edit) {
-			connection.workspace.applyEdit(edit);
+	if (applyEditSupport) {
+		let uri: string = params.arguments[0];
+		let document = documents[uri];
+		if (document) {
+			let edit = commandsProvider.createWorkspaceEdit(document, params);
+			if (edit) {
+				connection.workspace.applyEdit(edit);
+			}
 		}
 	}
 });
