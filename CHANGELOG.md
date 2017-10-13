@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - allow parameters to be suggested even if an ARG has no variables defined ([#184](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/184))
 - do not assume that clients support workspace/applyEdit ([#183](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/183))
+- fix broken socket support ([#178](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/178))
 
 ## [0.0.8] - 2017-10-05
 ### Added

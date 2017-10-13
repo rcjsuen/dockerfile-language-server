@@ -211,3 +211,117 @@ reader.listen((data) => {
 
 initialize();
 ```
+
+### Sockets
+
+To communicate with the langauge server via a socket, a port must be opened
+up first to listen for incoming connections. After the port is opened, the
+language server may be started and told to connect to the specified port.
+Messages can then be read from and written to the socket.
+
+Just like when trying to communicate to the server using
+[stdio](#standard-inputoutput), the `Content-Length` headers must be written
+and parsed explicitly.
+
+```TypeScript
+import * as net from "net"
+import * as child_process from "child_process"
+
+let messageId = 1;
+
+function send(socket: net.Socket, method: string, params: object) {
+    let message = {
+        jsonrpc: "2.0",
+        id: messageId++,
+        method: method,
+        params: params
+    };
+    let json = JSON.stringify(message) + "\n";
+    let headers = "Content-Length: " + json.length + "\r\n\r\n";
+    socket.write(headers, "ASCII");
+    socket.write(json, "UTF-8");
+}
+
+function initialize(socket: net.Socket) {
+    send(socket, "initialize", {
+        rootPath: process.cwd(),
+        processId: process.pid,
+        capabilities: {
+            textDocument: {
+                /* ... */
+            },
+            workspace: {
+                /* ... */
+            }
+        }
+    });
+}
+
+const server = net.createServer((socket: net.Socket) => {
+    server.close();
+    socket.on("data", (message) => {
+        // "Content-Length: ...\r\n\r\n\" will be included here
+        console.log(message.toString());
+    });
+    initialize(socket);
+});
+
+server.listen(3000, () => {
+    child_process.spawn("node", [ "out/src/server.js", "--socket=3000" ]);
+});
+```
+
+#### vscode-jsonrpc
+
+The `SocketMessageReader` and `SocketMessageWriter` classes from the
+`vscode-jsonrpc` module will handle the `Content-Length` headers for you so you
+only have to worry about the actual request and response.
+
+```TypeScript
+import * as net from "net"
+import * as child_process from "child_process"
+import { SocketMessageReader, SocketMessageWriter } from "vscode-jsonrpc";
+
+let messageId = 1;
+let reader: SocketMessageReader = null;
+let writer: SocketMessageWriter = null;
+
+function send(method: string, params: object) {
+    let message = {
+        jsonrpc: "2.0",
+        id: messageId++,
+        method: method,
+        params: params
+    };
+    writer.write(message);
+}
+
+function initialize() {
+    send("initialize", {
+        rootPath: process.cwd(),
+        processId: process.pid,
+        capabilities: {
+            textDocument: {
+                /* ... */
+            },
+            workspace: {
+                /* ... */
+            }
+        }
+    });
+}
+
+const server = net.createServer((socket: net.Socket) => {
+    server.close();
+    reader = new SocketMessageReader(socket);
+    reader.listen((data) => {
+        console.log(data);
+    });
+    writer = new SocketMessageWriter(socket);
+    initialize();
+});
+
+server.listen(3000, () => {
+    child_process.spawn("node", [ "out/src/server.js", "--socket=3000" ]);
+});
+```
