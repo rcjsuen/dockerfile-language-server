@@ -187,7 +187,7 @@ export class DockerCommands {
 							uri
 						]:
 						[
-							TextEdit.replace(range, "interval")
+							TextEdit.replace(range, "--interval")
 						]
 					}
 				};
@@ -198,7 +198,7 @@ export class DockerCommands {
 							uri
 						]:
 						[
-							TextEdit.replace(range, "retries")
+							TextEdit.replace(range, "--retries")
 						]
 					}
 				};
@@ -209,7 +209,7 @@ export class DockerCommands {
 							uri
 						]:
 						[
-							TextEdit.replace(range, "start-period")
+							TextEdit.replace(range, "--start-period")
 						]
 					}
 				};
@@ -220,7 +220,7 @@ export class DockerCommands {
 							uri
 						]:
 						[
-							TextEdit.replace(range, "timeout")
+							TextEdit.replace(range, "--timeout")
 						]
 					}
 				};
@@ -231,7 +231,7 @@ export class DockerCommands {
 							uri
 						]:
 						[
-							TextEdit.replace(range, "from")
+							TextEdit.replace(range, "--from")
 						]
 					}
 				};

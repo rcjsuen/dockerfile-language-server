@@ -270,7 +270,7 @@ describe("Dockerfile execute commands", function () {
 		assert.equal(edit.documentChanges, undefined);
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
-		assert.equal(edits[0].newText, "interval");
+		assert.equal(edits[0].newText, "--interval");
 		assert.equal(edits[0].range, range);
 	});
 
@@ -284,7 +284,7 @@ describe("Dockerfile execute commands", function () {
 		assert.equal(edit.documentChanges, undefined);
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
-		assert.equal(edits[0].newText, "retries");
+		assert.equal(edits[0].newText, "--retries");
 		assert.equal(edits[0].range, range);
 	});
 
@@ -298,7 +298,7 @@ describe("Dockerfile execute commands", function () {
 		assert.equal(edit.documentChanges, undefined);
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
-		assert.equal(edits[0].newText, "start-period");
+		assert.equal(edits[0].newText, "--start-period");
 		assert.equal(edits[0].range, range);
 	});
 
@@ -312,7 +312,7 @@ describe("Dockerfile execute commands", function () {
 		assert.equal(edit.documentChanges, undefined);
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
-		assert.equal(edits[0].newText, "timeout");
+		assert.equal(edits[0].newText, "--timeout");
 		assert.equal(edits[0].range, range);
 	});
 
@@ -326,7 +326,7 @@ describe("Dockerfile execute commands", function () {
 		assert.equal(edit.documentChanges, undefined);
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
-		assert.equal(edits[0].newText, "from");
+		assert.equal(edits[0].newText, "--from");
 		assert.equal(edits[0].range, range);
 	});
 });

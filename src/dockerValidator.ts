@@ -421,8 +421,8 @@ export class Validator {
 					for (const flag of healthcheckFlags) {
 						const flagName = flag.getName();
 						if (validFlags.indexOf(flagName) === -1) {
-							const nameRange = flag.getNameRange();
-							problems.push(Validator.createUnknownHealthcheckFlag(nameRange.start, nameRange.end, flag.getName()));
+							const range = flag.getRange();
+							problems.push(Validator.createUnknownHealthcheckFlag(range.start, flagName === "" ? range.end : flag.getNameRange().end, flag.getName()));
 						} else if (flagName === "retries") {
 							const value = flag.getValue();
 							if (value) {
@@ -518,9 +518,12 @@ export class Validator {
 					const addFlags = (instruction as ModifiableInstruction).getFlags();
 					for (let flag of addFlags) {
 						const name = flag.getName();
-						if (name !== "chown") {
+						const flagRange = flag.getRange();
+						if (name === "") {
+							problems.push(Validator.createUnknownAddFlag(flagRange.start, flagRange.end, name));
+						} else if (name !== "chown") {
 							let range = flag.getNameRange();
-							problems.push(Validator.createUnknownAddFlag(range.start, range.end, name));
+							problems.push(Validator.createUnknownAddFlag(flagRange.start, range.end, name));
 						}
 					}
 					this.checkFlagValue(addFlags, [ "chown" ], problems);
@@ -532,9 +535,12 @@ export class Validator {
 					if (flags.length > 0) {
 						for (let flag of flags) {
 							const name = flag.getName();
-							if (name !== "from" && name !== "chown") {
+							const flagRange = flag.getRange();
+							if (name === "") {
+								problems.push(Validator.createUnknownCopyFlag(flagRange.start, flagRange.end, name));
+							} else if (name !== "from" && name !== "chown") {
 								let range = flag.getNameRange();
-								problems.push(Validator.createUnknownCopyFlag(range.start, range.end, name));
+								problems.push(Validator.createUnknownCopyFlag(flagRange.start, range.end, name));
 							}
 						}
 					}

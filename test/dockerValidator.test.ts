@@ -1539,30 +1539,35 @@ describe("Docker Validator Tests", function() {
 			it("unknown flag", function() {
 				let diagnostics = validate("FROM alpine\nADD --x=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 4, 1, 7);
 
 				diagnostics = validate("FROM alpine\nADD --chown=bb --x . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownAddFlag(diagnostics[0], "x", 1, 17, 1, 18);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 15, 1, 18);
 
 				diagnostics = validate("FROM alpine\nADD --x --chown=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 4, 1, 7);
+
+				// empty name
+				diagnostics = validate("FROM alpine\nADD -- . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownAddFlag(diagnostics[0], "", 1, 4, 1, 6);
 
 				// empty value
 				diagnostics = validate("FROM alpine\nADD --x= . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 4, 1, 7);
 
 				// no equals sign
 				diagnostics = validate("FROM alpine\nADD --x . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownAddFlag(diagnostics[0], "x", 1, 6, 1, 7);
+				assertUnknownAddFlag(diagnostics[0], "x", 1, 4, 1, 7);
 
 				// flags are case-sensitive
 				diagnostics = validate("FROM alpine\nADD --CHOWN=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownAddFlag(diagnostics[0], "CHOWN", 1, 6, 1, 11);
+				assertUnknownAddFlag(diagnostics[0], "CHOWN", 1, 4, 1, 11);
 			});
 
 			it("flag no value", function() {
@@ -1680,34 +1685,39 @@ describe("Docker Validator Tests", function() {
 			it("unknown flag", function() {
 				let diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 5, 2, 8);
 
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --from=bb --x . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownCopyFlag(diagnostics[0], "x", 2, 17, 2, 18);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 15, 2, 18);
 
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x --from=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 5, 2, 8);
+
+				// empty name
+				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY -- . .");
+				assert.equal(diagnostics.length, 1);
+				assertUnknownCopyFlag(diagnostics[0], "", 2, 5, 2, 7);
 
 				// empty value
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x= . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 5, 2, 8);
 
 				// no equals sign
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --x . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownCopyFlag(diagnostics[0], "x", 2, 7, 2, 8);
+				assertUnknownCopyFlag(diagnostics[0], "x", 2, 5, 2, 8);
 
 				// flags are case-sensitive
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --FROM=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownCopyFlag(diagnostics[0], "FROM", 2, 7, 2, 11);
+				assertUnknownCopyFlag(diagnostics[0], "FROM", 2, 5, 2, 11);
 
 				diagnostics = validate("FROM alpine\nFROM busybox AS bb\nCOPY --CHOWN=bb . .");
 				assert.equal(diagnostics.length, 1);
-				assertUnknownCopyFlag(diagnostics[0], "CHOWN", 2, 7, 2, 12);
+				assertUnknownCopyFlag(diagnostics[0], "CHOWN", 2, 5, 2, 12);
 			});
 
 			it("flag no value", function() {
@@ -2191,34 +2201,39 @@ describe("Docker Validator Tests", function() {
 				it("unknown flag", function() {
 					let diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=30s CMD ls");
 					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 14, 1, 21);
+					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 12, 1, 21);
+
+					// empty name
+					diagnostics = validate("FROM alpine\nHEALTHCHECK -- CMD ls");
+					assert.equal(diagnostics.length, 1);
+					assertUnknownHealthcheckFlag(diagnostics[0], "", 1, 12, 1, 14);
 
 					// empty value
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva= CMD ls");
 					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 14, 1, 21);
+					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 12, 1, 21);
 
 					// no equals sign
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva CMD ls");
 					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 14, 1, 21);
+					assertUnknownHealthcheckFlag(diagnostics[0], "interva", 1, 12, 1, 21);
 
 					// flags are case-sensitive
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --INTERVAL=30s CMD ls");
 					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "INTERVAL", 1, 14, 1, 22);
+					assertUnknownHealthcheckFlag(diagnostics[0], "INTERVAL", 1, 12, 1, 22);
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --RETRIES=3 CMD ls");
 					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "RETRIES", 1, 14, 1, 21);
+					assertUnknownHealthcheckFlag(diagnostics[0], "RETRIES", 1, 12, 1, 21);
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --START-PERIOD=0s CMD ls");
 					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "START-PERIOD", 1, 14, 1, 26);
+					assertUnknownHealthcheckFlag(diagnostics[0], "START-PERIOD", 1, 12, 1, 26);
 
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --TIMEOUT=30s CMD ls");
 					assert.equal(diagnostics.length, 1);
-					assertUnknownHealthcheckFlag(diagnostics[0], "TIMEOUT", 1, 14, 1, 21);
+					assertUnknownHealthcheckFlag(diagnostics[0], "TIMEOUT", 1, 12, 1, 21);
 				});
 
 				it("flag no value", function() {
@@ -2505,7 +2520,7 @@ describe("Docker Validator Tests", function() {
 					diagnostics,
 					[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.UNKNOWN_TYPE ],
 					[ assertUnknownHealthcheckFlag, assertHealthcheckTypeUnknown ],
-					[ [ "intervul", 1, 14, 1, 22 ], [ "TEST", 1, 27, 1, 31 ]]);
+					[ [ "intervul", 1, 12, 1, 22 ], [ "TEST", 1, 27, 1, 31 ]]);
 			});
 		});
 
@@ -2519,7 +2534,7 @@ describe("Docker Validator Tests", function() {
 						diagnostics,
 						[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE ],
 						[ assertUnknownHealthcheckFlag, assertHEALTHCHECKRequiresAtLeastOneArgument ],
-						[ [ "interva", 1, 14, 1, 21 ], [ 1, 0, 1, 11 ]]);
+						[ [ "interva", 1, 12, 1, 21 ], [ 1, 0, 1, 11 ]]);
 
 					// empty value
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=");
@@ -2528,7 +2543,7 @@ describe("Docker Validator Tests", function() {
 						diagnostics,
 						[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE ],
 						[ assertUnknownHealthcheckFlag, assertHEALTHCHECKRequiresAtLeastOneArgument ],
-						[ [ "interva", 1, 14, 1, 21 ], [ 1, 0, 1, 11 ]]);
+						[ [ "interva", 1, 12, 1, 21 ], [ 1, 0, 1, 11 ]]);
 
 					// value specified
 					diagnostics = validate("FROM alpine\nHEALTHCHECK --interva=30s");
@@ -2537,7 +2552,7 @@ describe("Docker Validator Tests", function() {
 						diagnostics,
 						[ ValidationCode.UNKNOWN_HEALTHCHECK_FLAG, ValidationCode.ARGUMENT_REQUIRES_AT_LEAST_ONE ],
 						[ assertUnknownHealthcheckFlag, assertHEALTHCHECKRequiresAtLeastOneArgument ],
-						[ [ "interva", 1, 14, 1, 21 ], [ 1, 0, 1, 11 ]]);
+						[ [ "interva", 1, 12, 1, 21 ], [ 1, 0, 1, 11 ]]);
 				});
 			});
 		});

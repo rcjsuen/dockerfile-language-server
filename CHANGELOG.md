@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- use a reasonable range for the diagnostic if an unknown flag has no name ([#186](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/186))
+
 ## [0.0.9] - 2017-10-14
 ### Added
 - settings
