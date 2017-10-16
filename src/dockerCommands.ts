@@ -16,6 +16,7 @@ export class CommandIds {
 	static readonly EXTRA_ARGUMENT = "docker.command.removeExtraArgument";
 	static readonly DIRECTIVE_TO_BACKTICK = "docker.command.directiveToBacktick";
 	static readonly DIRECTIVE_TO_BACKSLASH = "docker.command.directiveToBackslash";
+	static readonly FLAG_TO_CHOWN = "docker.command.flagToChown";
 	static readonly FLAG_TO_COPY_FROM = "docker.command.flagToCopyFrom";
 	static readonly FLAG_TO_HEALTHCHECK_INTERVAL = "docker.command.flagToHealthcheckInterval";
 	static readonly FLAG_TO_HEALTHCHECK_RETRIES = "docker.command.flagToHealthcheckRetries";
@@ -96,7 +97,19 @@ export class DockerCommands {
 						arguments: [ textDocumentURI, diagnostics[i].range ]
 					});
 					break;
+				case ValidationCode.UNKNOWN_ADD_FLAG:
+					commands.push({
+						title: "Convert to --chown",
+						command: CommandIds.FLAG_TO_CHOWN,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
+					break;
 				case ValidationCode.UNKNOWN_COPY_FLAG:
+					commands.push({
+						title: "Convert to --chown",
+						command: CommandIds.FLAG_TO_CHOWN,
+						arguments: [ textDocumentURI, diagnostics[i].range ]
+					});
 					commands.push({
 						title: "Convert to --from",
 						command: CommandIds.FLAG_TO_COPY_FROM,
@@ -177,6 +190,17 @@ export class DockerCommands {
 						]:
 						[
 							TextEdit.replace(range, "AS")
+						]
+					}
+				};
+			case CommandIds.FLAG_TO_CHOWN:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.replace(range, "--chown")
 						]
 					}
 				};

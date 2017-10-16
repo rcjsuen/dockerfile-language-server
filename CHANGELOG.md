@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/codeAction
+  - create docker.command.flagToChown to convert an unknown ADD or COPY flag to a --chown ([#187](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/187))
 ### Fixed
 - use a reasonable range for the diagnostic if an unknown flag has no name ([#186](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/186))
 

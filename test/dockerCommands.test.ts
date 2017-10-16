@@ -25,6 +25,10 @@ function createInvalidEscapeDirective(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Warning, ValidationCode.INVALID_ESCAPE_DIRECTIVE);
 }
 
+function createUnknownAddFlag(): Diagnostic {
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.UNKNOWN_ADD_FLAG);
+}
+
 function createUnknownCopyFlag(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.UNKNOWN_COPY_FLAG);
 }
@@ -164,14 +168,28 @@ describe("Dockerfile code actions", function () {
 		assertRange(commands[3].arguments[1], diagnostic.range);
 	});
 
-	it("unknown COPY flags", function () {
-		let diagnostic = createUnknownCopyFlag();
+	it("unknown ADD flags", function () {
+		let diagnostic = createUnknownAddFlag();
 		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri);
 		assert.equal(commands.length, 1);
-		assert.equal(commands[0].command, CommandIds.FLAG_TO_COPY_FROM);
+		assert.equal(commands[0].command, CommandIds.FLAG_TO_CHOWN);
 		assert.equal(commands[0].arguments.length, 2);
 		assert.equal(commands[0].arguments[0], uri);
 		assertRange(commands[0].arguments[1], diagnostic.range);
+	});
+
+	it("unknown COPY flags", function () {
+		let diagnostic = createUnknownCopyFlag();
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri);
+		assert.equal(commands.length, 2);
+		assert.equal(commands[0].command, CommandIds.FLAG_TO_CHOWN);
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], diagnostic.range);
+		assert.equal(commands[1].command, CommandIds.FLAG_TO_COPY_FROM);
+		assert.equal(commands[1].arguments.length, 2);
+		assert.equal(commands[1].arguments[0], uri);
+		assertRange(commands[1].arguments[1], diagnostic.range);
 	});
 });
 
@@ -327,6 +345,20 @@ describe("Dockerfile execute commands", function () {
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
 		assert.equal(edits[0].newText, "--from");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("flag to --chown", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(0, 4));
+		let document = createDocument("");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.FLAG_TO_CHOWN,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "--chown");
 		assert.equal(edits[0].range, range);
 	});
 });

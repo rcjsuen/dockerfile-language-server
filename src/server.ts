@@ -106,6 +106,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 					CommandIds.EXTRA_ARGUMENT,
 					CommandIds.DIRECTIVE_TO_BACKSLASH,
 					CommandIds.DIRECTIVE_TO_BACKTICK,
+					CommandIds.FLAG_TO_CHOWN,
 					CommandIds.FLAG_TO_COPY_FROM,
 					CommandIds.FLAG_TO_HEALTHCHECK_INTERVAL,
 					CommandIds.FLAG_TO_HEALTHCHECK_RETRIES,
