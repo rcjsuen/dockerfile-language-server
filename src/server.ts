@@ -217,7 +217,7 @@ function getSeverity(severity: string | undefined): ValidationSeverity | null {
 function getConfiguration(resource: string): Thenable<ValidatorConfiguration> {
 	let result = validatorConfigurations.get(resource);
 	if (!result) {
-		result = connection.workspace.getConfiguration({ section: '', scopeUri: resource });
+		result = connection.workspace.getConfiguration({ section: "docker.languageserver.diagnostics", scopeUri: resource });
 		validatorConfigurations.set(resource, result);
 	}
 	return result;
@@ -235,7 +235,7 @@ function refreshConfigurations() {
 	// store all the URIs that need to be refreshed
 	const settingsRequest: ConfigurationItem[] = [];
 	for (let uri in documents) {
-		settingsRequest.push({ section: "", scopeUri: uri });
+		settingsRequest.push({ section: "docker.languageserver.diagnostics", scopeUri: uri });
 	}
 	// clear the cache
 	validatorConfigurations.clear();
