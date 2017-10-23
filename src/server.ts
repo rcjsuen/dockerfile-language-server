@@ -66,7 +66,7 @@ let applyEditSupport: boolean = false;
  */
 let configurationSupport: boolean = false;
 
-let documents: any = {};
+let documents: { [ uri: string ]: TextDocument } = {};
 
 function supportsSnippets(capabilities: ClientCapabilities): boolean {
 	return capabilities.textDocument
@@ -468,7 +468,7 @@ function handleChanges(document: TextDocument, content: string, changes: TextDoc
 }
 
 connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
-	let document: TextDocument = documents[didChangeTextDocumentParams.textDocument.uri];
+	let document = documents[didChangeTextDocumentParams.textDocument.uri];
 	let buffer = document.getText();
 	let changes = didChangeTextDocumentParams.contentChanges;
 	let changed = handleChanges(document, buffer, changes)
