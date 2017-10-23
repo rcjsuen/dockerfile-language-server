@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.0.10] - 2017-10-23
 ### Added
 - textDocument/codeAction
   - create docker.command.flagToChown to convert an unknown ADD or COPY flag to a --chown ([#187](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/187))
@@ -238,7 +238,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.9...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.10...HEAD
+[0.0.10]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.6...v0.0.7
