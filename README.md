@@ -11,10 +11,12 @@ Supported features:
 - code actions
 - code completion
 - definition
-- diagnostics
+- [diagnostics](https://github.com/rcjsuen/dockerfile-language-server-nodejs/blob/master/VALIDATOR.md)
+(can be used from the command line)
 - document highlight
 - document symbols
-- formatting
+- [formatting](https://github.com/rcjsuen/dockerfile-language-server-nodejs/blob/master/FORMATTER.md)
+(can be used from the command line)
 - hovers
 - rename
 - signature help
@@ -55,9 +57,29 @@ the desired method of communciating with the language server via one
 of the three arguments shown below.
 
 ```
-docker-langserver --node-ipc
-docker-langserver --stdio
-docker-langserver --socket=<port>
+docker-langserver listen --node-ipc
+docker-langserver listen --stdio
+docker-langserver listen --socket=<port>
+```
+
+The installed binary is not only used for launching the language server. It can
+also be used to [format](https://github.com/rcjsuen/dockerfile-language-server-nodejs/blob/master/FORMATTER.md)
+and [validate](https://github.com/rcjsuen/dockerfile-language-server-nodejs/blob/master/VALIDATOR.md)
+Dockerfiles as a standalone command line application.
+```
+> docker-langserver --help
+Usage: docker-langserver <command> [<args>]
+
+Options:
+
+  -h, --help                Output usage information
+  -v, --version             Output version information
+
+Commands:
+
+  listen                    Start the language server
+  format                    Format a Dockerfile
+  lint                      Validate a Dockerfile
 ```
 
 ### Settings

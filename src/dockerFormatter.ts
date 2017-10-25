@@ -4,12 +4,28 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import * as fs from 'fs';
 import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
 import { DockerfileParser } from './parser/dockerfileParser';
 
 export class DockerFormatter {
+
+	public formatFile(path: string, formattingOptions: FormattingOptions): string {
+		let content = fs.readFileSync(path).toString();
+		const document = TextDocument.create(null, null, 0, content);
+		const edits = this.formatDocument(document, formattingOptions);
+		// the returned edits are ordered based on their positions in the document,
+		// by iterating and applying the edits to the content backwards through the
+		// array, the offsets will not become stale and no recalculations will be necessary
+		for (let i = edits.length - 1; i >= 0; i--) {
+			const start = document.offsetAt(edits[i].range.start);
+			const end = document.offsetAt(edits[i].range.end);
+			content = content.substring(0, start) + edits[i].newText + content.substring(end);
+		}
+		return content;
+	}
 
 	private getIndentation(formattingOptions?: FormattingOptions): string {
 		let indentation = "\t";

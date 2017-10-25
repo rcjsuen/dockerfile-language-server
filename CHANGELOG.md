@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- add formatting and validation to the docker-langserver binary ([#79](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/79))
+
 ## [0.0.10] - 2017-10-23
 ### Added
 - textDocument/codeAction

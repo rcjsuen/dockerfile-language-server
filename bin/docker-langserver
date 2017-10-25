@@ -3,4 +3,256 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-require("../lib/server");
+const fs = require("fs");
+
+let args = process.argv.slice(2);
+if (args.length === 0 || args[0] === "-h" || args[0] === "--help") {
+	printHelp();
+} else if (args[0] === "-v" || args[0] === "--version") {
+	printVersion();
+} else if (args[0] === "format") {
+	let options = parseFormattingOptions(process.argv.slice(3));
+	let formatter = require("../lib/dockerFormatter");
+	let dockerFormatter = new formatter.DockerFormatter();
+	let formatted = dockerFormatter.formatFile(options.path, options);
+	console.log(formatted);
+} else if (args[0] === "lint") {
+	let json = false;
+	let path = "Dockerfile";
+	if (args.length > 1) {
+		if (args[1] === "-h" || args[1] === "--help") {
+			printLintHelp();
+			process.exit(0);
+		} else if (args[1] === "-j" || args[1] === "--json") {
+			json = true;
+			if (args.length > 2) {
+				path = args[2];
+			}
+		} else {
+			path = args[1];
+		}
+	}
+	checkPath(path);
+	let validator = require("../lib/dockerValidator");
+	let vscodeLangserver = require("vscode-languageserver-types");
+	let content = fs.readFileSync(path).toString();
+	let document = vscodeLangserver.TextDocument.create("", "", 0, content);
+	let dockerValidator = new validator.Validator();
+	let diagnostics = dockerValidator.validate(document);
+	
+	let exitCode = 0;
+	for (let i = 0; i < diagnostics.length; i++) {
+		if (diagnostics[i].severity === vscodeLangserver.DiagnosticSeverity.Error) {
+			exitCode = 1;
+		}
+	}
+	if (json) {
+		for (let i = 0; i < diagnostics.length; i++) {
+			delete diagnostics[i].code;
+			delete diagnostics[i].source;
+			if (diagnostics[i].severity === vscodeLangserver.DiagnosticSeverity.Warning) {
+				diagnostics[i].severity = "warning";
+			} else if (diagnostics[i].severity === vscodeLangserver.DiagnosticSeverity.Error) {
+				diagnostics[i].severity = "error";
+			}
+		}
+		console.log(JSON.stringify(diagnostics));
+		process.exit(exitCode);
+	}
+	for (let i = 0; i < diagnostics.length; i++) {
+		let message = "Warning: ";
+		if (diagnostics[i].severity === vscodeLangserver.DiagnosticSeverity.Error) {
+			message = "Error: ";
+		}
+		message = message + diagnostics[i].message;
+		if (diagnostics[i].code === validator.ValidationCode.EMPTY_CONTINUATION_LINE) {
+			// empty continuation lines encountered, just print out the line
+			// numbers and ignore the content (if any)
+			for (let j = diagnostics[i].range.start.line + 1; j < diagnostics[i].range.end.line + 1; j++) {
+				console.log("Line: " + j);
+				console.log(message);
+				console.log();
+			}
+		} else if (diagnostics[i].range.start.line === diagnostics[i].range.end.line) {
+			let rangeOffsetStart = document.offsetAt(diagnostics[i].range.start);
+			let rangeOffsetEnd = document.offsetAt(diagnostics[i].range.end);
+			let x = document.offsetAt({ line: diagnostics[i].range.start.line, character: 0 });
+			let y = document.offsetAt({ line: diagnostics[i].range.end.line + 1, character: 0 }) - 1;
+			let highlight = "";
+			let spacing = rangeOffsetStart - x;
+			for (let j = 0; j < spacing; j++) {
+				highlight += " ";
+			}
+			spacing = rangeOffsetEnd - rangeOffsetStart;
+			for (let j = 0; j < spacing; j++) {
+				highlight += "^";
+			}
+			console.log("Line: " + (diagnostics[i].range.start.line + 1));
+			console.log(content.substring(x, y));
+			console.log(highlight);
+			console.log(message);
+			console.log();
+		} else {
+			// the diagnostic spans multiple lines
+			let rangeOffsetStart = document.offsetAt(diagnostics[i].range.start);
+			let rangeOffsetEnd = document.offsetAt(diagnostics[i].range.end);
+			console.log("Line: " + (diagnostics[i].range.start.line + 1) + "-" + (diagnostics[i].range.end.line + 1));
+			for (let j = diagnostics[i].range.start.line; j < diagnostics[i].range.end.line + 1; j++) {
+				let x = document.offsetAt({ line: j, character: 0 });
+				let y = document.offsetAt({ line: j + 1, character: 0 }) - 1;
+				if (content.charAt(y - 1) === '\r') {
+					y--;
+				}
+				let highlight = "";
+				if (x <= rangeOffsetStart && y <= rangeOffsetEnd) {
+					let spacing = rangeOffsetStart - x;
+					for (let j = 0; j < spacing; j++) {
+						highlight += " ";
+					}
+					spacing = y - rangeOffsetStart;
+					for (let j = 0; j < spacing; j++) {
+						highlight += "^";
+					}
+				} else if (rangeOffsetStart <= x && y <= rangeOffsetEnd) {
+					let spacing = y - x;
+					for (let j = 0; j < spacing; j++) {
+						highlight += "^";
+					}
+				} else {
+					let spacing = rangeOffsetEnd - x;
+					for (let j = 0; j < spacing; j++) {
+						highlight += "^";
+					}
+				}
+				console.log(content.substring(x, y));
+				console.log(highlight);
+			}
+
+			console.log(message);
+			console.log();
+		}
+	}
+	process.exit(exitCode);
+} else if (args[0] === "listen") {
+	if (args[1] === "-h" || args[1] === "--help" || args.length === 1) {
+		printListenHelp();
+		process.exit(0);
+	} else {
+		require("../lib/server");
+	}
+} else {
+	require("../lib/server");
+}
+
+function printVersion() {
+	console.log("docker-langserver version 0.0.11 (supports Docker CE 17.09)");
+}
+
+function printHelp() {
+	console.log("Usage: docker-langserver <command> [<args>]");
+	console.log();
+	console.log("Options:");
+	console.log();
+	console.log("  -h, --help                Output usage information");
+	console.log("  -v, --version             Output version information");
+	console.log();
+	console.log("Commands:");
+	console.log();
+	console.log("  listen                    Start the language server");
+	console.log("  format                    Format a Dockerfile");
+	console.log("  lint                      Validate a Dockerfile");
+	console.log();
+}
+
+function printFormatHelp() {
+	console.log("Usage: docker-langserver format [options] [file]");
+	console.log();
+	console.log("Options:");
+	console.log();
+	console.log("  -h, --help                Output usage information");
+	console.log("  -s, --spaces <number>     Format with the <number> of spaces");
+	console.log("  -t, --tabs                Format with tabs");
+	console.log();
+}
+
+function printLintHelp() {
+	console.log("Usage: docker-langserver lint [options] [file]");
+	console.log();
+	console.log("Options:");
+	console.log();
+	console.log("  -h, --help                Output usage information");
+	console.log("  -j, --json                Output in JSON format");
+	console.log();
+}
+
+function printListenHelp() {
+	console.log("Usage: docker-langserver listen <arg>");
+	console.log();
+	console.log("Options:");
+	console.log();
+	console.log("  -h, --help                Output usage information");
+	console.log("  --node-ipc                Listen for messages using Node IPC");
+	console.log("  --socket=<port>           Connect the language server to the specified port");
+	console.log("  --stdio                   Read and write messages to and from stdio");
+	console.log();
+}
+
+function parseFormattingOptions(args) {
+	const options = {
+		tabSize: 4,
+		insertSpaces: false
+	}
+
+	if (args[0] === "-h" || args[0] === "--help") {
+		printFormatHelp();
+		process.exit(0);
+	} else if (args[0] === "-s" || args[0] === "--spaces") {
+		if (args.length < 2) {
+			console.log("Tab size unspecified");
+			console.log();
+			printFormatHelp();
+			process.exit(1);
+		}
+		const tabSize = parseInt(args[1]);
+		if (isNaN(tabSize)) {
+			console.log("Invalid number specified: " + args[1]);
+			console.log();
+			printFormatHelp();
+			process.exit(1);
+		} else if (tabSize < 0) {
+			console.log("Negative number specified: " + args[1]);
+			console.log();
+			printFormatHelp();
+			process.exit(1);
+		}
+		options.tabSize = tabSize;
+		options.insertSpaces = true;
+
+		options.path = args[2];
+	} else if (args[0] === "-t" || args[0] === "--tabs") {
+		options.path = args[1];
+	} else {
+		options.path = args[0];
+	}
+
+	if (!options.path) {
+		// no path specified, set to "Dockerfile"
+		options.path = "Dockerfile";
+	}
+
+	checkPath(options.path);
+	return options;
+}
+
+function checkPath(path) {
+	if (!fs.existsSync(path)) {
+		// nothing found at the given path
+		console.log("File not found: " + path);
+		process.exit(1);
+	}
+	if (fs.statSync(path).isDirectory()) {
+		// specified path was a directory
+		console.log("Directory found: " + path);
+		process.exit(1);
+	}
+}
