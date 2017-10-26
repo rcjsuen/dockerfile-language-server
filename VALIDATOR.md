@@ -58,9 +58,44 @@ ADD app.zip
 Error: ADD requires at least two arguments
 ```
 #### JSON Output
+For readability purposes, the output below has been formatted manually.
+The output on the command line will not include any whitespaces.
 ```
 > docker-langserver lint -j
-[{"range":{"start":{"line":1,"character":12},"end":{"line":1,"character":21}},"message":"Unknown flag: interva","severity":"error"},{"range":{"start":{"line":3,"character":0},"end":{"line":4,"character":0}},"message":"Empty continuation line","severity":"warning"},{"range":{"start":{"line":6,"character":2},"end":{"line":6,"character":6}},"message":"Instructions should be written in uppercase letters","severity":"warning"},{"range":{"start":{"line":7,"character":4},"end":{"line":7,"character":11}},"message":"ADD requires at least two arguments","severity":"error"}]
+[
+  {
+    "range": {
+      "start": { "line": 1, "character": 12 },
+      "end": { "line": 1, "character": 21 }
+    },
+    "message": "Unknown flag: interva",
+    "severity": "error"
+  },
+  {
+    "range": {
+      "start": { "line": 3, "character": 0 },
+      "end": { "line": 4, "character": 0 }
+    },
+    "message": "Empty continuation line",
+    "severity": "warning"
+  },
+  {
+    "range": {
+      "start": { "line": 6, "character": 2 },
+      "end": { "line": 6, "character": 6 }
+    },
+    "message": "Instructions should be written in uppercase letters",
+    "severity": "warning"
+  },
+  {
+    "range": {
+      "start": { "line": 7, "character": 4 },
+      "end": { "line": 7, "character": 11 }
+    },
+    "message": "ADD requires at least two arguments",
+    "severity": "error"
+  }
+]
 ```
 
 ## Supported Validation Checks
