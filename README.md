@@ -1,4 +1,4 @@
-# Dockerfile language server
+# Dockerfile Language Server
 
 [![Build Status](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs.svg?branch=master)](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs) [![Coverage Status](https://coveralls.io/repos/github/rcjsuen/dockerfile-language-server-nodejs/badge.svg?branch=master)](https://coveralls.io/github/rcjsuen/dockerfile-language-server-nodejs?branch=master) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -88,7 +88,7 @@ To run validator on a `Dockerfile` in your current working directory, use the fo
 docker run -v `pwd`/Dockerfile:/Dockerfile rcjsuen/docker-langserver lint /Dockerfile
 ```
 
-### Settings
+## Language Server Settings
 
 Clients may send a `workspace/didChangeConfiguration` notification to
 notify the server of settings changes.
@@ -115,6 +115,7 @@ interface Settings {
 }
 ```
 
+## Communicating with the Server
 ### Node IPC
 
 With the `child_process` API, you can `fork()` a new Node.js process
