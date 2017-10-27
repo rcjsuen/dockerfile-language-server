@@ -9,6 +9,9 @@ os:
 
 sudo: false
 
+services:
+  - docker
+
 node_js:
   - "8"
   - "6"
@@ -36,3 +39,5 @@ script:
 after_success:
   - npm run coverage
   - npm pack
+  - docker build -t rcjsuen/docker-langserver .
+  - docker run rcjsuen/docker-langserver --help
