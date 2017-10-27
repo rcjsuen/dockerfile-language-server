@@ -2,10 +2,8 @@
 
 [![Build Status](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs.svg?branch=master)](https://travis-ci.org/rcjsuen/dockerfile-language-server-nodejs) [![Coverage Status](https://coveralls.io/repos/github/rcjsuen/dockerfile-language-server-nodejs/badge.svg?branch=master)](https://coveralls.io/github/rcjsuen/dockerfile-language-server-nodejs?branch=master) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This is a language server for Dockerfiles powered by Node.js
-written in TypeScript. To build or to install this language server,
-you will need to have [Node.js](https://nodejs.org/en/download/)
-installed on your computer.
+This is a language server for Dockerfiles powered by Node.js written in TypeScript.
+To [install and run](#installation-instructions) this language server, you will need to have either [Node.js](https://nodejs.org/en/download/) or [Docker](https://www.docker.com/get-docker) installed on your computer.
 
 Supported features:
 - code actions
@@ -26,8 +24,8 @@ Projects that use this language server:
 
 ## Development Instructions
 
-To build and compile this language server, please run the following
-commands after cloning the repository with Git.
+If you wish to build and compile this language server, you must first install [Node.js](https://nodejs.org/en/download/) if you have not already done so.
+After you have installed Node.js and cloned the repository with Git, you may now proceed to build and compile the language server with the following commands:
 
 ```
 npm install
@@ -80,6 +78,14 @@ Commands:
   listen                    Start the language server
   format                    Format a Dockerfile
   lint                      Validate a Dockerfile
+```
+
+### Docker Image
+The `docker-langserver` binary is also available as a Docker image under the name `rcjsuen/docker-langserver`.
+
+To run validator on a `Dockerfile` in your current working directory, use the following command.
+```
+docker run -v `pwd`/Dockerfile:/Dockerfile rcjsuen/docker-langserver lint /Dockerfile
 ```
 
 ### Settings
