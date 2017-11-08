@@ -809,6 +809,18 @@ describe('Docker Content Assist Tests', function() {
 
 			proposals = compute("#FROM", 5);
 			assert.equal(proposals.length, 0);
+
+			proposals = compute("#\n#", 3);
+			assert.equal(proposals.length, 0);
+
+			proposals = compute("#\n# ", 4);
+			assert.equal(proposals.length, 0);
+
+			proposals = compute("#\n#\n", 3);
+			assert.equal(proposals.length, 0);
+
+			proposals = compute("#\n# \n", 4);
+			assert.equal(proposals.length, 0);
 		});
 
 		it('outside comment', function() {

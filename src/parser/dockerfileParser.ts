@@ -203,9 +203,9 @@ export class DockerfileParser {
 									j++;
 								}
 							case '\n':
-								i = j;
 								let range = Range.create(document.positionAt(i), document.positionAt(j));
 								dockerfile.addComment(new Comment(document, range));
+								i = j;
 								continue lineCheck;
 						}
 					}
