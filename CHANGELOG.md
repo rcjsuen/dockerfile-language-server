@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - use a reasonable range for the diagnostic if an unknown flag has no name ([#186](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/186))
 - specify a section name when sending a workspace/configuration request ([#182](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/182))
+- prevent completion items from being displayed in comments ([#190](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/190))
 
 ## [0.0.9] - 2017-10-14
 ### Added
