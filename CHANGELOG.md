@@ -3,7 +3,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- add formatting and validation to the docker-langserver binary ([#79](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/79))
 - create a Docker image to run the langauge server ([#189](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/189))
 
 ### Fixed

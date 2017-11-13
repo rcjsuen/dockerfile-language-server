@@ -2,7 +2,6 @@
  * Copyright (c) Remy Suen. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import * as fs from 'fs';
 import {
 	TextDocument, Range, Position, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
@@ -168,12 +167,6 @@ export class Validator {
 				problems.push(Validator.createExtraArgument(range.start, range.end));
 			}
 		}
-	}
-
-	public validateFile(path: string): Diagnostic[] {
-		let content = fs.readFileSync(path).toString();
-		const document = TextDocument.create(null, null, 0, content);
-		return this.validate(document);
 	}
 
 	validate(document: TextDocument): Diagnostic[] {
