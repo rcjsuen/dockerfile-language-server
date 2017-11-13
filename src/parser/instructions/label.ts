@@ -3,13 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
+import { Dockerfile } from '../dockerfile';
 import { Property } from '../property';
 import { PropertyInstruction } from './propertyInstruction';
 
 export class Label extends PropertyInstruction {
 
-	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
-		super(document, range, escapeChar, instruction, instructionRange);
+	constructor(document: TextDocument, range: Range, dockerfile: Dockerfile, escapeChar: string, instruction: string, instructionRange: Range) {
+		super(document, range, dockerfile, escapeChar, instruction, instructionRange);
 	}
 
 	public getProperties(): Property[] {

@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
+import { Dockerfile } from '../dockerfile';
 import { Argument } from '../argument';
 import { ModifiableInstruction } from './modifiableInstruction';
 
@@ -12,8 +13,8 @@ export class JSONInstruction extends ModifiableInstruction {
 	private readonly closingBracket: Argument;
 	private readonly jsonStrings: Argument[] = [];
 
-	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
-		super(document, range, escapeChar, instruction, instructionRange);
+	constructor(document: TextDocument, range: Range, dockerfile: Dockerfile, escapeChar: string, instruction: string, instructionRange: Range) {
+		super(document, range, dockerfile, escapeChar, instruction, instructionRange);
 
 		const argsContent = this.getArgumentsContent();
 		if (argsContent === null) {

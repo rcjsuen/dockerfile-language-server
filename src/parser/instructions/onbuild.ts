@@ -3,13 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
+import { Dockerfile } from '../dockerfile';
 import { DockerfileParser } from '../dockerfileParser';
 import { Instruction } from '../instruction';
 
 export class Onbuild extends Instruction {
 
-	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
-		super(document, range, escapeChar, instruction, instructionRange);
+	constructor(document: TextDocument, range: Range, dockerfile: Dockerfile, escapeChar: string, instruction: string, instructionRange: Range) {
+		super(document, range, dockerfile, escapeChar, instruction, instructionRange);
 	}
 
 	public getTrigger(): string | null {
@@ -34,6 +35,7 @@ export class Onbuild extends Instruction {
 		let args = this.getArguments();
 		return DockerfileParser.createInstruction(
 			this.document,
+			this.dockerfile,
 			this.escapeChar,
 			Range.create(args[0].getRange().start, this.getRange().end),
 			this.getTriggerWord(),

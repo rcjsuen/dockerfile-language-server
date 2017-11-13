@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
+import { Dockerfile } from '../dockerfile';
 import { Instruction } from '../instruction';
 import { Property } from '../property';
 import { Argument } from '../argument';
@@ -12,8 +13,8 @@ export abstract class PropertyInstruction extends Instruction {
 
 	private properties: Property[] | undefined = undefined;
 
-	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
-		super(document, range, escapeChar, instruction, instructionRange);
+	constructor(document: TextDocument, range: Range, dockerfile: Dockerfile, escapeChar: string, instruction: string, instructionRange: Range) {
+		super(document, range, dockerfile, escapeChar, instruction, instructionRange);
 	}
 
 	protected getProperties(): Property[] {

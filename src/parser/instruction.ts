@@ -4,11 +4,14 @@
  * ------------------------------------------------------------------------------------------ */
 import { TextDocument, Range } from 'vscode-languageserver';
 import { Util } from '../docker';
+import { Dockerfile } from './dockerfile';
 import { Line } from './line';
 import { Argument } from './argument';
 import { Variable } from './variable';
 
 export class Instruction extends Line {
+
+	protected readonly dockerfile: Dockerfile;
 
 	protected readonly escapeChar: string;
 
@@ -16,8 +19,9 @@ export class Instruction extends Line {
 
 	private readonly instructionRange: Range;
 
-	constructor(document: TextDocument, range: Range, escapeChar: string, instruction: string, instructionRange: Range) {
+	constructor(document: TextDocument, range: Range, dockerfile: Dockerfile, escapeChar: string, instruction: string, instructionRange: Range) {
 		super(document, range);
+		this.dockerfile = dockerfile;
 		this.escapeChar = escapeChar;
 		this.instruction = instruction;
 		this.instructionRange = instructionRange;
@@ -147,6 +151,41 @@ export class Instruction extends Line {
 		return args;
 	}
 
+	public getExpandedArguments(): Argument[] {
+		let args = this.getArguments();
+		for (let i = 0; i < args.length; i++) {
+			let argRange = args[i].getRange();
+			let value = args[i].getValue();
+			let argStart = this.document.offsetAt(argRange.start);
+			let requiresExpansion = false;
+			const variables = this.parseVariables(argStart, value);
+			const swaps = [];
+			for (let variable of variables) {
+				const value = this.dockerfile.getVariableValue(variable.getName(), variable.getNameRange().start.line);
+				swaps.push(value);
+				requiresExpansion = requiresExpansion || value !== undefined;
+			}
+
+			if (requiresExpansion) {
+				let expanded = "";
+				for (let j = 0; j < swaps.length; j++) {
+					// only expand defined values
+					if (swaps[j]) {
+						const variableRange = variables[j].getRange();
+						const start = this.document.offsetAt(variableRange.start);
+						const end = this.document.offsetAt(variableRange.end);
+						expanded += this.document.getText().substring(argStart, start);
+						expanded += swaps[j];
+						argStart = end;
+					}
+				}
+	
+				args[i] = new Argument(expanded, argRange);
+			}
+		}
+		return args;
+	}
+
 	public getVariables(): Variable[] {
 		let variables = [];
 		let args = this.getArguments();
@@ -181,8 +220,10 @@ export class Instruction extends Line {
 									end = i + 2 + end;
 								}
 								variables.push(new Variable(
-									name, Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + end)))
-								);
+									name,
+									Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + end)),
+									Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + j))
+								));
 								i = j;
 								continue variableLoop;
 							}
@@ -197,15 +238,17 @@ export class Instruction extends Line {
 								case '"':
 									variables.push(new Variable(
 										arg.substring(i + 1, j),
-										Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)))
-									);
+										Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)),
+										Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + j))
+									));
 									i = j - 1;
 									continue variableLoop;
 							}
 						}
 						variables.push(new Variable(
 							arg.substring(i + 1, arg.length),
-							Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + arg.length))
+							Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + arg.length)),
+							Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + arg.length))
 						));
 					}
 					break variableLoop;

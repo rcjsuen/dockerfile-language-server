@@ -1873,205 +1873,241 @@ describe("Docker Validator Tests", function() {
 	createNameValuePairTests("ENV");
 
 	describe("EXPOSE", function() {
-		it("ok", function() {
-			testValidArgument("EXPOSE", "8080");
-			testValidArgument("EXPOSE", "80\\80");
-			testValidArgument("EXPOSE", "7000-8000");
-			testValidArgument("EXPOSE", "8080/tcp");
-			testValidArgument("EXPOSE", "8080/TcP");
-			testValidArgument("EXPOSE", "8080/udp");
-			testValidArgument("EXPOSE", "8080/uDp");
-			testValidArgument("EXPOSE", "8080:8080");
-			testValidArgument("EXPOSE", "8080:8080/tcp");
-			// unspecified protocol is assumed to be TCP
-			testValidArgument("EXPOSE", "8080/");
-			// Docker engine does not flag such arguments as errors
-			testValidArgument("EXPOSE", "8080/tcp/tcpx/tcptx/sdfsdfasdf/asdf/asdf/adf");
-			testValidArgument("EXPOSE", "8080:888/tcp/123");
+		describe("standard", function() {
+			it("ok", function() {
+				testValidArgument("EXPOSE", "8080");
+				testValidArgument("EXPOSE", "80\\80");
+				testValidArgument("EXPOSE", "7000-8000");
+				testValidArgument("EXPOSE", "8080/tcp");
+				testValidArgument("EXPOSE", "8080/TcP");
+				testValidArgument("EXPOSE", "8080/udp");
+				testValidArgument("EXPOSE", "8080/uDp");
+				testValidArgument("EXPOSE", "8080:8080");
+				testValidArgument("EXPOSE", "8080:8080/tcp");
+				// unspecified protocol is assumed to be TCP
+				testValidArgument("EXPOSE", "8080/");
+				// Docker engine does not flag such arguments as errors
+				testValidArgument("EXPOSE", "8080/tcp/tcpx/tcptx/sdfsdfasdf/asdf/asdf/adf");
+				testValidArgument("EXPOSE", "8080:888/tcp/123");
+			});
+
+			it("escape", function() {
+				let diagnostics = validate("FROM node\nEXPOSE 8080\\\n8081");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080\\\r\n8081");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080 \\\n8081");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE \\\n8080");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE \\\n 8080");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE \\\n8080\n");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE \\\n 8080\n");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE \\\n8080 \n");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE \\\n 8080 \n");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080\\\n");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 80\\\n80");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000-\\\n9000");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000\\\n-9000");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 80\\\r\n80");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000-\\\r\n9000");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000\\\r\n-9000");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE \\ 8000");
+				assert.equal(diagnostics.length, 0);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000\\ 8001");
+				assert.equal(diagnostics.length, 0);
+			});
+
+			it("invalid containerPort", function() {
+				let diagnostics = validate("FROM node\nEXPOSE a");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE a ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE a\n");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE a\r");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE a\r\n");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE a\\\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE ab\\\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
+
+				diagnostics = validate("FROM node\nEXPOSE a\r");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE a\\\r ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE ab\\\r ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
+
+				diagnostics = validate("FROM node\nEXPOSE a\r\n");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE a\\\r\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE ab\\\r\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
+
+				diagnostics = validate("FROM node\nEXPOSE -8000");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE -8000 ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE -8000\n");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE -8000\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000-");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000- ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000-\n");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE 8000-\n ");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
+
+				diagnostics = validate("FROM node\nEXPOSE 80\\\n00-\n");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8000-", 1, 7, 2, 3);
+
+				diagnostics = validate("FROM node\nEXPOSE 80\\\n00-");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8000-", 1, 7, 2, 3);
+
+				diagnostics = validate("FROM node\nEXPOSE -");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "-", 1, 7, 1, 8);
+
+				diagnostics = validate("FROM node\nEXPOSE \\a");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 9);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080::8089");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8080::8089", 1, 7, 1, 17);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080--8089");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "8080--8089", 1, 7, 1, 17);
+			});
+
+			it("invalid proto", function() {
+				let diagnostics = validate("FROM node\nEXPOSE 8080/tcpx");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidProto(diagnostics[0], "tcpx", 1, 12, 1, 16);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080/TCPs");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidProto(diagnostics[0], "TCPs", 1, 12, 1, 16);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080-8081:8082-8083/udpy");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidProto(diagnostics[0], "udpy", 1, 27, 1, 31);
+
+				diagnostics = validate("FROM node\nEXPOSE 8080/x");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidProto(diagnostics[0], "x", 1, 12, 1, 13);
+			});	
 		});
 
-		it("escape", function() {
-			let diagnostics = validate("FROM node\nEXPOSE 8080\\\n8081");
-			assert.equal(diagnostics.length, 0);
+		describe("environment variables", function() {
+			it("ok", function() {
+				let diagnostics = validate("FROM node\nARG PORT=8000\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 0);
 
-			diagnostics = validate("FROM node\nEXPOSE 8080\\\r\n8081");
-			assert.equal(diagnostics.length, 0);
+				diagnostics = validate("FROM node\nENV PORT=8000\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 0);
 
-			diagnostics = validate("FROM node\nEXPOSE 8080 \\\n8081");
-			assert.equal(diagnostics.length, 0);
+				diagnostics = validate("FROM node\nARG PORT=8001\nENV PORT=8000\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 0);
 
-			diagnostics = validate("FROM node\nEXPOSE \\\n8080");
-			assert.equal(diagnostics.length, 0);
+				diagnostics = validate("FROM node\nENV PORT=8001\nARG PORT=8000\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 0);
+			});
 
-			diagnostics = validate("FROM node\nEXPOSE \\\n 8080");
-			assert.equal(diagnostics.length, 0);
+			it("invalid containerPort", function() {
+				let diagnostics = validate("FROM node\nARG PORT=a\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 2, 7, 2, 12);
 
-			diagnostics = validate("FROM node\nEXPOSE \\\n8080\n");
-			assert.equal(diagnostics.length, 0);
+				diagnostics = validate("FROM node\nENV PORT=a\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 2, 7, 2, 12);
 
-			diagnostics = validate("FROM node\nEXPOSE \\\n 8080\n");
-			assert.equal(diagnostics.length, 0);
+				diagnostics = validate("FROM node\nARG PORT=b\nENV PORT=a\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 3, 7, 3, 12);
 
-			diagnostics = validate("FROM node\nEXPOSE \\\n8080 \n");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE \\\n 8080 \n");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 8080\\\n");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 80\\\n80");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000-\\\n9000");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000\\\n-9000");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 80\\\r\n80");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000-\\\r\n9000");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000\\\r\n-9000");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE \\ 8000");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000\\ 8001");
-			assert.equal(diagnostics.length, 0);
-		});
-
-		it("invalid containerPort", function() {
-			let diagnostics = validate("FROM node\nEXPOSE a");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE a ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE a\n");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE a\r");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE a\r\n");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE a\\\n ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE ab\\\n ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
-
-			diagnostics = validate("FROM node\nEXPOSE a\r");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE a\\\r ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE ab\\\r ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
-
-			diagnostics = validate("FROM node\nEXPOSE a\r\n");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE a\\\r\n ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE ab\\\r\n ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
-
-			diagnostics = validate("FROM node\nEXPOSE -8000");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE -8000 ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE -8000\n");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE -8000\n ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "-8000", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000-");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000- ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000-\n");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE 8000-\n ");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 1, 12);
-
-			diagnostics = validate("FROM node\nEXPOSE 80\\\n00-\n");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 2, 3);
-
-			diagnostics = validate("FROM node\nEXPOSE 80\\\n00-");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8000-", 1, 7, 2, 3);
-
-			diagnostics = validate("FROM node\nEXPOSE -");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "-", 1, 7, 1, 8);
-
-			diagnostics = validate("FROM node\nEXPOSE \\a");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 9);
-
-			diagnostics = validate("FROM node\nEXPOSE 8080::8089");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8080::8089", 1, 7, 1, 17);
-
-			diagnostics = validate("FROM node\nEXPOSE 8080--8089");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidPort(diagnostics[0], "8080--8089", 1, 7, 1, 17);
-		});
-
-		it("invalid proto", function() {
-			let diagnostics = validate("FROM node\nEXPOSE 8080/tcpx");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidProto(diagnostics[0], "tcpx", 1, 12, 1, 16);
-
-			diagnostics = validate("FROM node\nEXPOSE 8080/TCPs");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidProto(diagnostics[0], "TCPs", 1, 12, 1, 16);
-
-			diagnostics = validate("FROM node\nEXPOSE 8080-8081:8082-8083/udpy");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidProto(diagnostics[0], "udpy", 1, 27, 1, 31);
-
-			diagnostics = validate("FROM node\nEXPOSE 8080/x");
-			assert.equal(diagnostics.length, 1);
-			assertInvalidProto(diagnostics[0], "x", 1, 12, 1, 13);
+				diagnostics = validate("FROM node\nENV PORT=a\nARG PORT=b\nEXPOSE $PORT");
+				assert.equal(diagnostics.length, 1);
+				assertInvalidPort(diagnostics[0], "a", 3, 7, 3, 12);
+			});
 		});
 	});
 

@@ -486,7 +486,7 @@ export class Validator {
 					});
 					break;
 				case "EXPOSE":
-					let exposeArgs = instruction.getArguments();
+					let exposeArgs = instruction.getExpandedArguments();
 					if (exposeArgs.length === 0) {
 						let range = instruction.getInstructionRange();
 						problems.push(Validator.createMissingArgument(range.start, range.end));

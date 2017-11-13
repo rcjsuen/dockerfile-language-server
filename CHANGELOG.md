@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - prevent completion items from being displayed in comments ([#190](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/190))
+- expand environment variables when validating an EXPOSE ([#192](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/192))
 
 ## [0.0.10] - 2017-10-23
 ### Added
