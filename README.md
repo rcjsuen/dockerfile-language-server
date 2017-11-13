@@ -61,11 +61,6 @@ docker-langserver --socket=<port>
 ### Docker Image
 The `docker-langserver` binary is also available as a Docker image under the name `rcjsuen/docker-langserver`.
 
-To run validator on a `Dockerfile` in your current working directory, use the following command.
-```
-docker run -v `pwd`/Dockerfile:/Dockerfile rcjsuen/docker-langserver lint /Dockerfile
-```
-
 ## Language Server Settings
 
 Clients may send a `workspace/didChangeConfiguration` notification to
