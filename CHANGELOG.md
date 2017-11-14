@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - prevent completion items from being displayed in comments ([#190](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/190))
 - expand environment variables when validating an EXPOSE ([#192](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/192))
 - ignore variables that are in a LABEL's single quoted value string ([#191](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/191))
+- support environment variables that span multiple lines ([#193](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/193))
 
 ## [0.0.10] - 2017-10-23
 ### Added

@@ -395,6 +395,190 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 1, 17);
 					assertHighlightRanges(ranges, expected);
 				});
+
+				it("multiline reference \\n", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(Position.create(1, 8), Position.create(2, 2)), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument(instruction + " port=8080\nEXPOSE $po\\\nrt");
+					let ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 8), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po`\nrt");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(1, 9), Position.create(2, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nEXPOSE ${po\\\nrt}");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 9), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po`\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("multiline reference \\r\\n", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(Position.create(1, 8), Position.create(2, 2)), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument(instruction + " port=8080\nEXPOSE $po\\\r\nrt");
+					let ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 8), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po`\r\nrt");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(1, 9), Position.create(2, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nEXPOSE ${po\\\r\nrt}");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 9), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po`\r\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("multiline reference \\n spaced", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(Position.create(1, 8), Position.create(2, 2)), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument(instruction + " port=8080\nEXPOSE $po\\ \t\nrt");
+					let ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 8), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po` \t\nrt");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(1, 9), Position.create(2, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nEXPOSE ${po\\ \t\nrt}");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 9), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po` \t\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("multiline reference \\r\\n spaced", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(Position.create(1, 8), Position.create(2, 2)), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument(instruction + " port=8080\nEXPOSE $po\\ \t\r\nrt");
+					let ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 8), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po` \t\r\nrt");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(1, 9), Position.create(2, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nEXPOSE ${po\\ \t\r\nrt}");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 8)), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(Position.create(2, 9), Position.create(3, 2)), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po` \t\r\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+				});
 			});
 
 			describe("build stage", function() {
@@ -808,6 +992,190 @@ describe("Dockerfile Document Highlight tests", function() {
 					assertHighlightRanges(ranges, expected);
 
 					ranges = computeHighlightRanges(document, 2, 17);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("multiline reference \\n", function() {
+					let declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(2, 8, 3, 2), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\\nrt");
+					let ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 8, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po`\nrt");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 9, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 9, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po`\nrt}");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("multiline reference \\r\\n", function() {
+					let declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(2, 8, 3, 2), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\\r\nrt");
+					let ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 8, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po`\r\nrt");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 9, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\\r\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 9, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po`\r\nrt}");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("multiline reference \\n spaced", function() {
+					let declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(2, 8, 3, 2), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\ \t\nrt");
+					let ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 8, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po` \t\nrt");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 9, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\ \t\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 9, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po` \t\nrt}");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("multiline reference \\r\\n spaced", function() {
+					let declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(2, 8, 3, 2), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\ \t\r\nrt");
+					let ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 8, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po` \t\r\nrt");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 9, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\ \t\r\nrt}");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(2, 4, 2, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(3, 9, 4, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po` \t\r\nrt}");
+					ranges = computeHighlightRanges(document, 4, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 4, 2);
 					assertHighlightRanges(ranges, expected);
 				});
 			});

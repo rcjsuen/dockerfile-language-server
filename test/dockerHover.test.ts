@@ -835,6 +835,142 @@ describe("Dockerfile hover", function() {
 					let hover = onHover(document, 1, 17);
 					assert.equal(hover.contents, "value");
 				});
+
+				it("multiline reference \\n", function() {
+					let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\\nrt}");
+					let hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po`\nrt}");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\nEXPOSE $po\\\nrt");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po`\nrt");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+				});
+
+				it("multiline reference \\r\\n", function() {
+					let document = createDocument(instruction + " port=8080\rnEXPOSE ${po\\\r\nrt}");
+					let hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\r\nEXPOSE ${po`\r\nrt}");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\r\nEXPOSE $po\\\r\nrt");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\r\nEXPOSE $po`\r\nrt");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+				});
+
+				it("multiline reference \\n spaced", function() {
+					let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\ \t\nrt}");
+					let hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po` \t\nrt}");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\nEXPOSE $po\\ \t\nrt");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po` \t\nrt");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+				});
+
+				it("multiline reference \\r\\n spaced", function() {
+					let document = createDocument(instruction + " port=8080\r\nEXPOSE ${po\\ \t\r\nrt}");
+					let hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\r\nEXPOSE ${po` \t\r\nrt}");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\nEXPOSE $po\\ \t\r\nrt");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po` \t\r\nrt");
+					hover = onHover(document, 3, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+				});
 			});
 		}
 

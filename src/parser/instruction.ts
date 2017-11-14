@@ -77,9 +77,9 @@ export class Instruction extends Line {
 			if (Util.isWhitespace(char)) {
 				if (found !== -1) {
 					if (escapeMarker === -1) {
-						args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + i))));
+						args.push(new Argument(escapedArg, fullArgs.substring(found, i), Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + i))));
 					} else {
-						args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + escapeMarker))));
+						args.push(new Argument(escapedArg, fullArgs.substring(found, escapeMarker), Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + escapeMarker))));
 					}
 					escapedArg = "";
 					found = -1;
@@ -145,7 +145,7 @@ export class Instruction extends Line {
 		}
 
 		if (found !== -1) {
-			args.push(new Argument(escapedArg, Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + fullArgs.length))));			
+			args.push(new Argument(escapedArg, fullArgs.substring(found), Range.create(this.document.positionAt(offset + found), this.document.positionAt(offset + fullArgs.length))));			
 		}
 
 		return args;
@@ -180,7 +180,7 @@ export class Instruction extends Line {
 					}
 				}
 	
-				args[i] = new Argument(expanded, argRange);
+				args[i] = new Argument(expanded, args[i].getRawValue(), argRange);
 			}
 		}
 		return args;
@@ -190,7 +190,7 @@ export class Instruction extends Line {
 		let variables = [];
 		let args = this.getArguments();
 		for (let arg of args) {
-			let parsedVariables = this.parseVariables(this.document.offsetAt(arg.getRange().start), arg.getValue());
+			let parsedVariables = this.parseVariables(this.document.offsetAt(arg.getRange().start), arg.getRawValue());
 			for (let parsedVariable of parsedVariables) {
 				variables.push(parsedVariable);
 			}
@@ -209,30 +209,50 @@ export class Instruction extends Line {
 					break;
 				case '$':
 					if (arg.charAt(i + 1) === '{') {
-						for (let j = i + 2; j < arg.length; j++) {
-							if (arg.charAt(j) === '}') {
-								let name = arg.substring(i + 2, j);
-								let end = name.indexOf(':');
+						let escapedName = "";
+						nameLoop: for (let j = i + 2; j < arg.length; j++) {
+							let char = arg.charAt(j);
+							if (char === '}') {
+								let end = escapedName.indexOf(':');
 								if (end === -1) {
 									end = j;
 								} else {
-									name = name.substring(0, end);
+									escapedName = escapedName.substring(0, end);
 									end = i + 2 + end;
 								}
 								variables.push(new Variable(
-									name,
+									escapedName,
 									Range.create(this.document.positionAt(offset + i + 2), this.document.positionAt(offset + end)),
 									Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + j))
 								));
 								i = j;
 								continue variableLoop;
+							} else if (char === this.escapeChar) {
+								for (let k = j + 1; k < arg.length; k++) {
+									switch (arg.charAt(k)) {
+										case ' ':
+										case '\t':
+										case '\r':
+											// ignore whitespace
+											continue;
+										case '\n':
+											// escape this newline
+											j = k;
+											continue nameLoop;
+									}
+								}
+								continue;
+							} else {
+								escapedName += char;
 							}
 						}
 						// no } found, not a valid variable, stop processing
 						break variableLoop;
 					} else {
-						for (let j = i + 1; j < arg.length; j++) {
-							switch (arg.charAt(j)) {
+						let escapedName = "";
+						nameLoop: for (let j = i + 1; j < arg.length; j++) {
+							let char = arg.charAt(j);
+							switch (char) {
 								case '$':
 								case '\'':
 								case '"':
@@ -243,10 +263,26 @@ export class Instruction extends Line {
 									));
 									i = j - 1;
 									continue variableLoop;
+								case this.escapeChar:
+									for (let k = j + 1; k < arg.length; k++) {
+										switch (arg.charAt(k)) {
+											case ' ':
+											case '\t':
+											case '\r':
+												// ignore whitespace
+												continue;
+											case '\n':
+												// escape this newline
+												j = k;
+												continue nameLoop;
+										}
+									}
+									continue;
 							}
+							escapedName += char;
 						}
 						variables.push(new Variable(
-							arg.substring(i + 1, arg.length),
+							escapedName,
 							Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + arg.length)),
 							Range.create(this.document.positionAt(offset + i), this.document.positionAt(offset + arg.length))
 						));

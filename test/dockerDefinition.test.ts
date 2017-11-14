@@ -199,6 +199,78 @@ describe("Dockerfile Document Definition tests", function() {
 						let location = computeDefinition(document, Position.create(1, 17));
 						assertLocation(location, document.uri, 0, 4, 0, 7);
 					});
+
+					it("multiline reference \\n", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\\nrt}");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po`\nrt}");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+					});
+
+					it("multiline reference \\r\\n", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\\r\nrt}");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po`\r\nrt}");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+					});
+
+					it("multiline reference \\n spaced", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\ \t\nrt}");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po` \t\nrt}");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+					});
+
+					it("multiline reference \\r\\n spaced", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\ \t\r\nrt}");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po` \t\r\nrt}");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+					});
 				});
 
 				describe("$var", function() {
@@ -328,6 +400,78 @@ describe("Dockerfile Document Definition tests", function() {
 						let document = createDocument(instruction + " var\nLABEL label=\"$var\"");
 						let location = computeDefinition(document, Position.create(1, 15));
 						assertLocation(location, document.uri, 0, 4, 0, 7);
+					});
+
+					it("multiline reference \\n", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE $po\\\nrt");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po`\nrt");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+					});
+
+					it("multiline reference \\r\\n", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE $po\\\r\nrt");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po`\r\nrt");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+					});
+
+					it("multiline reference \\n spaced", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE $po\\ \t\nrt");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po` \t\nrt");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+					});
+
+					it("multiline reference \\r\\n spaced", function() {
+						let document = createDocument(instruction + " port=8080\nEXPOSE $po\\ \t\r\nrt");
+						let location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+
+						document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po` \t\r\nrt");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 				});
 			});
@@ -521,6 +665,78 @@ describe("Dockerfile Document Definition tests", function() {
 						let document = createDocument("FROM alpine\n" + instruction + " var\nLABEL label=\"$var\"");
 						let location = computeDefinition(document, Position.create(2, 15));
 						assertLocation(location, document.uri, 1, 4, 1, 7);
+					});
+
+					it("multiline reference \\n", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\\nrt}");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po`\nrt}");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+					});
+
+					it("multiline reference \\r\\n", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\\r\nrt}");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po`\r\nrt}");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+					});
+
+					it("multiline reference \\n spaced", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\ \t\nrt}");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po` \t\nrt}");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+					});
+
+					it("multiline reference \\r\\n spaced", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE ${po\\ \t\r\nrt}");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE ${po` \t\r\nrt}");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
 					});
 				});
 
@@ -766,6 +982,78 @@ describe("Dockerfile Document Definition tests", function() {
 						let document = createDocument("FROM alpine\n" + instruction + " var\nLABEL label=\"${var}\"");
 						let location = computeDefinition(document, Position.create(2, 17));
 						assertLocation(location, document.uri, 1, 4, 1, 7);
+					});
+
+					it("multiline reference \\n", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\\nrt");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po`\nrt");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+					});
+
+					it("multiline reference \\r\\n", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\\r\nrt");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po`\r\nrt");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+					});
+
+					it("multiline reference \\n spaced", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\ \t\nrt");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po` \t\nrt");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+					});
+
+					it("multiline reference \\r\\n spaced", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " port=8080\nEXPOSE $po\\ \t\r\nrt");
+						let location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument("#escape=`\nFROM alpine\n" + instruction + " port=8080\nEXPOSE $po` \t\r\nrt");
+						location = computeDefinition(document, Position.create(4, 0));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 1));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
+						location = computeDefinition(document, Position.create(4, 2));
+						assertLocation(location, document.uri, 2, 4, 2, 8);
 					});
 				});
 			});

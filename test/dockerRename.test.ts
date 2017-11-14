@@ -343,6 +343,270 @@ describe("Dockerfile Document Rename tests", function() {
 					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
 					assertEdit(edits[1], "renamed", 1, 15, 1, 18);
 				});
+
+				it("multiline reference \\n", function() {
+					let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\\nrt}");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 1, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po`\nrt}");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 2, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					document = createDocument(instruction + " port=8080\nEXPOSE $po\\\nrt");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 1, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po`\nrt");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 2, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+				});
+
+				it("multiline reference \\r\\n", function() {
+					let document = createDocument(instruction + " port=8080\r\nEXPOSE ${po\\\r\nrt}");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 1, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					document = createDocument("#escape=`\r\n" + instruction + " port=8080\r\nEXPOSE ${po`\r\nrt}");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 2, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					document = createDocument(instruction + " port=8080\r\nEXPOSE $po\\\r\nrt");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 1, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					document = createDocument("#escape=`\r\n" + instruction + " port=8080\r\nEXPOSE $po`\r\nrt");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 2, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+				});
+
+				it("multiline reference \\n spaced", function() {
+					let document = createDocument(instruction + " port=8080\nEXPOSE ${po\\ \t\nrt}");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 1, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE ${po` \t\nrt}");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 2, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					document = createDocument(instruction + " port=8080\nEXPOSE $po\\ \t\nrt");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 1, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					document = createDocument("#escape=`\n" + instruction + " port=8080\nEXPOSE $po` \t\nrt");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 2, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+				});
+
+				it("multiline reference \\r\\n spaced", function() {
+					let document = createDocument(instruction + " port=8080\r\nEXPOSE ${po\\ \t\r\nrt}");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 1, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 9, 2, 2);
+
+					document = createDocument("#escape=`\r\n" + instruction + " port=8080\r\nEXPOSE ${po` \t\r\nrt}");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 2, 10, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 9, 3, 2);
+
+					document = createDocument(instruction + " port=8080\r\nEXPOSE $po\\ \t\r\nrt");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 1, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 8, 2, 2);
+
+					document = createDocument("#escape=`\r\n" + instruction + " port=8080\r\nEXPOSE $po` \t\r\nrt");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 2, 9, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+				});
 			});
 
 			describe("build stage", function() {
