@@ -256,6 +256,8 @@ export class Instruction extends Line {
 								case '$':
 								case '\'':
 								case '"':
+								case ' ':
+								case '\t':
 									variables.push(new Variable(
 										arg.substring(i + 1, j),
 										Range.create(this.document.positionAt(offset + i + 1), this.document.positionAt(offset + j)),

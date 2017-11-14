@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - expand environment variables when validating an EXPOSE ([#192](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/192))
 - ignore variables that are in a LABEL's single quoted value string ([#191](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/191))
 - support environment variables that span multiple lines ([#193](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/193))
+- ignore spaces that come after an environment variable ([#194](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/194))
 
 ## [0.0.10] - 2017-10-23
 ### Added

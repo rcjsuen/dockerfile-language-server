@@ -473,6 +473,18 @@ describe("Dockerfile Document Definition tests", function() {
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
+
+					it("$var followed by space", function() {
+						let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var \"");
+						let location = computeDefinition(document, Position.create(1, 14));
+						assertLocation(location, document.uri, 0, 4, 0, 7);
+					});
+
+					it("$var followed by tab", function() {
+						let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var\t\"");
+						let location = computeDefinition(document, Position.create(1, 14));
+						assertLocation(location, document.uri, 0, 4, 0, 7);
+					});
 				});
 			});
 
@@ -1054,6 +1066,18 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+					});
+
+					it("$var followed by space", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL key=\"$var \"");
+						let location = computeDefinition(document, Position.create(2, 14));
+						assertLocation(location, document.uri, 1, 4, 1, 7);
+					});
+
+					it("$var followed by tab", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL key=\"$var\t\"");
+						let location = computeDefinition(document, Position.create(2, 14));
+						assertLocation(location, document.uri, 1, 4, 1, 7);
 					});
 				});
 			});

@@ -607,6 +607,32 @@ describe("Dockerfile Document Rename tests", function() {
 					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
 					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
 				});
+
+				it("$var followed by space", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var \"");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+
+					edits = rename(document, 1, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				});
+
+				it("$var followed by tab", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var\t\"");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+
+					edits = rename(document, 1, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 12, 1, 15);
+				});
 			});
 
 			describe("build stage", function() {
@@ -1042,6 +1068,32 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 2, 4, 2, 8);
 					assertEdit(edits[1], "renamed", 3, 8, 4, 2);
+				});
+
+				it("$var followed by space", function() {
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL key=\"$var \"");
+					let edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 12, 2, 15);
+
+					edits = rename(document, 2, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 12, 2, 15);
+				});
+
+				it("$var followed by tab", function() {
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL key=\"$var\t\"");
+					let edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 12, 2, 15);
+
+					edits = rename(document, 2, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 12, 2, 15);
 				});
 			});
 		});

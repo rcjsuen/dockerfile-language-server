@@ -579,6 +579,28 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 3, 2);
 					assertHighlightRanges(ranges, expected);
 				});
+
+				it("$var followed by space", function() {
+					let declaration = DocumentHighlight.create(Range.create(0, 4, 0, 7), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(1, 12, 1, 15), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var \"");
+					let ranges = computeHighlightRanges(document, 0, 5);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 1, 14);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("$var followed by tab", function() {
+					let declaration = DocumentHighlight.create(Range.create(0, 4, 0, 7), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(1, 12, 1, 15), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var\t\"");
+					let ranges = computeHighlightRanges(document, 0, 5);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 1, 14);
+					assertHighlightRanges(ranges, expected);
+				});
 			});
 
 			describe("build stage", function() {
@@ -1176,6 +1198,28 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 4, 1);
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("$var followed by space", function() {
+					let declaration = DocumentHighlight.create(Range.create(1, 4, 1, 7), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(2, 12, 2, 15), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL key=\"$var \"");
+					let ranges = computeHighlightRanges(document, 1, 5);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 14);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("$var followed by tab", function() {
+					let declaration = DocumentHighlight.create(Range.create(1, 4, 1, 7), DocumentHighlightKind.Write);
+					let reference = DocumentHighlight.create(Range.create(2, 12, 2, 15), DocumentHighlightKind.Read);
+					let expected = [ declaration, reference ];
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL key=\"$var\t\"");
+					let ranges = computeHighlightRanges(document, 1, 5);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 14);
 					assertHighlightRanges(ranges, expected);
 				});
 			});

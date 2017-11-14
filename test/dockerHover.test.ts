@@ -971,6 +971,18 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 3, 2);
 					assert.equal(hover.contents, "8080");
 				});
+
+				it("$var followed by space", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var \"");
+					let hover = onHover(document, 1, 14);
+					assert.equal(hover.contents, "value");
+				});
+
+				it("$var followed by tab", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL key=\"$var\t\"");
+					let hover = onHover(document, 1, 14);
+					assert.equal(hover.contents, "value");
+				});
 			});
 		}
 
