@@ -813,6 +813,28 @@ describe("Dockerfile hover", function() {
 					assert.equal(onHover(document, 3, 9), null);
 					assert.equal(onHover(document, 4, 11), null);
 				});
+
+				it("$var in LABEL value with single quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label='$var'");
+					assert.equal(onHover(document, 1, 15), null);
+				});
+
+				it("$var in LABEL value with double quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label=\"$var\"");
+					let hover = onHover(document, 1, 15);
+					assert.equal(hover.contents, "value");
+				});
+
+				it("${var} in LABEL value with single quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label='${var}'");
+					assert.equal(onHover(document, 1, 17), null);
+				});
+
+				it("${var} in LABEL value with double quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label=\"${var}\"");
+					let hover = onHover(document, 1, 17);
+					assert.equal(hover.contents, "value");
+				});
 			});
 		}
 

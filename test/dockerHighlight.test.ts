@@ -351,6 +351,50 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 3, 12);
 					assertHighlightRanges(ranges, expected);
 				});
+
+				it("$var in LABEL value with single quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label='$var'");
+					let ranges = computeHighlightRanges(document, 0, 5);
+					assertHighlightRanges(ranges, [ declaration ]);
+
+					ranges = computeHighlightRanges(document, 1, 15);
+					assert.equal(ranges.length, 0);
+				});
+
+				it("$var in LABEL value with double quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+					let labelValue = DocumentHighlight.create(Range.create(Position.create(1, 14), Position.create(1, 17)), DocumentHighlightKind.Read);
+					let expected = [ declaration, labelValue ];
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label=\"$var\"");
+					let ranges = computeHighlightRanges(document, 0, 5);
+					assertHighlightRanges(ranges, expected);
+
+					ranges = computeHighlightRanges(document, 1, 15);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("${var} in LABEL value with single quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label='${var}'");
+					let ranges = computeHighlightRanges(document, 0, 5);
+					assertHighlightRanges(ranges, [ declaration ]);
+
+					ranges = computeHighlightRanges(document, 1, 17);
+					assert.equal(ranges.length, 0);
+				});
+
+				it("${var} in LABEL value with double quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(0, 4), Position.create(0, 7)), DocumentHighlightKind.Write);
+					let labelValue = DocumentHighlight.create(Range.create(Position.create(1, 15), Position.create(1, 18)), DocumentHighlightKind.Read);
+					let expected = [ declaration, labelValue ];
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label=\"${var}\"");
+					let ranges = computeHighlightRanges(document, 0, 5);
+					assertHighlightRanges(ranges, expected);
+
+					ranges = computeHighlightRanges(document, 1, 17);
+					assertHighlightRanges(ranges, expected);
+				});
 			});
 
 			describe("build stage", function() {
@@ -721,6 +765,50 @@ describe("Dockerfile Document Highlight tests", function() {
 					assertHighlightRanges(ranges, expectedB);
 					ranges = computeHighlightRanges(document, 9, 11);
 					assertHighlightRanges(ranges, expectedB);
+				});
+
+				it("$var in LABEL value with single quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label='$var'");
+					let ranges = computeHighlightRanges(document, 1, 5);
+					assertHighlightRanges(ranges, [ declaration ]);
+
+					ranges = computeHighlightRanges(document, 2, 15);
+					assert.equal(ranges.length, 0);
+				});
+
+				it("$var in LABEL value with double quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+					let labelValue = DocumentHighlight.create(Range.create(Position.create(2, 14), Position.create(2, 17)), DocumentHighlightKind.Read);
+					let expected = [ declaration, labelValue ];
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label=\"$var\"");
+					let ranges = computeHighlightRanges(document, 1, 5);
+					assertHighlightRanges(ranges, expected);
+
+					ranges = computeHighlightRanges(document, 2, 15);
+					assertHighlightRanges(ranges, expected);
+				});
+
+				it("${var} in LABEL value with single quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label='${var}'");
+					let ranges = computeHighlightRanges(document, 1, 5);
+					assertHighlightRanges(ranges, [ declaration ]);
+
+					ranges = computeHighlightRanges(document, 2, 17);
+					assert.equal(ranges.length, 0);
+				});
+
+				it("${var} in LABEL value with double quotes", function() {
+					let declaration = DocumentHighlight.create(Range.create(Position.create(1, 4), Position.create(1, 7)), DocumentHighlightKind.Write);
+					let labelValue = DocumentHighlight.create(Range.create(Position.create(2, 15), Position.create(2, 18)), DocumentHighlightKind.Read);
+					let expected = [ declaration, labelValue ];
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label=\"${var}\"");
+					let ranges = computeHighlightRanges(document, 1, 5);
+					assertHighlightRanges(ranges, expected);
+
+					ranges = computeHighlightRanges(document, 2, 17);
+					assertHighlightRanges(ranges, expected);
 				});
 			});
 		});

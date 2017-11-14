@@ -187,6 +187,18 @@ describe("Dockerfile Document Definition tests", function() {
 						location = computeDefinition(document, Position.create(2, 5));
 						assertLocation(location, document.uri, 0, 4, 0, 7);
 					});
+
+					it("label value with single quotes", function() {
+						let document = createDocument(instruction + " var\nLABEL label='${var}'");
+						let location = computeDefinition(document, Position.create(1, 17));
+						assert.equal(location, null);
+					});
+
+					it("label value with double quotes", function() {
+						let document = createDocument(instruction + " var\nLABEL label=\"${var}\"");
+						let location = computeDefinition(document, Position.create(1, 17));
+						assertLocation(location, document.uri, 0, 4, 0, 7);
+					});
 				});
 
 				describe("$var", function() {
@@ -303,6 +315,18 @@ describe("Dockerfile Document Definition tests", function() {
 						location = computeDefinition(document, Position.create(1, 11));
 						assertLocation(location, document.uri, 0, 4, 0, 7);
 						location = computeDefinition(document, Position.create(2, 5));
+						assertLocation(location, document.uri, 0, 4, 0, 7);
+					});
+
+					it("label value with single quotes", function() {
+						let document = createDocument(instruction + " var\nLABEL label='$var'");
+						let location = computeDefinition(document, Position.create(1, 15));
+						assert.equal(location, null);
+					});
+
+					it("label value with double quotes", function() {
+						let document = createDocument(instruction + " var\nLABEL label=\"$var\"");
+						let location = computeDefinition(document, Position.create(1, 15));
 						assertLocation(location, document.uri, 0, 4, 0, 7);
 					});
 				});
@@ -485,6 +509,18 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 5, 4, 5, 7);
 						location = computeDefinition(document, Position.create(7, 5));
 						assertLocation(location, document.uri, 5, 4, 5, 7);
+					});
+
+					it("label value with single quotes", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " var\nLABEL label='$var'");
+						let location = computeDefinition(document, Position.create(2, 15));
+						assert.equal(location, null);
+					});
+
+					it("label value with double quotes", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " var\nLABEL label=\"$var\"");
+						let location = computeDefinition(document, Position.create(2, 15));
+						assertLocation(location, document.uri, 1, 4, 1, 7);
 					});
 				});
 
@@ -718,6 +754,18 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 5, 4, 5, 7);
 						location = computeDefinition(document, Position.create(7, 5));
 						assertLocation(location, document.uri, 5, 4, 5, 7);
+					});
+
+					it("label value with single quotes", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " var\nLABEL label='${var}'");
+						let location = computeDefinition(document, Position.create(2, 17));
+						assert.equal(location, null);
+					});
+
+					it("label value with double quotes", function() {
+						let document = createDocument("FROM alpine\n" + instruction + " var\nLABEL label=\"${var}\"");
+						let location = computeDefinition(document, Position.create(2, 17));
+						assertLocation(location, document.uri, 1, 4, 1, 7);
 					});
 				});
 			});

@@ -297,6 +297,52 @@ describe("Dockerfile Document Rename tests", function() {
 					assertEdit(edits[4], "renamed", 4, 11, 4, 14);
 					assertEdit(edits[5], "renamed", 5, 11, 5, 14);
 				});
+
+				it("$var in LABEL value with single quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label='$var'");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 1);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+
+					edits = rename(document, 1, 15, "renamed");
+					assert.equal(edits.length, 0);
+				});
+
+				it("$var in LABEL value with double quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label=\"$var\"");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 14, 1, 17);
+
+					edits = rename(document, 1, 15, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 14, 1, 17);
+				});
+
+				it("${var} in LABEL value with single quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label='${var}'");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 1);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+
+					edits = rename(document, 1, 17, "renamed");
+					assert.equal(edits.length, 0);
+				});
+
+				it("${var} in LABEL value with double quotes", function() {
+					let document = createDocument(instruction + " var" + delimiter + "value\nLABEL label=\"${var}\"");
+					let edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 15, 1, 18);
+
+					edits = rename(document, 1, 17, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 7);
+					assertEdit(edits[1], "renamed", 1, 15, 1, 18);
+				});
 			});
 
 			describe("build stage", function() {
@@ -422,6 +468,52 @@ describe("Dockerfile Document Rename tests", function() {
 					assertEdits(rename(document, 11, 11, "renamed"), expectedEdits2);
 					assertEdits(rename(document, 12, 12, "renamed"), expectedEdits2);
 					assertEdits(rename(document, 13, 13, "renamed"), expectedEdits2);
+				});
+
+				it("$var in LABEL value with single quotes", function() {
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label='$var'");
+					let edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 1);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+
+					edits = rename(document, 2, 15, "renamed");
+					assert.equal(edits.length, 0);
+				});
+
+				it("$var in LABEL value with double quotes", function() {
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label=\"$var\"");
+					let edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 14, 2, 17);
+
+					edits = rename(document, 2, 15, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 14, 2, 17);
+				});
+
+				it("${var} in LABEL value with single quotes", function() {
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label='${var}'");
+					let edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 1);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+
+					edits = rename(document, 2, 17, "renamed");
+					assert.equal(edits.length, 0);
+				});
+
+				it("${var} in LABEL value with double quotes", function() {
+					let document = createDocument("FROM alpine\n" + instruction + " var" + delimiter + "value\nLABEL label=\"${var}\"");
+					let edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 15, 2, 18);
+
+					edits = rename(document, 2, 17, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 7);
+					assertEdit(edits[1], "renamed", 2, 15, 2, 18);
 				});
 			});
 		});
