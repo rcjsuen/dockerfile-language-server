@@ -868,6 +868,14 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "8080");
 					hover = onHover(document, 3, 2);
 					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\\nrt\"");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
 				});
 
 				it("multiline reference \\r\\n", function() {
@@ -901,6 +909,14 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 3, 1);
 					assert.equal(hover.contents, "8080");
 					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\r\nLABEL key=\"$po\\\r\nrt\"");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
 					assert.equal(hover.contents, "8080");
 				});
 
@@ -936,6 +952,14 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "8080");
 					hover = onHover(document, 3, 2);
 					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\ \t\nrt\"");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
+					assert.equal(hover.contents, "8080");
 				});
 
 				it("multiline reference \\r\\n spaced", function() {
@@ -969,6 +993,14 @@ describe("Dockerfile hover", function() {
 					hover = onHover(document, 3, 1);
 					assert.equal(hover.contents, "8080");
 					hover = onHover(document, 3, 2);
+					assert.equal(hover.contents, "8080");
+
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\ \t\r\nrt\"");
+					hover = onHover(document, 2, 0);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 1);
+					assert.equal(hover.contents, "8080");
+					hover = onHover(document, 2, 2);
 					assert.equal(hover.contents, "8080");
 				});
 

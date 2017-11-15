@@ -408,6 +408,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
 					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\\nrt\"");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 1, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
 				});
 
 				it("multiline reference \\r\\n", function() {
@@ -474,6 +490,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
 					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					document = createDocument(instruction + " port=8080\r\nLABEL key=\"$po\\\r\nrt\"");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 1, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
 				});
 
 				it("multiline reference \\n spaced", function() {
@@ -540,6 +572,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
 					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\ \t\nrt\"");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 1, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
 				});
 
 				it("multiline reference \\r\\n spaced", function() {
@@ -606,6 +654,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
 					assertEdit(edits[1], "renamed", 2, 8, 3, 2);
+
+					document = createDocument(instruction + " port=8080\r\nLABEL key=\"$po\\ \t\r\nrt\"");
+					edits = rename(document, 0, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 1, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
+
+					edits = rename(document, 2, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 0, 4, 0, 8);
+					assertEdit(edits[1], "renamed", 1, 12, 2, 2);
 				});
 
 				it("$var followed by space", function() {
@@ -870,6 +934,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 2, 4, 2, 8);
 					assertEdit(edits[1], "renamed", 3, 8, 4, 2);
+
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nLABEL key=\"$po\\\nrt\"");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 2, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
 				});
 
 				it("multiline reference \\r\\n", function() {
@@ -936,6 +1016,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 2, 4, 2, 8);
 					assertEdit(edits[1], "renamed", 3, 8, 4, 2);
+
+					document = createDocument("FROM alpine\r\n" + instruction + " port=8080\r\nLABEL key=\"$po\\\r\nrt\"");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 2, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
 				});
 
 				it("multiline reference \\n spaced", function() {
@@ -1002,6 +1098,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 2, 4, 2, 8);
 					assertEdit(edits[1], "renamed", 3, 8, 4, 2);
+
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nLABEL key=\"$po\\ \t\nrt\"");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 2, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
 				});
 
 				it("multiline reference \\r\\n spaced", function() {
@@ -1068,6 +1180,22 @@ describe("Dockerfile Document Rename tests", function() {
 					assert.equal(edits.length, 2);
 					assertEdit(edits[0], "renamed", 2, 4, 2, 8);
 					assertEdit(edits[1], "renamed", 3, 8, 4, 2);
+
+					document = createDocument("FROM alpine\r\n" + instruction + " port=8080\nLABEL key=\"$po\\ \t\r\nrt\"");
+					edits = rename(document, 1, 5, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 2, 13, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
+
+					edits = rename(document, 3, 1, "renamed");
+					assert.equal(edits.length, 2);
+					assertEdit(edits[0], "renamed", 1, 4, 1, 8);
+					assertEdit(edits[1], "renamed", 2, 12, 3, 2);
 				});
 
 				it("$var followed by space", function() {

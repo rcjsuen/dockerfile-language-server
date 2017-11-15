@@ -440,6 +440,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 3, 2);
 					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(0, 4, 0, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(1, 12, 2, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\\nrt\"");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
 				});
 
 				it("multiline reference \\r\\n", function() {
@@ -485,6 +496,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 3, 1);
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(0, 4, 0, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(1, 12, 2, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\\r\nrt\"");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
 					assertHighlightRanges(ranges, expected);
 				});
 
@@ -532,6 +554,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 3, 2);
 					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(0, 4, 0, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(1, 12, 2, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\ \t\nrt\"");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
+					assertHighlightRanges(ranges, expected);
 				});
 
 				it("multiline reference \\r\\n spaced", function() {
@@ -577,6 +610,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 3, 1);
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(0, 4, 0, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(1, 12, 2, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\ \t\r\nrt\"");
+					ranges = computeHighlightRanges(document, 2, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 2, 2);
 					assertHighlightRanges(ranges, expected);
 				});
 
@@ -1061,6 +1105,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 4, 2);
 					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 12, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nLABEL key=\"$po\\\nrt\"");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
 				});
 
 				it("multiline reference \\r\\n", function() {
@@ -1106,6 +1161,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 4, 1);
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 12, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\r\n" + instruction + " port=8080\r\nLABEL key=\"$po\\\r\nrt\"");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
 					assertHighlightRanges(ranges, expected);
 				});
 
@@ -1153,6 +1219,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 4, 2);
 					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 12, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\n" + instruction + " port=8080\nLABEL key=\"$po\\ \t\nrt\"");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
+					assertHighlightRanges(ranges, expected);
 				});
 
 				it("multiline reference \\r\\n spaced", function() {
@@ -1198,6 +1275,17 @@ describe("Dockerfile Document Highlight tests", function() {
 					ranges = computeHighlightRanges(document, 4, 1);
 					assertHighlightRanges(ranges, expected);
 					ranges = computeHighlightRanges(document, 4, 2);
+					assertHighlightRanges(ranges, expected);
+
+					declaration = DocumentHighlight.create(Range.create(1, 4, 1, 8), DocumentHighlightKind.Write);
+					reference = DocumentHighlight.create(Range.create(2, 12, 3, 2), DocumentHighlightKind.Read);
+					expected = [ declaration, reference ];
+					document = createDocument("FROM alpine\r\n" + instruction + " port=8080\r\nLABEL key=\"$po\\ \t\r\nrt\"");
+					ranges = computeHighlightRanges(document, 3, 0);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 1);
+					assertHighlightRanges(ranges, expected);
+					ranges = computeHighlightRanges(document, 3, 2);
 					assertHighlightRanges(ranges, expected);
 				});
 

@@ -216,6 +216,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\nLABEL key=\"${po\\\nrt}\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 
 					it("multiline reference \\r\\n", function() {
@@ -234,6 +242,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\r\nLABEL key=\"${po\\\r\nrt}\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 
 					it("multiline reference \\n spaced", function() {
@@ -252,6 +268,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\nLABEL key=\"${po\\ \t\nrt}\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 
 					it("multiline reference \\r\\n spaced", function() {
@@ -270,6 +294,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\r\nLABEL key=\"${po\\ \t\r\nrt}\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 				});
 
@@ -418,6 +450,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\\nrt\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 
 					it("multiline reference \\r\\n", function() {
@@ -436,6 +476,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\r\nLABEL key=\"$po\\\r\nrt\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 
 					it("multiline reference \\n spaced", function() {
@@ -454,6 +502,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\ \t\nrt\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 
 					it("multiline reference \\r\\n spaced", function() {
@@ -472,6 +528,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 1, 4, 1, 8);
 						location = computeDefinition(document, Position.create(3, 2));
 						assertLocation(location, document.uri, 1, 4, 1, 8);
+
+						document = createDocument(instruction + " port=8080\nLABEL key=\"$po\\ \t\r\nrt\"");
+						location = computeDefinition(document, Position.create(2, 0));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 1));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
+						location = computeDefinition(document, Position.create(2, 2));
+						assertLocation(location, document.uri, 0, 4, 0, 8);
 					});
 
 					it("$var followed by space", function() {
@@ -695,6 +759,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\n" + instruction + " port=8080\nLABEL key=\"${po\\\nrt}\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 
 					it("multiline reference \\r\\n", function() {
@@ -713,6 +785,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\n" + instruction + " port=8080\r\nLABEL key=\"${po\\\r\nrt}\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 
 					it("multiline reference \\n spaced", function() {
@@ -731,6 +811,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\n" + instruction + " port=8080\r\nLABEL key=\"${po\\ \t\nrt}\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 
 					it("multiline reference \\r\\n spaced", function() {
@@ -749,6 +837,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\n" + instruction + " port=8080\r\nLABEL key=\"${po\\ \t\r\nrt}\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 				});
 
@@ -1012,6 +1108,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\n" + instruction + " port=8080\nLABEL key=\"$po\\\nrt\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 
 					it("multiline reference \\r\\n", function() {
@@ -1030,6 +1134,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\r\n" + instruction + " port=8080\r\nLABEL key=\"$po\\\r\nrt\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 
 					it("multiline reference \\n spaced", function() {
@@ -1048,6 +1160,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\n" + instruction + " port=8080\nLABEL key=\"$po\\ \t\nrt\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 
 					it("multiline reference \\r\\n spaced", function() {
@@ -1066,6 +1186,14 @@ describe("Dockerfile Document Definition tests", function() {
 						assertLocation(location, document.uri, 2, 4, 2, 8);
 						location = computeDefinition(document, Position.create(4, 2));
 						assertLocation(location, document.uri, 2, 4, 2, 8);
+
+						document = createDocument("FROM alpine\r\n" + instruction + " port=8080\r\nLABEL key=\"$po\\ \t\r\nrt\"");
+						location = computeDefinition(document, Position.create(3, 0));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 1));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
+						location = computeDefinition(document, Position.create(3, 2));
+						assertLocation(location, document.uri, 1, 4, 1, 8);
 					});
 
 					it("$var followed by space", function() {
