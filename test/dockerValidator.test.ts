@@ -1147,6 +1147,9 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("FROM node\nRUNCMD docker");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "RUNCMD", 1, 0, 1, 6);
+				
+				diagnostics = validate("FR\\\nOM node");
+				assert.equal(diagnostics.length, 0);
 
 				diagnostics = validate("FROM node\nRUNCMD docker\n");
 				assert.equal(diagnostics.length, 1);
