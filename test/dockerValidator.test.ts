@@ -1430,7 +1430,7 @@ describe("Docker Validator Tests", function() {
 				assertDirectiveEscapeInvalid(diagnostics[0], "ab", 0, 9, 0, 11);
 			});
 
-			it("value set to whitespace", function() {
+			it("value cannot be whitespace", function() {
 				let diagnostics = validate("#escape= \nFROM node");
 				assert.equal(diagnostics.length, 1);
 				assertDirectiveEscapeInvalid(diagnostics[0], " ", 0, 8, 0, 9);
