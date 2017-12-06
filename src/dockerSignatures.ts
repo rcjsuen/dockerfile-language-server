@@ -47,6 +47,16 @@ export class DockerSignatures {
 			}
 		}
 
+		for (const comment of dockerfile.getComments()) {
+			if (Util.isInsideRange(position, comment.getRange())) {
+				return {
+					signatures: [],
+					activeSignature: null,
+					activeParameter: null
+				};
+			}
+		}
+
 		let signatureHelp = this.getInstructionSignatures(document, dockerfile.getOnbuildTriggers(), position);
 		if (!signatureHelp) {
 			signatureHelp = this.getInstructionSignatures(document, dockerfile.getInstructions(), position);

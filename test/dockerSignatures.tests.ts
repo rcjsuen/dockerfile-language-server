@@ -1988,6 +1988,14 @@ describe("Dockerfile Signature Tests", function() {
 				assertEqualsMultiOnly(compute(prefix + " key=value key2=value2 key3=value3", 0, offset + 31), 3);
 				assertEqualsMultiOnly(compute(prefix + " key=value key2=value2 key3=value3", 0, offset + 34), 3);
 			});
+
+			it("invalid", function() {
+				let signatureHelp = compute(prefix + " key=value \\\n# ", 1, 2);
+				assertNoSignatures(signatureHelp);
+
+				signatureHelp = compute(prefix + " key=value \\\n# \nkey2=value2", 1, 2);
+				assertNoSignatures(signatureHelp);
+			});
 		});
 	}
 

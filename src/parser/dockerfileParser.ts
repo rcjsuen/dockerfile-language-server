@@ -263,7 +263,7 @@ export class DockerfileParser {
 								}
 
 								let escaped = false;
-								for (let k = j + 1; k < buffer.length; k++) {
+								instructionCheck: for (let k = j + 1; k < buffer.length; k++) {
 									switch (buffer.charAt(k)) {
 										case '\r':
 										case '\n':
@@ -312,18 +312,26 @@ export class DockerfileParser {
 											continue;
 										case '#':
 											if (escaped) {
-												escapeCheck: for (let l = k + 1; l < buffer.length; l++) {
+												for (let l = k + 1; l < buffer.length; l++) {
 													switch (buffer.charAt(l)) {
 														case '\r':
 															if (buffer.charAt(l + 1) === '\n') {
+																let range = Range.create(document.positionAt(k), document.positionAt(l));
+																dockerfile.addComment(new Comment(document, range));
 																k = l + 1;
-																break escapeCheck;
+																continue instructionCheck;
 															}
 														case '\n':
+															let range = Range.create(document.positionAt(k), document.positionAt(l));
+															dockerfile.addComment(new Comment(document, range));
 															k = l;
-															break escapeCheck;
+															continue instructionCheck;
 													}
 												}
+
+												let range = Range.create(document.positionAt(k), document.positionAt(buffer.length));
+												dockerfile.addComment(new Comment(document, range));
+												break instructionCheck;
 											}
 											break;
 										case ' ':
