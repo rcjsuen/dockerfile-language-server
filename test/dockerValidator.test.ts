@@ -520,7 +520,7 @@ function assertInvalidBuildStageName(diagnostic: Diagnostic, name: string, start
 }
 
 function testValidArgument(instruction: string, argument: string) {
-	let gaps = [ " ", "\t", " \\\n", " \\\r", " \\\r\n" ];
+	let gaps = [ " ", "\t", " \\\n", " \\\r\n" ];
 	for (let gap of gaps) {
 		let diagnostics = validate("FROM node\n" + instruction + gap + argument);
 		assert.equal(diagnostics.length, 0);
@@ -531,25 +531,16 @@ function testValidArgument(instruction: string, argument: string) {
 		diagnostics = validate("FROM node\n" + instruction + gap + argument + "\n");
 		assert.equal(diagnostics.length, 0);
 
-		diagnostics = validate("FROM node\n" + instruction + gap + argument + "\r");
-		assert.equal(diagnostics.length, 0);
-
 		diagnostics = validate("FROM node\n" + instruction + gap + argument + "\r\n");
 		assert.equal(diagnostics.length, 0);
 
 		diagnostics = validate("FROM node\n" + instruction + gap + argument + " \n");
 		assert.equal(diagnostics.length, 0);
 
-		diagnostics = validate("FROM node\n" + instruction + gap + argument + " \r");
-		assert.equal(diagnostics.length, 0);
-
 		diagnostics = validate("FROM node\n" + instruction + gap + argument + " \r\n");
 		assert.equal(diagnostics.length, 0);
 
 		diagnostics = validate("FROM node\n" + instruction + gap + argument + "\n ");
-		assert.equal(diagnostics.length, 0);
-
-		diagnostics = validate("FROM node\n" + instruction + gap + argument + "\r ");
 		assert.equal(diagnostics.length, 0);
 
 		diagnostics = validate("FROM node\n" + instruction + gap + argument + "\r\n ");
@@ -1010,7 +1001,7 @@ describe("Docker Validator Tests", function() {
 			}
 
 			function testEscapedInstructionLoop(instruction: string, args: string) {
-				let newlines = [ "\\\n", "\\\r", "\\\r\n", "\\ \n", "\\ \r", "\\ \r\n", "\\\t\n", "\\\t\r", "\\\t\r\n" ];
+				let newlines = [ "\\\n", "\\\r\n", "\\ \n", "\\ \r\n", "\\\t\n", "\\\t\r\n" ];
 				for (let newline of newlines) {
 					testEscapedInstruction(instruction.substring(0, 1), newline, instruction.substring(1), args);
 				}
@@ -1201,10 +1192,6 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
 
-				diagnostics = validate("FROM node\nSTOPSIGNAL\\ \r9");
-				assert.equal(diagnostics.length, 1);
-				assertInstructionUnknown(diagnostics[0], "STOPSIGNAL9", 1, 0, 2, 1);
-
 				diagnostics = validate("FROM alpine\nEXPOS\\8080");
 				assert.equal(diagnostics.length, 1);
 				assertInstructionUnknown(diagnostics[0], "EXPOS\\8080", 1, 0, 1, 10);
@@ -1390,10 +1377,7 @@ describe("Docker Validator Tests", function() {
 				let diagnostics = validate("# This is a comment\n# key=value\nFROM node");
 				assert.equal(diagnostics.length, 0);
 
-				diagnostics = validate("#\r# key=value\nFROM node");
-				assert.equal(diagnostics.length, 0);
-
-				diagnostics = validate("#\r# key=value\rFROM node");
+				diagnostics = validate("#\n# key=value\nFROM node");
 				assert.equal(diagnostics.length, 0);
 
 				diagnostics = validate("#=# key=value\nFROM node");
@@ -1633,10 +1617,6 @@ describe("Docker Validator Tests", function() {
 			assert.equal(diagnostics.length, 1);
 			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
 
-			diagnostics = validate("FROM busybox\nARG a=a\\\r b");
-			assert.equal(diagnostics.length, 1);
-			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
-
 			diagnostics = validate("FROM busybox\nARG a=a\\\r\n b");
 			assert.equal(diagnostics.length, 1);
 			assertInstructionRequiresOneArgument(diagnostics[0], 2, 1, 2, 2);
@@ -1844,10 +1824,6 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 1);
 				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 2, 2);
 
-				diagnostics = validate("FROM node\n" + instruction + " var=\"val\\\rue");
-				assert.equal(diagnostics.length, 1);
-				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 2, 2);
-
 				diagnostics = validate("FROM node\n" + instruction + " var=\"val\\\r\nue");
 				assert.equal(diagnostics.length, 1);
 				assertSyntaxMissingDoubleQuote(diagnostics[0], "\"value", 1, instructionLength + 5, 2, 2);
@@ -1963,10 +1939,6 @@ describe("Docker Validator Tests", function() {
 				assert.equal(diagnostics.length, 1);
 				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
 
-				diagnostics = validate("FROM node\nEXPOSE a\r");
-				assert.equal(diagnostics.length, 1);
-				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
 				diagnostics = validate("FROM node\nEXPOSE a\r\n");
 				assert.equal(diagnostics.length, 1);
 				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
@@ -1976,18 +1948,6 @@ describe("Docker Validator Tests", function() {
 				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
 
 				diagnostics = validate("FROM node\nEXPOSE ab\\\n ");
-				assert.equal(diagnostics.length, 1);
-				assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
-
-				diagnostics = validate("FROM node\nEXPOSE a\r");
-				assert.equal(diagnostics.length, 1);
-				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-				diagnostics = validate("FROM node\nEXPOSE a\\\r ");
-				assert.equal(diagnostics.length, 1);
-				assertInvalidPort(diagnostics[0], "a", 1, 7, 1, 8);
-
-				diagnostics = validate("FROM node\nEXPOSE ab\\\r ");
 				assert.equal(diagnostics.length, 1);
 				assertInvalidPort(diagnostics[0], "ab", 1, 7, 1, 9);
 
@@ -2734,9 +2694,6 @@ describe("Docker Validator Tests", function() {
 			let diagnostics = validate("FROM busybox\nRUN ls && \\\n# comment\nls");
 			assert.equal(diagnostics.length, 0);
 
-			diagnostics = validate("FROM busybox\rRUN ls && \\\r# comment\rls");
-			assert.equal(diagnostics.length, 0);
-
 			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n# comment\r\nls");
 			assert.equal(diagnostics.length, 0);
 
@@ -2746,9 +2703,6 @@ describe("Docker Validator Tests", function() {
 
 		it("whitespace comment escape", function() {
 			let diagnostics = validate("FROM busybox\nRUN ls && \\\n \t# comment\nls");
-			assert.equal(diagnostics.length, 0);
-
-			diagnostics = validate("FROM busybox\rRUN ls && \\\r \t# comment\rls");
 			assert.equal(diagnostics.length, 0);
 
 			diagnostics = validate("FROM busybox\r\nRUN ls && \\\r\n \t# comment\r\nls");

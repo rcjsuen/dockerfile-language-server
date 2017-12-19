@@ -27,8 +27,6 @@ export const KEYWORDS = [
 	"WORKDIR"
 ];
 
-export const DIRECTIVE_ESCAPE = "escape";
-
 export class Util {
 	public static isWhitespace(char: string): boolean {
 		return char === ' ' || char === '\t' || Util.isNewline(char);

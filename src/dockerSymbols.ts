@@ -7,7 +7,7 @@
 import {
 	TextDocument, SymbolInformation, SymbolKind, Range
 } from 'vscode-languageserver';
-import { DockerfileParser } from './parser/dockerfileParser';
+import { DockerfileParser } from 'dockerfile-ast';
 
 export class DockerSymbols {
 
@@ -23,8 +23,7 @@ export class DockerSymbols {
 	}
 
 	public parseSymbolInformation(document: TextDocument, textDocumentURI: string): SymbolInformation[] {
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
+		let dockerfile = DockerfileParser.parse(document.getText());
 		let directive = dockerfile.getDirective();
 		let symbols: SymbolInformation[] = [];
 		if (directive !== null) {

@@ -7,7 +7,7 @@
 import {
 	TextDocument, TextEdit, Position, Range, FormattingOptions,
 } from 'vscode-languageserver';
-import { DockerfileParser } from './parser/dockerfileParser';
+import { DockerfileParser } from 'dockerfile-ast';
 
 export class DockerFormatter {
 
@@ -46,8 +46,7 @@ export class DockerFormatter {
 	}
 
 	public formatOnType(document: TextDocument, position: Position, ch: string, options: FormattingOptions): TextEdit[] {
-		const parser = new DockerfileParser();
-		const dockerfile = parser.parse(document);
+		const dockerfile = DockerfileParser.parse(document.getText());
 		// check that the inserted character is the escape character
 		if (dockerfile.getEscapeCharacter() === ch) {
 			for (let comment of dockerfile.getComments()) {
@@ -112,9 +111,8 @@ export class DockerFormatter {
 	 * @return the text edits to apply to format the lines of the document
 	 */
 	private format(document: TextDocument, lines: number[], options?: FormattingOptions): TextEdit[] {
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
 		let content = document.getText();
+		let dockerfile = DockerfileParser.parse(content);
 		const indentedLines: boolean[] = [];
 		for (let i = 0; i < document.lineCount; i++) {
 			indentedLines[i] = false;

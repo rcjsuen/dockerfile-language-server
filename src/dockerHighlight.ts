@@ -7,33 +7,34 @@
 import {
 	TextDocument, Position, DocumentHighlight, DocumentHighlightKind
 } from 'vscode-languageserver';
-import { DockerfileParser } from './parser/dockerfileParser';
-import { From } from './parser/instructions/from';
+import { DockerfileParser, From } from 'dockerfile-ast';
 import { DockerDefinition } from './dockerDefinition';
 import { Util } from './docker';
 
 export class DockerHighlight {
 
 	public computeHighlightRanges(document: TextDocument, position: Position): DocumentHighlight[] {
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
+		let dockerfile = DockerfileParser.parse(document.getText());
 		let provider = new DockerDefinition();
 		let location = provider.computeDefinition(document, position);
 		let image = location === null ? dockerfile.getContainingImage(position) : dockerfile.getContainingImage(location.range.start);
 		const highlights: DocumentHighlight[] = [];
 		if (location === null) {
 			for (let instruction of dockerfile.getCOPYs()) {
-				let range = instruction.getFromValueRange();
-				if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
-					let stage = instruction.getFromValue();
-
-					for (let instruction of dockerfile.getCOPYs()) {
-						let source = instruction.getFromValue();
-						if (source === stage) {
-							highlights.push(DocumentHighlight.create(instruction.getFromValueRange(), DocumentHighlightKind.Read));
+				let flag = instruction.getFromFlag();
+				if (flag) {
+					let range = flag.getValueRange();
+					if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
+						let stage = flag.getValue();
+	
+						for (let other of dockerfile.getCOPYs()) {
+							let otherFlag = other.getFromFlag();
+							if (otherFlag && otherFlag.getValue() === stage) {
+								highlights.push(DocumentHighlight.create(otherFlag.getValueRange(), DocumentHighlightKind.Read));
+							}
 						}
+						return highlights;
 					}
-					return highlights;
 				}
 			}
 
@@ -79,9 +80,11 @@ export class DockerHighlight {
 				if (range && range.start.line === location.range.start.line) {
 					highlights.push(DocumentHighlight.create(location.range, DocumentHighlightKind.Write));
 					for (let instruction of dockerfile.getCOPYs()) {
-						let source = instruction.getFromValue();
-						if (source === definition) {
-							highlights.push(DocumentHighlight.create(instruction.getFromValueRange(), DocumentHighlightKind.Read));
+						let flag = instruction.getFromFlag();
+						if (flag) {
+							if (flag.getValue() === definition) {
+								highlights.push(DocumentHighlight.create(flag.getValueRange(), DocumentHighlightKind.Read));
+							}
 						}
 					}
 					return highlights;

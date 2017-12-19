@@ -7,13 +7,8 @@
 import {
 	TextDocument, TextDocumentPositionParams, Hover, Position
 } from 'vscode-languageserver';
-import { DockerfileParser } from './parser/dockerfileParser';
-import { Arg } from './parser/instructions/arg';
-import { Env } from './parser/instructions/env';
-import { Instruction } from './parser/instruction';
-import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
-import { Onbuild } from './parser/instructions/onbuild';
-import { Util, DIRECTIVE_ESCAPE } from './docker';
+import { DockerfileParser, Arg, Env, Instruction, ModifiableInstruction, Onbuild, Directive } from 'dockerfile-ast';
+import { Util } from './docker';
 import { MarkdownDocumentation } from './dockerMarkdown';
 import { DockerDefinition } from './dockerDefinition';
 
@@ -26,15 +21,14 @@ export class DockerHover {
 	}
 
 	onHover(document: TextDocument, textDocumentPosition: TextDocumentPositionParams): Hover | null {
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
+		let dockerfile = DockerfileParser.parse(document.getText());
 		let directive = dockerfile.getDirective();
 		let image = dockerfile.getContainingImage(textDocumentPosition.position);
 
-		if (textDocumentPosition.position.line === 0 && directive !== null && directive.getDirective() === DIRECTIVE_ESCAPE) {
+		if (textDocumentPosition.position.line === 0 && directive !== null && directive.getDirective() === Directive.escape) {
 			let range = directive.getNameRange();
 			if (Util.isInsideRange(textDocumentPosition.position, range)) {
-				return this.markdown.getMarkdown(DIRECTIVE_ESCAPE);
+				return this.markdown.getMarkdown(Directive.escape);
 			}
 		}
 

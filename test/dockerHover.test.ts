@@ -140,21 +140,6 @@ describe("Dockerfile hover", function() {
 			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
 		});
 
-		it("fr\\\\roM", function() {
-			let document = createDocument("fr\\\roM node");
-			let hover = onHover(document, 0, 0);
-			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
-
-			hover = onHover(document, 0, 1);
-			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
-
-			hover = onHover(document, 1, 1);
-			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
-
-			hover = onHover(document, 1, 1);
-			assert.equal(hover, markdownDocumentation.getMarkdown("FROM"));
-		});
-
 		it("fr\\\\r\\noM", function() {
 			let document = createDocument("fr\\\r\noM node");
 			let hover = onHover(document, 0, 0);
@@ -258,10 +243,6 @@ describe("Dockerfile hover", function() {
 					let hover = onHover(document, 1, 0);
 					assert.equal(hover.contents, "y");
 
-					document = createDocument(instruction + " \\ \t\rz" + delimiter + "y");
-					hover = onHover(document, 1, 0);
-					assert.equal(hover.contents, "y");
-
 					document = createDocument(instruction + " \\ \t\r\nz" + delimiter + "y");
 					hover = onHover(document, 1, 0);
 					assert.equal(hover.contents, "y");
@@ -304,16 +285,10 @@ describe("Dockerfile hover", function() {
 					hover = onHoverString(instruction + " a" + delimiter + "a\\\nx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
-					hover = onHoverString(instruction + " a" + delimiter + "a\\\rx", 0, 5);
-					assert.equal(hover.contents, "ax");
-
 					hover = onHoverString(instruction + " a" + delimiter + "a\\\r\nx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
 					hover = onHoverString(instruction + " a" + delimiter + "a\\  \nx", 0, 5);
-					assert.equal(hover.contents, "ax");
-
-					hover = onHoverString(instruction + " a" + delimiter + "a\\ \t \rx", 0, 5);
 					assert.equal(hover.contents, "ax");
 
 					hover = onHoverString(instruction + " a" + delimiter + "a\\  \t\t\r\nx", 0, 5);
@@ -1963,10 +1938,6 @@ describe("Dockerfile hover", function() {
 		it("ONBUILD EXPOSE escaped on newline", function() {
 			let document = createDocument("ONBUILD \\\nEXPOSE 8080");
 			let hover = onHover(document, 1, 3);
-			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
-
-			document = createDocument("ONBUILD \\\rEXPOSE 8080");
-			hover = onHover(document, 1, 3);
 			assert.equal(hover, markdownDocumentation.getMarkdown("EXPOSE"));
 
 			document = createDocument("ONBUILD \\\r\nEXPOSE 8080");

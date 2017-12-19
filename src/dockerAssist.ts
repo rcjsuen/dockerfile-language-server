@@ -8,15 +8,12 @@ import {
 	TextDocument, TextEdit, Range, Position,
 	CompletionItem, CompletionItemKind, InsertTextFormat
 } from 'vscode-languageserver';
-import { Util, KEYWORDS, DIRECTIVE_ESCAPE } from './docker';
-import { Dockerfile } from './parser/dockerfile';
+import { Util, KEYWORDS } from './docker';
 import { DockerRegistryClient } from './dockerRegistryClient';
-import { DockerfileParser } from './parser/dockerfileParser';
-import { Copy } from './parser/instructions/copy';
-import { From } from './parser/instructions/from';
-import { Healthcheck } from './parser/instructions/healthcheck';
-import { Onbuild } from './parser/instructions/onbuild';
-import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
+import { DockerfileParser, Dockerfile,
+	Copy, From, Healthcheck, Onbuild,
+	ModifiableInstruction, Directive, DefaultVariables
+} from 'dockerfile-ast';
 
 export class DockerAssist {
 
@@ -44,8 +41,7 @@ export class DockerAssist {
 	public computeProposals(document: TextDocument, position: Position): CompletionItem[] | PromiseLike<CompletionItem[]> {
 		let buffer = document.getText();
 		let offset = document.offsetAt(position);
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
+		let dockerfile = DockerfileParser.parse(buffer);
 		let escapeCharacter = dockerfile.getEscapeCharacter();
 
 		let directive = dockerfile.getDirective();
@@ -53,10 +49,10 @@ export class DockerAssist {
 			let range = directive.getNameRange();
 			if (position.character <= range.start.character) {
 				// in whitespace before the directive's name
-				return [ this.createEscape(0, offset, DIRECTIVE_ESCAPE) ];
+				return [this.createEscape(0, offset, Directive.escape)];
 			} else if (position.character <= range.end.character) {
 				// in the name
-				return [ this.createEscape(position.character - range.start.character, offset, DIRECTIVE_ESCAPE) ];
+				return [this.createEscape(position.character - range.start.character, offset, Directive.escape)];
 			}
 			return [];
 		}
@@ -73,15 +69,15 @@ export class DockerAssist {
 						let range = comments[0].getContentRange();
 						if (range === null || position.character <= range.start.character) {
 							// in whitespace
-							return [ this.createEscape(0, offset, DIRECTIVE_ESCAPE) ];
+							return [this.createEscape(0, offset, Directive.escape)];
 						}
 						let comment = comments[0].getContent();
 						if (position.character <= range.end.character) {
 							// within the content
 							let prefix = comment.substring(0, position.character - range.start.character);
 							// substring check
-							if (DIRECTIVE_ESCAPE.indexOf(prefix.toLowerCase()) === 0) {
-								return [ this.createEscape(prefix.length, offset, DIRECTIVE_ESCAPE) ];
+							if (Directive.escape.indexOf(prefix.toLowerCase()) === 0) {
+								return [this.createEscape(prefix.length, offset, Directive.escape)];
 							}
 						}
 						return [];
@@ -110,29 +106,49 @@ export class DockerAssist {
 					// get the variable's prefix thus far
 					var variablePrefix = prefix.substring(index + 1).toLowerCase();
 					let prefixLength = variablePrefix.length + 1;
+					const items: CompletionItem[] = [];
 					if (variablePrefix === "") {
 						// empty prefix, return all variables
-						const items: CompletionItem[] = [];
-						for (let variable of dockerfile.getVariableNames(position.line)) {
-							let doc = dockerfile.getVariableValue(variable, position.line);
+						for (let variable of dockerfile.getAvailableVariables(position.line)) {
+							let doc = dockerfile.resolveVariable(variable, position.line);
 							items.push(this.createVariableCompletionItem(variable, prefixLength, offset, true, doc));
 						}
-						return items;
+
+						for (let variable of DefaultVariables) {
+							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
+								let doc = dockerfile.resolveVariable(variable, position.line);
+								items.push(this.createVariableCompletionItem(variable, prefixLength, offset, true, doc));
+							}
+						}
 					} else {
 						let brace = false;
 						if (variablePrefix.charAt(0) === '{') {
 							brace = true;
 							variablePrefix = variablePrefix.substring(1);
 						}
-						const items: CompletionItem[] = [];
-						for (let variable of dockerfile.getVariableNames(position.line)) {
+						for (let variable of dockerfile.getAvailableVariables(position.line)) {
 							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
-							let doc = dockerfile.getVariableValue(variable, position.line);
-							items.push(this.createVariableCompletionItem(variable, prefixLength, offset, brace, doc));
+								let doc = dockerfile.resolveVariable(variable, position.line);
+								items.push(this.createVariableCompletionItem(variable, prefixLength, offset, brace, doc));
 							}
 						}
-						return items;
+
+						for (let variable of DefaultVariables) {
+							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
+								let doc = dockerfile.resolveVariable(variable, position.line);
+								items.push(this.createVariableCompletionItem(variable, prefixLength, offset, brace, doc));
+							}
+						}
 					}
+
+					items.sort((a: CompletionItem, b: CompletionItem) => {
+						if (a.label.toLowerCase() === b.label.toLowerCase()) {
+							// put uppercase variables first
+							return a.label.localeCompare(b.label) * -1;	
+						}
+						return a.label.localeCompare(b.label);
+					});
+					return items;
 				}
 			}
 		}
@@ -186,7 +202,7 @@ export class DockerAssist {
 		if (prefix === "") {
 			if (dockerfile.getInstructions().length === 0) {
 				// if we don't have any instructions, only suggest FROM
-				return [ this.createFROM(0, offset, "FROM") ];
+				return [this.createFROM(0, offset, "FROM")];
 			}
 			// no prefix, return all the proposals
 			return this.createProposals(KEYWORDS, previousWord, 0, offset);
@@ -246,30 +262,30 @@ export class DockerAssist {
 		const flags = add.getFlags();
 		let copyArgs = add.getArguments();
 		if (copyArgs.length === 0 && add.getFlags().length === 0) {
-			return [ this.createCOPY_FlagChown(0, offset) ];
+			return [this.createCOPY_FlagChown(0, offset)];
 		} else if (copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && prefix === "-") {
-			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
+			return [this.createCOPY_FlagChown(prefix.length, offset)];
 		} else if (flags.length > 0 && flags[0].toString() === "--") {
-			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
+			return [this.createCOPY_FlagChown(prefix.length, offset)];
 		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--chown=".indexOf(prefix) === 0)
-				|| (flags.length > 0 && "--chown=".indexOf(flags[0].toString()) === 0)) {
-			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
+			|| (flags.length > 0 && "--chown=".indexOf(flags[0].toString()) === 0)) {
+			return [this.createCOPY_FlagChown(prefix.length, offset)];
 		}
 
 		return [];
 	}
 
 	private createCopyProposals(dockerfile: Dockerfile, copy: Copy, position: Position, offset: number, prefix: string) {
-		let range = copy.getFromValueRange();
+		let flag = copy.getFromFlag();
 		// is the user in the --from= area
-		if (range && Util.isInsideRange(position, range)) {
+		if (flag && Util.isInsideRange(position, flag.getValueRange())) {
 			const names: { [key: string]: boolean; } = {};
 			const items: CompletionItem[] = [];
 			let stageIndex = 0;
 			// determines if the last build stage was named or not
 			let lastNumber = false;
 			// get the prefix
-			let stagePrefix = this.document.getText().substring(this.document.offsetAt(range.start), offset).toLowerCase();
+			let stagePrefix = this.document.getText().substring(this.document.offsetAt(flag.getValueRange().start), offset).toLowerCase();
 			for (let from of dockerfile.getFROMs()) {
 				if (copy.isAfter(from)) {
 					const image = from.getImage();
@@ -302,17 +318,17 @@ export class DockerAssist {
 		const flags = copy.getFlags();
 		let copyArgs = copy.getArguments();
 		if (copyArgs.length === 0 && copy.getFlags().length === 0) {
-			return [ this.createCOPY_FlagChown(0, offset), this.createCOPY_FlagFrom(0, offset) ];
+			return [this.createCOPY_FlagChown(0, offset), this.createCOPY_FlagFrom(0, offset)];
 		} else if (copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && prefix === "-") {
-			return [ this.createCOPY_FlagChown(prefix.length, offset), this.createCOPY_FlagFrom(prefix.length, offset) ];
+			return [this.createCOPY_FlagChown(prefix.length, offset), this.createCOPY_FlagFrom(prefix.length, offset)];
 		} else if (flags.length > 0 && flags[0].toString() === "--") {
-			return [ this.createCOPY_FlagChown(prefix.length, offset), this.createCOPY_FlagFrom(prefix.length, offset) ];
+			return [this.createCOPY_FlagChown(prefix.length, offset), this.createCOPY_FlagFrom(prefix.length, offset)];
 		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--chown=".indexOf(prefix) === 0)
-				|| (flags.length > 0 && "--chown=".indexOf(flags[0].toString()) === 0)) {
-			return [ this.createCOPY_FlagChown(prefix.length, offset) ];
+			|| (flags.length > 0 && "--chown=".indexOf(flags[0].toString()) === 0)) {
+			return [this.createCOPY_FlagChown(prefix.length, offset)];
 		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--from=".indexOf(prefix) === 0)
-				|| (flags.length > 0 && "--from=".indexOf(flags[0].toString()) === 0)) {
-			return [ this.createCOPY_FlagFrom(prefix.length, offset) ];
+			|| (flags.length > 0 && "--from=".indexOf(flags[0].toString()) === 0)) {
+			return [this.createCOPY_FlagFrom(prefix.length, offset)];
 		}
 
 		return [];
@@ -634,7 +650,7 @@ export class DockerAssist {
 	}
 
 	createEscape(prefixLength: number, offset: number, markdown: string): CompletionItem {
-		return this.createKeywordCompletionItem(DIRECTIVE_ESCAPE, "escape=`", prefixLength, offset, "escape=${1:`}", markdown);
+		return this.createKeywordCompletionItem(Directive.escape, "escape=`", prefixLength, offset, "escape=${1:`}", markdown);
 	}
 
 	createKeywordCompletionItem(keyword: string, label: string, prefixLength: number, offset: number, insertText: string, markdown: string): CompletionItem {

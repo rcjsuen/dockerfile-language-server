@@ -5,15 +5,8 @@
 import {
 	TextDocument, Range, Position, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
-import { Dockerfile } from './parser/dockerfile';
-import { Flag } from './parser/flag';
-import { Instruction } from './parser/instruction';
-import { Env } from './parser/instructions/env';
-import { Label } from './parser/instructions/label';
-import { Onbuild } from './parser/instructions/onbuild';
-import { ModifiableInstruction } from './parser/instructions/modifiableInstruction';
-import { DockerfileParser } from './parser/dockerfileParser';
-import { DIRECTIVE_ESCAPE, KEYWORDS } from './docker';
+import { Dockerfile, Flag, Instruction, Env, Label, Onbuild, ModifiableInstruction, DockerfileParser, Directive } from 'dockerfile-ast';
+import { KEYWORDS } from './docker';
 import { ValidatorSettings } from './dockerValidatorSettings';
 
 export enum ValidationCode {
@@ -99,14 +92,14 @@ export class Validator {
 
 		let directiveName = directive.getDirective();
 		let value = directive.getValue();
-		if (directiveName === DIRECTIVE_ESCAPE) {
+		if (directiveName === Directive.escape) {
 			if (value !== '\\' && value !== '`' && value !== "") {
 				// if the directive's value is invalid or isn't the empty string, flag it
 				let range = directive.getValueRange();
 				problems.push(Validator.createInvalidEscapeDirective(range.start, range.end, value));
 			}
 
-			if (directive.getName() !== DIRECTIVE_ESCAPE) {
+			if (directive.getName() !== Directive.escape) {
 				let range = directive.getNameRange();
 				let diagnostic = this.createLowercaseDirective(range.start, range.end);
 				if (diagnostic) {
@@ -172,8 +165,7 @@ export class Validator {
 	validate(document: TextDocument): Diagnostic[] {
 		this.document = document;
 		let problems: Diagnostic[] = [];
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
+		let dockerfile = DockerfileParser.parse(document.getText());
 		this.parseDirective(dockerfile, problems);
 		let instructions = dockerfile.getInstructions();
 		if (instructions.length === 0 || dockerfile.getARGs().length === instructions.length) {

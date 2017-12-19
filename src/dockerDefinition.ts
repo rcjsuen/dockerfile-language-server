@@ -6,22 +6,23 @@
 
 import { TextDocument, Position, Location } from 'vscode-languageserver';
 import { Util } from './docker';
-import { Dockerfile } from './parser/dockerfile';
-import { DockerfileParser } from './parser/dockerfileParser';
-import { ImageTemplate } from './parser/imageTemplate';
-import { Property } from './parser/property';
-import { Arg } from './parser/instructions/arg';
-import { Env } from './parser/instructions/env';
+import {
+	DockerfileParser, Dockerfile, ImageTemplate,
+	Property, Arg, Env
+} from 'dockerfile-ast';
 
 export class DockerDefinition {
 
 	private computeBuildStageDefinition(uri: string, dockerfile: Dockerfile, position: Position): Location | null {
 		let source = undefined;
 		for (let instruction of dockerfile.getCOPYs()) {
-			let range = instruction.getFromValueRange();
-			if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
-				source = instruction.getFromValue();
-				break;
+			let flag = instruction.getFromFlag();
+			if (flag) {
+				let range = flag.getValueRange();
+				if (range && range.start.line === position.line && range.start.character <= position.character && position.character <= range.end.character) {
+					source = flag.getValue();
+					break;
+				}
 			}
 		}
 
@@ -116,8 +117,7 @@ export class DockerDefinition {
 	}
 
 	public computeDefinition(document: TextDocument, position: Position): Location | null {
-		let parser = new DockerfileParser();
-		let dockerfile = parser.parse(document);
+		let dockerfile = DockerfileParser.parse(document.getText());
 		let definition = this.computeBuildStageDefinition(document.uri, dockerfile, position);
 		if (definition !== null) {
 			return definition;
