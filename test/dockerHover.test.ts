@@ -768,7 +768,7 @@ describe("Dockerfile hover", function() {
 					assert.equal(hover.contents, "value");
 
 					document = createDocument(
-						"FROM alpine\n" + instruction + " var" + delimiter + "value\nRUN echo \"$var\"" +
+						"FROM alpine\n" + instruction + " var" + delimiter + "value\nRUN echo \"$var\"\n" +
 						"FROM alpine\nRUN echo \"$var\""
 					);
 					hover = onHover(document, 2, 12);
