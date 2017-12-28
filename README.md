@@ -49,7 +49,7 @@ npm install -g dockerfile-language-server-nodejs
 
 After the installation has completed, you can start the language
 server with the `docker-langserver` binary. You should specify
-the desired method of communciating with the language server via one
+the desired method of communicating with the language server via one
 of the three arguments shown below.
 
 ```
