@@ -19,6 +19,7 @@ Supported features:
 
 Projects that use this language server:
 - [vscode-docker](https://github.com/Microsoft/vscode-docker)
+- [atom-ide-docker](https://github.com/josa42/atom-ide-docker)
 
 ## Development Instructions
 
