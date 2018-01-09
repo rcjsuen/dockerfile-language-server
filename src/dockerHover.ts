@@ -103,10 +103,28 @@ export class DockerHover {
 
 	private getFlagsHover(position: Position, instruction: Instruction): Hover {
 		switch (instruction.getKeyword()) {
+			case "ADD":
+				let addFlags = (instruction as ModifiableInstruction).getFlags();
+				for (let flag of addFlags) {
+					if (Util.isInsideRange(position, flag.getNameRange())) {
+						switch (flag.getName()) {
+							case "chown":
+								return this.markdown.getMarkdown("ADD_FlagChown");
+						}
+					}
+				}
+				break;
 			case "COPY":
 				let copyFlags = (instruction as ModifiableInstruction).getFlags();
-				if (copyFlags.length > 0 && Util.isInsideRange(position, copyFlags[0].getNameRange()) && copyFlags[0].getName() === "from") {
-					return this.markdown.getMarkdown("COPY_FlagFrom");
+				for (let flag of copyFlags) {
+					if (Util.isInsideRange(position, flag.getNameRange())) {
+						switch (flag.getName()) {
+							case "chown":
+								return this.markdown.getMarkdown("COPY_FlagChown");
+							case "from":
+								return this.markdown.getMarkdown("COPY_FlagFrom");
+						}
+					}
 				}
 				break;
 			case "HEALTHCHECK":

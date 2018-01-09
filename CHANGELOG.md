@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/completion
   - documentation for ADD and COPY's --chown flag ([#181](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/181))
+- textDocument/hover
+  - ADD and COPY's --chown flag ([#181](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/181))
 
 ### Changed
 - created a dependency on the dockerfile-ast NPM module ([#196](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/196))

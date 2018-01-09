@@ -32,6 +32,8 @@ export class MarkdownDocumentation {
 
 		"hoverOnlineDocumentationFooter": "\n\n[Online documentation](${0})",
 		
+		"hoverAddFlagChown": "The username, groupname, or UID/GID combination to own the added content.",
+		"hoverCopyFlagChown": "The username, groupname, or UID/GID combination to own the copied content.",
 		"hoverCopyFlagFrom": "The previous build stage to use as the source location instead of the build's context.\n\nSince Docker 17.05.0-ce.",
 		"hoverHealthcheckFlagInterval": "The seconds to wait for the health check to run after the container has started, and then again the number of seconds to wait before running again after the previous check has completed.",
 		"hoverHealthcheckFlagRetries": "The number of consecutive failures of this health check before the container is considered to be `unhealthy`.",
@@ -55,6 +57,10 @@ export class MarkdownDocumentation {
 					"ADD hello.txt relative/to/workdir\n" +
 					"```" + 
 					this.formatMessage(this.dockerMessages["hoverOnlineDocumentationFooter"], "https://docs.docker.com/engine/reference/builder/#add")
+			},
+
+			ADD_FlagChown: {
+				contents:  this.dockerMessages["hoverAddFlagChown"]
 			},
 
 			ARG: {
@@ -81,6 +87,10 @@ export class MarkdownDocumentation {
 					"COPY hello.txt relative/to/workdir\n" +
 					"```" + 
 					this.formatMessage(this.dockerMessages["hoverOnlineDocumentationFooter"], "https://docs.docker.com/engine/reference/builder/#copy")
+			},
+
+			COPY_FlagChown: {
+				contents:  this.dockerMessages["hoverCopyFlagChown"]
 			},
 
 			COPY_FlagFrom: {

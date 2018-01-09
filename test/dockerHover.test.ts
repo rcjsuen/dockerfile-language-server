@@ -184,6 +184,58 @@ describe("Dockerfile hover", function() {
 			assert.equal(hover, null);
 		});
 
+		function createAddTest(trigger: boolean) {
+			let onbuild = trigger ? "ONBUILD " : "";
+			let triggerOffset = onbuild.length;
+
+			describe("ADD", function() {
+				it("--chown", function() {
+					let document = createDocument(onbuild + "ADD --chown");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.notEqual(hover, null);
+					assert.equal(hover, markdownDocumentation.getMarkdown("ADD_FlagChown"));
+				});
+
+				it("--chown=\\$user", function() {
+					let document = createDocument(onbuild + "ADD --chown=\\$user");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.notEqual(hover, null);
+					assert.equal(hover, markdownDocumentation.getMarkdown("ADD_FlagChown"));
+				});
+
+				it("--chown=\\root", function() {
+					let document = createDocument(onbuild + "ADD --chown=\\root");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.notEqual(hover, null);
+					assert.equal(hover, markdownDocumentation.getMarkdown("ADD_FlagChown"));
+				});
+
+				it("--CHOWN", function() {
+					let document = createDocument(onbuild + "ADD --FROM");
+					let hover = onHover(document, 0, triggerOffset + 9);
+					assert.equal(hover, null);
+				});
+
+				it("whitespace", function() {
+					let document = createDocument(onbuild + "ADD  --from");
+					let hover = onHover(document, 0, triggerOffset + 5);
+					assert.equal(hover, null);
+				});
+
+				it("flag after", function() {
+					let document = createDocument(onbuild + "ADD app --chown=root app");
+					let hover = onHover(document, 0, triggerOffset + 13);
+					assert.equal(hover, null);
+
+					document = createDocument(onbuild + "ADD app app --chown=root");
+					hover = onHover(document, 0, triggerOffset + 17);
+					assert.equal(hover, null);
+				});
+			});
+		}
+
+		createAddTest(false);
+
 		function createVariablesTest(testSuiteName: string, instruction: string, delimiter: string) {
 			const space = delimiter === " ";
 
@@ -1000,47 +1052,94 @@ describe("Dockerfile hover", function() {
 			let triggerOffset = onbuild.length;
 
 			describe("COPY", function() {
-				it("--from", function() {
-					let document = createDocument(onbuild + "COPY --from");
-					let hover = onHover(document, 0, triggerOffset + 9);
-					assert.notEqual(hover, null);
-					assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
+				describe("--from flag", function() {
+					it("--from", function() {
+						let document = createDocument(onbuild + "COPY --from");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.notEqual(hover, null);
+						assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
+					});
+
+					it("--from=\\$x", function() {
+						let document = createDocument(onbuild + "COPY --from=\\$x");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.notEqual(hover, null);
+						assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
+					});
+
+					it("--from=\\a", function() {
+						let document = createDocument(onbuild + "COPY --from=\\a");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.notEqual(hover, null);
+						assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
+					});
+
+					it("--FROM", function() {
+						let document = createDocument(onbuild + "COPY --FROM");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.equal(hover, null);
+					});
+
+					it("flag after", function() {
+						let document = createDocument(onbuild + "COPY app --from=alpine app");
+						let hover = onHover(document, 0, triggerOffset + 13);
+						assert.equal(hover, null);
+
+						document = createDocument(onbuild + "COPY app app --from=alpine");
+						hover = onHover(document, 0, triggerOffset + 18);
+						assert.equal(hover, null);
+					});
+
+					it("whitespace", function() {
+						let document = createDocument(onbuild + "COPY  --from");
+						let hover = onHover(document, 0, triggerOffset + 5);
+						assert.equal(hover, null);
+					});
 				});
 
-				it("--from=\\$x", function() {
-					let document = createDocument(onbuild + "COPY --from=\\$x");
-					let hover = onHover(document, 0, triggerOffset + 9);
-					assert.notEqual(hover, null);
-					assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
-				});
+				describe("--chown flag", function() {
+					it("--chown", function() {
+						let document = createDocument(onbuild + "COPY --chown");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.notEqual(hover, null);
+						assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagChown"));
+					});
 
-				it("--from=\\a", function() {
-					let document = createDocument(onbuild + "COPY --from=\\a");
-					let hover = onHover(document, 0, triggerOffset + 9);
-					assert.notEqual(hover, null);
-					assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagFrom"));
-				});
+					it("--chown=\\$user", function() {
+						let document = createDocument(onbuild + "COPY --chown=\\$x");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.notEqual(hover, null);
+						assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagChown"));
+					});
 
-				it("--FROM", function() {
-					let document = createDocument(onbuild + "COPY --FROM");
-					let hover = onHover(document, 0, triggerOffset + 9);
-					assert.equal(hover, null);
-				});
+					it("--chown=\\root", function() {
+						let document = createDocument(onbuild + "COPY --chown=\\a");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.notEqual(hover, null);
+						assert.equal(hover, markdownDocumentation.getMarkdown("COPY_FlagChown"));
+					});
 
-				it("whitespace", function() {
-					let document = createDocument(onbuild + "COPY  --from");
-					let hover = onHover(document, 0, triggerOffset + 5);
-					assert.equal(hover, null);
-				});
+					it("--CHOWN", function() {
+						let document = createDocument(onbuild + "COPY --CHOWN");
+						let hover = onHover(document, 0, triggerOffset + 9);
+						assert.equal(hover, null);
+					});
 
-				it("flag after", function() {
-					let document = createDocument(onbuild + "COPY app --from=alpine app");
-					let hover = onHover(document, 0, triggerOffset + 13);
-					assert.equal(hover, null);
+					it("flag after", function() {
+						let document = createDocument(onbuild + "COPY app --chown=alpine app");
+						let hover = onHover(document, 0, triggerOffset + 13);
+						assert.equal(hover, null);
 
-					document = createDocument(onbuild + "COPY app app --from=alpine");
-					hover = onHover(document, 0, triggerOffset + 18);
-					assert.equal(hover, null);
+						document = createDocument(onbuild + "COPY app app --chown=alpine");
+						hover = onHover(document, 0, triggerOffset + 18);
+						assert.equal(hover, null);
+					});
+
+					it("whitespace", function() {
+						let document = createDocument(onbuild + "COPY  --chown");
+						let hover = onHover(document, 0, triggerOffset + 5);
+						assert.equal(hover, null);
+					});
 				});
 			});
 		}
@@ -1722,6 +1821,7 @@ describe("Dockerfile hover", function() {
 		createHealthcheckTest(false);
 
 		describe("ONBUILD", function() {
+			createAddTest(true);
 			createCopyTest(true);
 			createHealthcheckTest(true);
 		});
