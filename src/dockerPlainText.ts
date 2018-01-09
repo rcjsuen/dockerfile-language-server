@@ -26,6 +26,8 @@ export class PlainTextDocumentation {
 		"hoverVolume": "Create a mount point with the specifid name and mark it as holding externally mounted volumes from the native host or from other containers.\n\n",
 		"hoverWorkdir": "Set the working directory for any subsequent ADD, COPY, CMD, ENTRYPOINT, or RUN` instructions that follow it in the `Dockerfile`.\n\n",
 
+		"hoverAddFlagChown": "The username, groupname, or UID/GID combination to own the added content.",
+		"hoverCopyFlagChown": "The username, groupname, or UID/GID combination to own the copied content.",
 		"hoverCopyFlagFrom": "The previous build stage to use as the source location instead of the build's context.\n\nSince Docker 17.05.0-ce.",
 		"hoverHealthcheckFlagInterval": "The seconds to wait for the health check to run after the container has started, and then again the number of seconds to wait before running again after the previous check has completed.",
 		"hoverHealthcheckFlagRetries": "The number of consecutive failures of this health check before the container is considered to be `unhealthy`.",
@@ -116,6 +118,8 @@ export class PlainTextDocumentation {
 				"ADD hello.txt relative/to/workdir"
 			,
 
+			ADD_FlagChown: this.dockerMessages["hoverAddFlagChown"],
+
 			ARG: this.dockerMessages["hoverArg"] +
 				"ARG userName\n" +
 				"ARG testOutputDir=test"
@@ -137,6 +141,8 @@ export class PlainTextDocumentation {
 				"COPY hello.txt /absolute/path\n" +
 				"COPY hello.txt relative/to/workdir"
 			,
+
+			COPY_FlagChown: this.dockerMessages["hoverCopyFlagChown"],
 
 			COPY_FlagFrom: this.dockerMessages["hoverCopyFlagFrom"],
 

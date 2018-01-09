@@ -262,14 +262,14 @@ export class DockerAssist {
 		const flags = add.getFlags();
 		let copyArgs = add.getArguments();
 		if (copyArgs.length === 0 && add.getFlags().length === 0) {
-			return [this.createCOPY_FlagChown(0, offset)];
+			return [this.createADD_FlagChown(0, offset)];
 		} else if (copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && prefix === "-") {
-			return [this.createCOPY_FlagChown(prefix.length, offset)];
+			return [this.createADD_FlagChown(prefix.length, offset)];
 		} else if (flags.length > 0 && flags[0].toString() === "--") {
-			return [this.createCOPY_FlagChown(prefix.length, offset)];
+			return [this.createADD_FlagChown(prefix.length, offset)];
 		} else if ((copyArgs.length > 0 && Util.isInsideRange(position, copyArgs[0].getRange()) && "--chown=".indexOf(prefix) === 0)
 			|| (flags.length > 0 && "--chown=".indexOf(flags[0].toString()) === 0)) {
-			return [this.createCOPY_FlagChown(prefix.length, offset)];
+			return [this.createADD_FlagChown(prefix.length, offset)];
 		}
 
 		return [];
@@ -561,6 +561,13 @@ export class DockerAssist {
 			kind: CompletionItemKind.Keyword,
 			insertTextFormat: InsertTextFormat.PlainText,
 		};
+	}
+
+	private createADD_FlagChown(prefixLength: number, offset: number): CompletionItem {
+		if (this.snippetSupport) {
+			return this.createFlagCompletionItem("--chown=user:group", prefixLength, offset, "--chown=${1:user\:group}", "ADD_FlagChown");
+		}
+		return this.createFlagCompletionItem("--chown=", prefixLength, offset, "--chown=", "ADD_FlagChown");
 	}
 
 	private createCOPY_FlagChown(prefixLength: number, offset: number): CompletionItem {
