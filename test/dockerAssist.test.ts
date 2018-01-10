@@ -2214,6 +2214,9 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 2, false);
 				assertVariable("ftp_proxy", items[1], 1, 9, 2, false);
+
+				items = computePosition("FROM busybox\nARG foo=env\nRUN echo $o", 3, 11);
+				assert.equal(items.length, 0);
 			});
 
 			it("ENV variable", function() {
@@ -2264,6 +2267,9 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 2, false);
 				assertVariable("ftp_proxy", items[1], 1, 9, 2, false);
+
+				items = computePosition("FROM busybox\nENV foo=env\nRUN echo $o", 3, 11);
+				assert.equal(items.length, 0);
 			});
 
 			it("ARG and ENV variable", function() {
@@ -2298,10 +2304,18 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 2, false);
 				assertVariable("ftp_proxy", items[1], 1, 9, 2, false);
+
+				items = computePosition("FROM busybox\nARG foo=arg\nENV foo=env\nRUN echo $o", 3, 11);
+				assert.equal(items.length, 0);
 			});
 			
 			it("escaped", function() {
 				let items = computePosition("FROM busybox\nRUN echo \\$", 1, 11);
+				assert.equal(items.length, 0);
+			});
+
+			it("non-existent", function() {
+				let items = computePosition("FROM busybox\nRUN echo $x", 1, 11);
 				assert.equal(items.length, 0);
 			});
 		});
@@ -2349,6 +2363,9 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 3, true);
 				assertVariable("ftp_proxy", items[1], 1, 9, 3, true);
+
+				items = computePosition("FROM busybox\nARG foo=env\nRUN echo ${o", 2, 12);
+				assert.equal(items.length, 0);
 			});
 
 			it("ENV variable", function() {
@@ -2376,6 +2393,9 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 3, true);
 				assertVariable("ftp_proxy", items[1], 1, 9, 3, true);
+
+				items = computePosition("FROM busybox\nENV foo=env\nRUN echo ${o", 2, 12);
+				assert.equal(items.length, 0);
 			});
 
 			it("ARG and ENV variable", function() {
@@ -2397,10 +2417,18 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 1, 9, 3, true);
 				assertVariable("ftp_proxy", items[1], 1, 9, 3, true);
+
+				items = computePosition("FROM busybox\nARG foo=arg\nENV foo=env\nRUN echo ${o", 3, 12);
+				assert.equal(items.length, 0);
 			});
 			
 			it("escaped", function() {
 				let items = computePosition("FROM busybox\nRUN echo \\${", 1, 12);
+				assert.equal(items.length, 0);
+			});
+
+			it("non-existent", function() {
+				let items = computePosition("FROM busybox\nRUN echo ${x", 1, 12);
 				assert.equal(items.length, 0);
 			});
 		});
