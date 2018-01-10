@@ -115,10 +115,8 @@ export class DockerAssist {
 						}
 
 						for (let variable of DefaultVariables) {
-							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
-								let doc = dockerfile.resolveVariable(variable, position.line);
-								items.push(this.createVariableCompletionItem(variable, prefixLength, offset, true, doc));
-							}
+							let doc = dockerfile.resolveVariable(variable, position.line);
+							items.push(this.createVariableCompletionItem(variable, prefixLength, offset, true, doc));
 						}
 					} else {
 						let brace = false;
