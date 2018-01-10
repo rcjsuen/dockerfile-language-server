@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.0.12] - 2018-0-11
 ### Added
 - textDocument/completion
   - documentation for ADD and COPY's --chown flag ([#181](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/181))
@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - prevent signature help from showing in a multiline instruction's embedded comment ([#195](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/195))
+- publish the docker-langserver binary with \n line endings for OS X ([#198](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/198))
 
 ### Removed
 - remove Dockerfile parsing code in src/parser ([#196](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/196))
@@ -265,7 +266,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.11...HEAD
+[0.0.12]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.8...v0.0.9
