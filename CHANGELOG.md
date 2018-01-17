@@ -3,13 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## [0.0.12] - 2018-01-11
 ### Added
+- create dependency on the dockerfile-ast NPM module ([#196](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/196))
 - textDocument/completion
   - documentation for ADD and COPY's --chown flag ([#181](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/181))
 - textDocument/hover
   - ADD and COPY's --chown flag ([#181](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/181))
-
-### Changed
-- create dependency on the dockerfile-ast NPM module ([#196](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/196))
 
 ### Fixed
 - prevent signature help from showing in a multiline instruction's embedded comment ([#195](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/195))
