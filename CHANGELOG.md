@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [0.0.12] - 2018-0-11
+## [0.0.12] - 2018-01-11
 ### Added
 - textDocument/completion
   - documentation for ADD and COPY's --chown flag ([#181](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/181))
