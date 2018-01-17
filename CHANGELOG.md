@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - ignore ARG variables with no default values in an EXPOSE ([#199](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/199))
 
 ### Removed
-- remove validation code and tests in favor of the dockerfile-utils module ([#196](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/196))
+- remove validation code and tests in favor of the dockerfile-utils module ([#79](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/79))
 
 ## [0.0.12] - 2018-01-11
 ### Added
