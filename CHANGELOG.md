@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- create dependency on the dockerfile-utils module ([#79](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/79))
+
+### Fixed
+- ignore ARG variables with no default values in an EXPOSE ([#199](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/199))
+
+### Removed
+- remove validation code and tests in favor of the dockerfile-utils module ([#196](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/196))
+
 ## [0.0.12] - 2018-01-11
 ### Added
 - create dependency on the dockerfile-ast NPM module ([#196](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/196))
@@ -264,6 +274,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.12...HEAD
 [0.0.12]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.9...v0.0.10

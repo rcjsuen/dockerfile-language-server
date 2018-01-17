@@ -7,7 +7,7 @@ import * as assert from "assert";
 import {
 	TextDocument, Position, Range, Diagnostic, DiagnosticSeverity
 } from 'vscode-languageserver';
-import { ValidationCode } from '../src/dockerValidator';
+import { ValidationCode } from 'dockerfile-utils';
 import { DockerCommands, CommandIds } from '../src/dockerCommands';
 
 let uri = "uri://host/Dockerfile.sample";

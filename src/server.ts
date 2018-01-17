@@ -15,8 +15,7 @@ import {
 	DidChangeConfigurationNotification, ProposedFeatures
 } from 'vscode-languageserver';
 import { ConfigurationItem } from 'vscode-languageserver-protocol/lib/protocol.configuration.proposed';
-import { Validator, ValidationSeverity } from './dockerValidator';
-import { ValidatorSettings } from './dockerValidatorSettings';
+import { format, validate, ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { DockerAssist } from './dockerAssist';
 import { CommandIds, DockerCommands } from './dockerCommands';
 import { DockerHover } from './dockerHover';
@@ -167,13 +166,11 @@ function validateTextDocument(textDocument: TextDocument): void {
 				instructionEntrypointMultiple: instructionEntrypointMultiple,
 				instructionHealthcheckMultiple: instructionHealthcheckMultiple
 			};
-			const validator = new Validator(fileSettings);
-			const diagnostics = validator.validate(textDocument);
+			const diagnostics = validate(textDocument.getText(), fileSettings);
 			connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 		});
 	} else {
-		const validator = new Validator(validatorSettings);
-		const diagnostics = validator.validate(textDocument);
+		const diagnostics = validate(textDocument.getText(), validatorSettings);
 		connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 	}
 }
@@ -397,7 +394,7 @@ connection.onDocumentSymbol((documentSymbolParams: DocumentSymbolParams): Symbol
 connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingParams): TextEdit[] => {
 	let document = documents[documentFormattingParams.textDocument.uri];
 	if (document) {
-		return formatterProvider.formatDocument(document, documentFormattingParams.options);
+		return format(document.getText(), documentFormattingParams.options);
 	}
 	return [];
 });

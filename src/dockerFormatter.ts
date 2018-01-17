@@ -93,14 +93,6 @@ export class DockerFormatter {
 		return this.format(document, lines, options);
 	}
 
-	public formatDocument(document: TextDocument, options?: FormattingOptions): TextEdit[] {
-		const lines: number[] = [];
-		for (let i = 0; i < document.lineCount; i++) {
-			lines.push(i);
-		}
-		return this.format(document, lines, options);
-	}
-
 	/**
 	 * Formats the specified lines of the given document based on the
 	 * provided formatting options.

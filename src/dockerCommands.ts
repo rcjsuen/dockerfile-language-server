@@ -8,7 +8,7 @@ import {
 	TextDocument, Command, Diagnostic, Range,
 	ExecuteCommandParams, WorkspaceEdit, TextEdit
 } from 'vscode-languageserver';
-import { ValidationCode } from './dockerValidator';
+import { ValidationCode } from 'dockerfile-utils';
 
 export class CommandIds {
 	static readonly LOWERCASE = "docker.command.convertToLowercase";

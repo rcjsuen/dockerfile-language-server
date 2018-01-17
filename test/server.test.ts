@@ -7,7 +7,7 @@ import * as assert from "assert";
 
 import { TextDocumentSyncKind } from 'vscode-languageserver';
 import { CommandIds } from '../src/dockerCommands';
-import { ValidationCode } from '../src/dockerValidator';
+import { ValidationCode } from 'dockerfile-utils';
 
 // fork the server and connect to it using Node IPC
 let lspProcess = child_process.fork("out/src/server.js", [ "--node-ipc" ]);
