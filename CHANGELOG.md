@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - create dependency on the dockerfile-utils module ([#79](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/79))
+- textDocument/publishDiagnostics
+  - warn if COPY's --from flag is invalid ([#149](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/149))
 
 ### Fixed
 - ignore ARG variables with no default values in an EXPOSE ([#199](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/199))
