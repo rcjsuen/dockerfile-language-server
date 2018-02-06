@@ -36,17 +36,11 @@ export class DockerHover {
 			for (let variable of instruction.getVariables()) {
 				// are we hovering over a variable
 				if (Util.isInsideRange(textDocumentPosition.position, variable.getNameRange())) {
-					let instructions = image.getInstructions();
-					for (let i = instructions.length - 1; i >= 0; i--) {
-						// only look for variables defined before the current instruction
-						if (instruction.isAfter(instructions[i]) && instructions[i] instanceof Env) {
-							for (let property of (instructions[i] as Env).getProperties()) {
-								// check that the names match
-								if (property.getName() === variable.getName()) {
-									return property.getValue() !== null ? { contents: property.getValue() } : null;
-								}
-							}
-						}
+					let resolved = image.resolveVariable(variable.getName(), variable.getNameRange().start.line);
+					if (resolved || resolved === "") {
+						return { contents: resolved };
+					} else if (resolved === null) {
+						return null;
 					}
 				}
 			}
