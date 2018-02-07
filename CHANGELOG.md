@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- merge defined and default variables together when suggesting completion items ([#200](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/200))
+
 ## [0.0.13] - 2018-01-19
 ### Added
 - create dependency on the dockerfile-utils module ([#79](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/79))

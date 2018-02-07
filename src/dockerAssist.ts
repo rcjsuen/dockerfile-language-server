@@ -124,14 +124,16 @@ export class DockerAssist {
 							brace = true;
 							variablePrefix = variablePrefix.substring(1);
 						}
-						for (let variable of dockerfile.getAvailableVariables(position.line)) {
-							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
-								let doc = dockerfile.resolveVariable(variable, position.line);
-								items.push(this.createVariableCompletionItem(variable, prefixLength, offset, brace, doc));
+
+						// merge list of available variables with the defaults
+						let variables = dockerfile.getAvailableVariables(position.line);
+						for (let variable of DefaultVariables) {
+							if (variables.indexOf(variable) === -1) {
+								variables.push(variable);
 							}
 						}
 
-						for (let variable of DefaultVariables) {
+						for (let variable of variables) {
 							if (variable.toLowerCase().indexOf(variablePrefix) === 0) {
 								let doc = dockerfile.resolveVariable(variable, position.line);
 								items.push(this.createVariableCompletionItem(variable, prefixLength, offset, brace, doc));

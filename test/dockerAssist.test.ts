@@ -2219,6 +2219,13 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 0);
 			});
 
+			it("ARG variable overlaps with default", function() {
+				let items = computePosition("FROM busybox\nARG FTP_PROXY\nRUN echo $f", 2, 11);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 2, 9, 2, false);
+				assertVariable("ftp_proxy", items[1], 2, 9, 2, false);
+			});
+
 			it("ENV variable", function() {
 				let items = computePosition("FROM busybox\nENV foo=bar\nENV FOO=BAR\nRUN echo $", 3, 10);
 				assert.equal(items.length, 10);
@@ -2272,6 +2279,13 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 0);
 			});
 
+			it("ENV variable overlaps with default", function() {
+				let items = computePosition("FROM busybox\nENV FTP_PROXY=8001\nRUN echo $f", 2, 11);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 2, 9, 2, false, "8001");
+				assertVariable("ftp_proxy", items[1], 2, 9, 2, false);
+			});
+
 			it("ARG and ENV variable", function() {
 				let items = computePosition("FROM busybox\nARG foo=arg\nARG FOO=ARG\nENV foo=env FOO=ENV\nRUN echo $", 4, 10);
 				assert.equal(items.length, 10);
@@ -2308,7 +2322,14 @@ describe('Docker Content Assist Tests', function() {
 				items = computePosition("FROM busybox\nARG foo=arg\nENV foo=env\nRUN echo $o", 3, 11);
 				assert.equal(items.length, 0);
 			});
-			
+
+			it("ARG and ENV variables overlap with default", function() {
+				let items = computePosition("FROM busybox\nARG ftp_proxy\nENV FTP_PROXY=8001\nRUN echo $f", 3, 11);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 3, 9, 2, false, "8001");
+				assertVariable("ftp_proxy", items[1], 3, 9, 2, false);
+			});
+
 			it("escaped", function() {
 				let items = computePosition("FROM busybox\nRUN echo \\$", 1, 11);
 				assert.equal(items.length, 0);
@@ -2368,6 +2389,13 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 0);
 			});
 
+			it("ARG variable overlaps with default", function() {
+				let items = computePosition("FROM busybox\nARG FTP_PROXY\nRUN echo ${f", 2, 12);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 2, 9, 3, true);
+				assertVariable("ftp_proxy", items[1], 2, 9, 3, true);
+			});
+
 			it("ENV variable", function() {
 				let items = computePosition("FROM busybox\nENV foo=bar FOO=BAR\nRUN echo ${F", 2, 12);
 				assert.equal(items.length, 4);
@@ -2398,6 +2426,13 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 0);
 			});
 
+			it("ENV variable overlaps with default", function() {
+				let items = computePosition("FROM busybox\nENV FTP_PROXY=8001\nRUN echo ${f", 2, 12);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 2, 9, 3, true, "8001");
+				assertVariable("ftp_proxy", items[1], 2, 9, 3, true);
+			});
+
 			it("ARG and ENV variable", function() {
 				let items = computePosition("FROM busybox\nARG foo=arg\nARG FOO=ARG\nENV foo=env FOO=ENV\nRUN echo ${F", 4, 12);
 				assert.equal(items.length, 4);
@@ -2421,7 +2456,14 @@ describe('Docker Content Assist Tests', function() {
 				items = computePosition("FROM busybox\nARG foo=arg\nENV foo=env\nRUN echo ${o", 3, 12);
 				assert.equal(items.length, 0);
 			});
-			
+
+			it("ARG and ENV variable overlaps with default", function() {
+				let items = computePosition("FROM busybox\nARG ftp_proxy\nENV FTP_PROXY=8001\nRUN echo ${f", 3, 12);
+				assert.equal(items.length, 2);
+				assertVariable("FTP_PROXY", items[0], 3, 9, 3, true, "8001");
+				assertVariable("ftp_proxy", items[1], 3, 9, 3, true);
+			});
+
 			it("escaped", function() {
 				let items = computePosition("FROM busybox\nRUN echo \\${", 1, 12);
 				assert.equal(items.length, 0);
