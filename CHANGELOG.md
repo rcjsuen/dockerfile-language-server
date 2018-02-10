@@ -280,6 +280,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.13...HEAD
 [0.0.13]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.12...v0.0.13
 [0.0.12]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.10...v0.0.11
