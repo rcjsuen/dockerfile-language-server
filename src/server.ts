@@ -12,7 +12,7 @@ import {
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
-	DidChangeConfigurationNotification, ProposedFeatures
+	DidChangeConfigurationNotification, ProposedFeatures, DocumentLinkParams, DocumentLink
 } from 'vscode-languageserver';
 import { ConfigurationItem } from 'vscode-languageserver-protocol/lib/protocol.configuration.proposed';
 import { format, validate, ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
@@ -28,6 +28,7 @@ import { DockerHighlight } from './dockerHighlight';
 import { DockerRename } from './dockerRename';
 import { DockerDefinition } from './dockerDefinition';
 import { DockerRegistryClient } from './dockerRegistryClient';
+import { DockerLinks } from './dockerLinks';
 
 let markdown = new MarkdownDocumentation();
 let hoverProvider = new DockerHover(markdown);
@@ -37,6 +38,7 @@ let formatterProvider = new DockerFormatter();
 let definitionProvider = new DockerDefinition();
 let documentationResolver = new PlainTextDocumentation();
 let signatureHelp = new DockerSignatures();
+let linksProvider = new DockerLinks();
 
 /**
  * The settings to use for the validator if the client doesn't support
@@ -133,6 +135,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 					' ',
 					'='
 				]
+			},
+			documentLinkProvider: {
+				resolveProvider: false
 			}
 		}
 	}
@@ -413,6 +418,14 @@ connection.onDocumentOnTypeFormatting((onTypeFormattingParams: DocumentOnTypeFor
 		return formatterProvider.formatOnType(document, onTypeFormattingParams.position, onTypeFormattingParams.ch, onTypeFormattingParams.options);
 	}
 	return [];
+});
+
+connection.onDocumentLinks((documentLinkParams: DocumentLinkParams): DocumentLink[] => {
+	let document = documents[documentLinkParams.textDocument.uri];
+	if (document) {
+		return linksProvider.getLinks(document);
+	}
+	return null;
 });
 
 connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {

@@ -11,6 +11,7 @@ To [install and run](#installation-instructions) this language server, you will 
 - definition
 - diagnostics
 - document highlight
+- document links
 - document symbols
 - formatting
 - hovers
