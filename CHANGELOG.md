@@ -2,9 +2,20 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - flag HEALTHCHECK durations that include a hyphen as an error ([rcjsuen/dockerfile-utils#18](https://github.com/rcjsuen/dockerfile-utils/issues/18))
+  - warn if ADD has more than two arguments and its last argument is not a directory ([rcjsuen/dockerfile-utils#17](https://github.com/rcjsuen/dockerfile-utils/issues/17))
+  - warn if COPY has more than two arguments and its last argument is not a directory ([rcjsuen/dockerfile-utils#14](https://github.com/rcjsuen/dockerfile-utils/issues/14))
+  - warn if FROM's base image's digest is invalid ([rcjsuen/dockerfile-utils#15](https://github.com/rcjsuen/dockerfile-utils/issues/15))
+  - warn if FROM's base image's tag is invalid ([rcjsuen/dockerfile-utils#20](https://github.com/rcjsuen/dockerfile-utils/issues/20))
+
 ### Fixed
 - merge defined and default variables together when suggesting completion items ([#200](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/200))
 - do not suggest variables from another build stage as a completion item ([#201](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/201))
+- textDocument/publishDiagnostics
+  - allow decimal values for HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#19](https://github.com/rcjsuen/dockerfile-utils/issues/19))
+  - warn if STOPSIGNAL uses invalid variables for its argument ([rcjsuen/dockerfile-utils#11](https://github.com/rcjsuen/dockerfile-utils/issues/11))
 
 ## [0.0.13] - 2018-01-19
 ### Added
