@@ -5,7 +5,7 @@
 This is a language server for Dockerfiles powered by Node.js written in TypeScript.
 To [install and run](#installation-instructions) this language server, you will need to have either [Node.js](https://nodejs.org/en/download/) or [Docker](https://www.docker.com/get-docker) installed on your computer.
 
-Supported features:
+**Supported features:**
 - code actions
 - code completion
 - definition
@@ -17,7 +17,7 @@ Supported features:
 - rename
 - signature help
 
-Projects that use this language server:
+**Projects that use this language server:**
 - [vscode-docker](https://github.com/Microsoft/vscode-docker)
 - [atom-ide-docker](https://github.com/josa42/atom-ide-docker)
 
