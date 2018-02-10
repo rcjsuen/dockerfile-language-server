@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- textdocument/documentlink
+- textDocument/documentLink
   - create links to hub.docker.com for base image names in FROM ([#204](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/204))
 - textDocument/publishDiagnostics
   - flag HEALTHCHECK durations that include a hyphen as an error ([rcjsuen/dockerfile-utils#18](https://github.com/rcjsuen/dockerfile-utils/issues/18))
