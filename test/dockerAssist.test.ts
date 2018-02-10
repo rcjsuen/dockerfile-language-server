@@ -2330,6 +2330,11 @@ describe('Docker Content Assist Tests', function() {
 				assertVariable("ftp_proxy", items[1], 3, 9, 2, false);
 			});
 
+			it("variable from other build stage ignored", function() {
+				let items = computePosition("FROM scratch\nENV xyz=y\nFROM alpine\nRUN echo $x", 3, 11);
+				assert.equal(items.length, 0);
+			});
+
 			it("escaped", function() {
 				let items = computePosition("FROM busybox\nRUN echo \\$", 1, 11);
 				assert.equal(items.length, 0);
@@ -2462,6 +2467,11 @@ describe('Docker Content Assist Tests', function() {
 				assert.equal(items.length, 2);
 				assertVariable("FTP_PROXY", items[0], 3, 9, 3, true, "8001");
 				assertVariable("ftp_proxy", items[1], 3, 9, 3, true);
+			});
+
+			it("variable from other build stage ignored", function() {
+				let items = computePosition("FROM scratch\nENV xyz=y\nFROM alpine\nRUN echo ${x", 3, 12);
+				assert.equal(items.length, 0);
 			});
 
 			it("escaped", function() {

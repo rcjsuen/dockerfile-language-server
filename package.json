@@ -20,7 +20,7 @@
     "node": "*"
   },
   "dependencies": {
-    "dockerfile-ast": "0.0.1",
+    "dockerfile-ast": "0.0.3",
     "dockerfile-utils": "0.0.5",
     "vscode-languageserver": "^3.5.0-next.1"
   },
