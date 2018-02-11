@@ -22,6 +22,7 @@ export class CommandIds {
 	static readonly FLAG_TO_HEALTHCHECK_RETRIES = "docker.command.flagToHealthcheckRetries";
 	static readonly FLAG_TO_HEALTHCHECK_START_PERIOD = "docker.command.flagToHealthcheckStartPeriod";
 	static readonly FLAG_TO_HEALTHCHECK_TIMEOUT = "docker.command.flagToHealthcheckTimeout";
+	static readonly REMOVE_EMPTY_CONTINUATION_LINE = "docker.command.removeEmptyContinuationLine";
 	static readonly CONVERT_TO_AS = "docker.command.convertToAS";
 }
 
@@ -115,6 +116,21 @@ export class DockerCommands {
 						command: CommandIds.FLAG_TO_COPY_FROM,
 						arguments: [ textDocumentURI, diagnostics[i].range ]
 					});
+					break;
+				case ValidationCode.EMPTY_CONTINUATION_LINE:
+					if (diagnostics[i].range.start.line + 1 === diagnostics[i].range.end.line) {
+						commands.push({
+							title: "Remove empty continuation line",
+							command: CommandIds.REMOVE_EMPTY_CONTINUATION_LINE,
+							arguments: [ textDocumentURI, diagnostics[i].range ]
+						});
+					} else {
+						commands.push({
+							title: "Remove empty continuation lines",
+							command: CommandIds.REMOVE_EMPTY_CONTINUATION_LINE,
+							arguments: [ textDocumentURI, diagnostics[i].range ]
+						});
+					}
 					break;
 			}
 		}
@@ -256,6 +272,17 @@ export class DockerCommands {
 						]:
 						[
 							TextEdit.replace(range, "--from")
+						]
+					}
+				};
+			case CommandIds.REMOVE_EMPTY_CONTINUATION_LINE:
+				return {
+					changes: {
+						[
+							uri
+						]:
+						[
+							TextEdit.del(range)
 						]
 					}
 				};

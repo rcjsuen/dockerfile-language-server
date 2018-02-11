@@ -49,6 +49,10 @@ function createAS(): Diagnostic {
 	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(0, 0)), "", DiagnosticSeverity.Error, ValidationCode.INVALID_AS);
 }
 
+function createEmptyContinuationLine(multiline: boolean): Diagnostic {
+	return Diagnostic.create(Range.create(Position.create(0, 0), Position.create(multiline ? 2 : 1, 0)), "", DiagnosticSeverity.Error, ValidationCode.EMPTY_CONTINUATION_LINE);
+}
+
 function assertRange(actual: Range, expected: Range) {
 	assert.equal(actual.start.line, expected.start.line);
 	assert.equal(actual.start.character, expected.start.character);
@@ -190,6 +194,28 @@ describe("Dockerfile code actions", function () {
 		assert.equal(commands[1].arguments.length, 2);
 		assert.equal(commands[1].arguments[0], uri);
 		assertRange(commands[1].arguments[1], diagnostic.range);
+	});
+
+	it("empty continuation line", function () {
+		let diagnostic = createEmptyContinuationLine(false);
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri);
+		assert.equal(commands.length, 1);
+		assert.equal(commands[0].command, CommandIds.REMOVE_EMPTY_CONTINUATION_LINE);
+		assert.equal(commands[0].title, "Remove empty continuation line");
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], diagnostic.range);
+	});
+
+	it("empty continuation lines", function () {
+		let diagnostic = createEmptyContinuationLine(true);
+		let commands = dockerCommands.analyzeDiagnostics([ diagnostic ], uri);
+		assert.equal(commands.length, 1);
+		assert.equal(commands[0].command, CommandIds.REMOVE_EMPTY_CONTINUATION_LINE);
+		assert.equal(commands[0].title, "Remove empty continuation lines");
+		assert.equal(commands[0].arguments.length, 2);
+		assert.equal(commands[0].arguments[0], uri);
+		assertRange(commands[0].arguments[1], diagnostic.range);
 	});
 });
 
@@ -359,6 +385,20 @@ describe("Dockerfile execute commands", function () {
 		let edits = edit.changes[uri];
 		assert.equal(edits.length, 1);
 		assert.equal(edits[0].newText, "--chown");
+		assert.equal(edits[0].range, range);
+	});
+
+	it("remove empty continuation line", function () {
+		let range = Range.create(Position.create(0, 0), Position.create(3, 0));
+		let document = createDocument("");
+		let edit = dockerCommands.createWorkspaceEdit(document, {
+			command: CommandIds.REMOVE_EMPTY_CONTINUATION_LINE,
+			arguments: [ uri, range ]
+		});
+		assert.equal(edit.documentChanges, undefined);
+		let edits = edit.changes[uri];
+		assert.equal(edits.length, 1);
+		assert.equal(edits[0].newText, "");
 		assert.equal(edits[0].range, range);
 	});
 });

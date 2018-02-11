@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- textDocument/codeAction
+  - create docker.command.removeEmptyContinuationLine to remove empty continuation lines in instructions that span multiple lines ([#203](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/203))
 - textDocument/documentLink
   - create links to hub.docker.com for base image names in FROM ([#204](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/204))
 - textDocument/publishDiagnostics

@@ -113,7 +113,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 					CommandIds.FLAG_TO_HEALTHCHECK_RETRIES,
 					CommandIds.FLAG_TO_HEALTHCHECK_START_PERIOD,
 					CommandIds.FLAG_TO_HEALTHCHECK_TIMEOUT,
-					CommandIds.CONVERT_TO_AS
+					CommandIds.CONVERT_TO_AS,
+					CommandIds.REMOVE_EMPTY_CONTINUATION_LINE
 				]
 			} : undefined,
 			documentFormattingProvider: true,
