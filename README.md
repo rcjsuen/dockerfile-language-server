@@ -22,6 +22,18 @@ To [install and run](#installation-instructions) this language server, you will 
 - [vscode-docker](https://github.com/Microsoft/vscode-docker)
 - [atom-ide-docker](https://github.com/josa42/atom-ide-docker)
 
+This repository only contains the code necessary for launching a Dockerfile language server that conforms to the language server protocol.
+The actual code for parsing a Dockerfile and offering editor features such as code completion or hovers is not contained within this repository.
+
+The code for analyzing and processing a Dockerfile is contained in the following three libraries:
+- [dockerfile-ast](https://github.com/rcjsuen/dockerfile-ast) - parses a Dockerfile
+- [dockerfile-language-service](https://github.com/rcjsuen/dockerfile-language-service) - provides API functions for handling the different requests defined by the language server protocol
+- [dockerfile-utils](https://github.com/rcjsuen/dockerfile-utils) - validates and formats a Dockerfile, can be run from the CLI
+
+All of the language server protocol requests that help create a rich editing experience for the user is forwarded to the `dockerfile-language-service` library.
+You can test its features [right in the browser](https://rcjsuen.github.io/dockerfile-language-service/).
+This online editor is a very good representation of what is possible when this language server is connected to an editor that supports the language server protocol.
+
 ## Development Instructions
 
 If you wish to build and compile this language server, you must first install [Node.js](https://nodejs.org/en/download/) if you have not already done so.
