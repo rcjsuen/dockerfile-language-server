@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- create dependency on the dockerfile-language-service module ([#205](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/205))
 - textDocument/codeAction
   - create docker.command.removeEmptyContinuationLine to remove empty continuation lines in instructions that span multiple lines ([#203](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/203))
 - textDocument/documentLink
@@ -20,6 +21,9 @@ All notable changes to this project will be documented in this file.
 - textDocument/publishDiagnostics
   - allow decimal values for HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#19](https://github.com/rcjsuen/dockerfile-utils/issues/19))
   - warn if STOPSIGNAL uses invalid variables for its argument ([rcjsuen/dockerfile-utils#11](https://github.com/rcjsuen/dockerfile-utils/issues/11))
+
+### Removed
+- remove document analysis and processing code and tests in favor of the dockerfile-language-service module ([#205](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/205))
 
 ## [0.0.13] - 2018-01-19
 ### Added

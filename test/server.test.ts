@@ -6,7 +6,7 @@ import * as child_process from "child_process";
 import * as assert from "assert";
 
 import { TextDocumentSyncKind } from 'vscode-languageserver';
-import { CommandIds } from '../src/dockerCommands';
+import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
 
 // fork the server and connect to it using Node IPC

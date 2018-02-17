@@ -7,7 +7,7 @@
 import {
 	createConnection, InitializeParams, InitializeResult, ClientCapabilities,
 	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
-	CompletionItem, CodeActionParams, Command, ExecuteCommandParams, 
+	CompletionItem, CodeActionParams, Command, ExecuteCommandParams,
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
@@ -15,30 +15,8 @@ import {
 	DidChangeConfigurationNotification, ProposedFeatures, DocumentLinkParams, DocumentLink
 } from 'vscode-languageserver';
 import { ConfigurationItem } from 'vscode-languageserver-protocol/lib/protocol.configuration.proposed';
-import { format, validate, ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
-import { DockerAssist } from './dockerAssist';
-import { CommandIds, DockerCommands } from './dockerCommands';
-import { DockerHover } from './dockerHover';
-import { MarkdownDocumentation } from './dockerMarkdown';
-import { PlainTextDocumentation } from './dockerPlainText';
-import { DockerSignatures } from './dockerSignatures';
-import { DockerSymbols } from './dockerSymbols';
-import { DockerFormatter } from './dockerFormatter';
-import { DockerHighlight } from './dockerHighlight';
-import { DockerRename } from './dockerRename';
-import { DockerDefinition } from './dockerDefinition';
-import { DockerRegistryClient } from './dockerRegistryClient';
-import { DockerLinks } from './dockerLinks';
-
-let markdown = new MarkdownDocumentation();
-let hoverProvider = new DockerHover(markdown);
-let commandsProvider = new DockerCommands();
-let symbolsProvider = new DockerSymbols();
-let formatterProvider = new DockerFormatter();
-let definitionProvider = new DockerDefinition();
-let documentationResolver = new PlainTextDocumentation();
-let signatureHelp = new DockerSignatures();
-let linksProvider = new DockerLinks();
+import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
+import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
 
 /**
  * The settings to use for the validator if the client doesn't support
@@ -53,7 +31,12 @@ let validatorSettings: ValidatorSettings | null = null;
 let validatorConfigurations: Map<string, Thenable<ValidatorConfiguration>> = new Map();
 
 let connection = createConnection(ProposedFeatures.all);
-let dockerRegistryClient = new DockerRegistryClient(connection);
+let service = DockerfileLanguageServiceFactory.createLanguageService();
+service.setLogger({
+	log(message): void {
+		connection.console.log(message);
+	}
+});
 
 let snippetSupport: boolean = false;
 
@@ -172,11 +155,11 @@ function validateTextDocument(textDocument: TextDocument): void {
 				instructionEntrypointMultiple: instructionEntrypointMultiple,
 				instructionHealthcheckMultiple: instructionHealthcheckMultiple
 			};
-			const diagnostics = validate(textDocument.getText(), fileSettings);
+			const diagnostics = service.validate(textDocument.getText(), fileSettings);
 			connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 		});
 	} else {
-		const diagnostics = validate(textDocument.getText(), validatorSettings);
+		const diagnostics = service.validate(textDocument.getText(), validatorSettings);
 		connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 	}
 }
@@ -301,8 +284,7 @@ connection.onDidChangeConfiguration((change) => {
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] | PromiseLike<CompletionItem[]> => {
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document) {
-		let assist = new DockerAssist(document, snippetSupport, dockerRegistryClient);
-		return assist.computeProposals(document, textDocumentPosition.position);
+		return service.computeCompletionItems(document.getText(), textDocumentPosition.position, snippetSupport);
 	}
 	return null;
 });
@@ -310,7 +292,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document !== null) {
-		return signatureHelp.computeSignatures(document, textDocumentPosition.position);
+		return service.computeSignatureHelp(document.getText(), textDocumentPosition.position);
 	}
 	return {
 		signatures: [],
@@ -320,16 +302,13 @@ connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): S
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-	if (!item.documentation) {
-		item.documentation = documentationResolver.getDocumentation(item.data);
-	}
-	return item;
+	return service.resolveCompletionItem(item);
 });
 
 connection.onHover((textDocumentPosition: TextDocumentPositionParams): Hover => {
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document !== null) {
-		return hoverProvider.onHover(document, textDocumentPosition);
+		return service.computeHover(document.getText(), textDocumentPosition.position);
 	}
 	return null;
 });
@@ -337,17 +316,14 @@ connection.onHover((textDocumentPosition: TextDocumentPositionParams): Hover => 
 connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams): DocumentHighlight[] => {
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document) {
-		let highlightProvider = new DockerHighlight();
-		return highlightProvider.computeHighlightRanges(document, textDocumentPosition.position);
+		return service.computeHighlightRanges(textDocumentPosition.textDocument, document.getText(), textDocumentPosition.position);
 	}
 	return [];
 });
 
 connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {
 	if (applyEditSupport && codeActionParams.context.diagnostics.length > 0) {
-		return commandsProvider.analyzeDiagnostics(
-			codeActionParams.context.diagnostics, codeActionParams.textDocument.uri
-		);
+		return service.computeCodeActions(codeActionParams.textDocument, codeActionParams.range, codeActionParams.context);
 	}
 	return [];
 });
@@ -357,7 +333,7 @@ connection.onExecuteCommand((params: ExecuteCommandParams): void => {
 		let uri: string = params.arguments[0];
 		let document = documents[uri];
 		if (document) {
-			let edit = commandsProvider.createWorkspaceEdit(document, params);
+			let edit = service.createWorkspaceEdit(document.getText(), params.command, params.arguments);
 			if (edit) {
 				connection.workspace.applyEdit(edit);
 			}
@@ -369,7 +345,7 @@ connection.onDefinition((textDocumentPosition: TextDocumentPositionParams): Loca
 	let uri = textDocumentPosition.textDocument.uri;
 	let document = documents[uri];
 	if (document) {
-		return definitionProvider.computeDefinition(document, textDocumentPosition.position);
+		return service.computeDefinition(textDocumentPosition.textDocument, document.getText(), textDocumentPosition.position);
 	}
 	return null;
 });
@@ -377,8 +353,7 @@ connection.onDefinition((textDocumentPosition: TextDocumentPositionParams): Loca
 connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
 	let document = documents[params.textDocument.uri];
 	if (document) {
-		let rename = new DockerRename();
-		let edits = rename.rename(document, params.position, params.newName);
+		let edits = service.computeRename(params.textDocument, document.getText(), params.position, params.newName);
 		return {
 			changes: {
 				[ params.textDocument.uri ]: edits
@@ -392,7 +367,7 @@ connection.onDocumentSymbol((documentSymbolParams: DocumentSymbolParams): Symbol
 	let uri = documentSymbolParams.textDocument.uri;
 	let document = documents[uri];
 	if (document) {
-		return symbolsProvider.parseSymbolInformation(document, uri);
+		return service.computeSymbols(documentSymbolParams.textDocument, document.getText());
 	}
 	return [];
 });
@@ -400,7 +375,7 @@ connection.onDocumentSymbol((documentSymbolParams: DocumentSymbolParams): Symbol
 connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingParams): TextEdit[] => {
 	let document = documents[documentFormattingParams.textDocument.uri];
 	if (document) {
-		return format(document.getText(), documentFormattingParams.options);
+		return service.format(document.getText(), documentFormattingParams.options);
 	}
 	return [];
 });
@@ -408,7 +383,7 @@ connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingPar
 connection.onDocumentRangeFormatting((rangeFormattingParams: DocumentRangeFormattingParams): TextEdit[] => {
 	let document = documents[rangeFormattingParams.textDocument.uri];
 	if (document) {
-		return formatterProvider.formatRange(document, rangeFormattingParams.range, rangeFormattingParams.options);
+		return service.formatRange(document.getText(), rangeFormattingParams.range, rangeFormattingParams.options);
 	}
 	return [];
 });
@@ -416,7 +391,7 @@ connection.onDocumentRangeFormatting((rangeFormattingParams: DocumentRangeFormat
 connection.onDocumentOnTypeFormatting((onTypeFormattingParams: DocumentOnTypeFormattingParams): TextEdit[] => {
 	const document = documents[onTypeFormattingParams.textDocument.uri];
 	if (document) {
-		return formatterProvider.formatOnType(document, onTypeFormattingParams.position, onTypeFormattingParams.ch, onTypeFormattingParams.options);
+		return service.formatOnType(document.getText(), onTypeFormattingParams.position, onTypeFormattingParams.ch, onTypeFormattingParams.options);
 	}
 	return [];
 });
@@ -424,7 +399,7 @@ connection.onDocumentOnTypeFormatting((onTypeFormattingParams: DocumentOnTypeFor
 connection.onDocumentLinks((documentLinkParams: DocumentLinkParams): DocumentLink[] => {
 	let document = documents[documentLinkParams.textDocument.uri];
 	if (document) {
-		return linksProvider.getLinks(document);
+		return service.computeLinks(document.getText());
 	}
 	return null;
 });
