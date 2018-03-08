@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
   - create docker.command.removeEmptyContinuationLine to remove empty continuation lines in instructions that span multiple lines ([#203](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/203))
 - textDocument/documentLink
   - create links to hub.docker.com for base image names in FROM ([#204](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/204))
+- textDocument/hover
+  - inspect client's capabilities to decide what content format to use for hovers ([#209](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/209))
 - textDocument/publishDiagnostics
   - flag HEALTHCHECK durations that include a hyphen as an error ([rcjsuen/dockerfile-utils#18](https://github.com/rcjsuen/dockerfile-utils/issues/18))
   - warn if ADD has more than two arguments and its last argument is not a directory ([rcjsuen/dockerfile-utils#17](https://github.com/rcjsuen/dockerfile-utils/issues/17))

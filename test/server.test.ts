@@ -5,7 +5,7 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import { TextDocumentSyncKind } from 'vscode-languageserver';
+import { TextDocumentSyncKind, MarkupKind } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
 
@@ -43,6 +43,9 @@ function initialize(): number {
 					completionItem: {
 						snippetSupport: true
 					}
+				},
+				hover: {
+					contentFormat: [ MarkupKind.PlainText ]
 				}
 			},
 			workspace: {
@@ -128,5 +131,24 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		};
 		lspProcess.on("message", executeCommandListener);
+	});
+
+	it("issue #209", function(finished) {
+		this.timeout(5000);
+		let id = sendRequest("textDocument/hover", {
+			textDocument: {
+				uri: "uri://dockerfile/x.txt"
+			},
+			position: {
+				line: 0,
+				character: 1
+			}
+		});
+		lspProcess.on("message", (json) => {
+			if (json.id === id) {
+				assert.equal(json.result.contents.kind, MarkupKind.PlainText);
+				finished();
+			}
+		});
 	});
 });

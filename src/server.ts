@@ -12,7 +12,7 @@ import {
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
-	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink
+	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind
 } from 'vscode-languageserver';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
@@ -56,6 +56,25 @@ function supportsSnippets(capabilities: ClientCapabilities): boolean {
 		&& capabilities.textDocument.completion.completionItem.snippetSupport;
 }
 
+function getHoverContentFormat(capabilities: ClientCapabilities): MarkupKind[] {
+	return capabilities.textDocument
+		&& capabilities.textDocument.hover
+		&& capabilities.textDocument.hover.contentFormat;
+}
+
+function setServiceCapabilities(capabilities: ClientCapabilities): void {
+	service.setCapabilities({
+		completion: {
+			completionItem: {
+				snippetSupport: supportsSnippets(capabilities)
+			}
+		},
+		hover: {
+			contentFormat: getHoverContentFormat(capabilities)
+		}
+	});
+}
+
 connection.onInitialized(() => {
 	if (configurationSupport) {
 		// listen for notification changes if the client supports workspace/configuration
@@ -64,7 +83,7 @@ connection.onInitialized(() => {
 });
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
-	service.setCapabilities({ completion: { completionItem: { snippetSupport: supportsSnippets(params.capabilities) }}});
+	setServiceCapabilities(params.capabilities);
 	applyEditSupport = params.capabilities.workspace && params.capabilities.workspace.applyEdit === true;
 	configurationSupport = params.capabilities.workspace && params.capabilities.workspace.configuration === true;
 	return {
