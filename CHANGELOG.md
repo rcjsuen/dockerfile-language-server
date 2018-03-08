@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- update to target version 3.6.0 of the Language Server Protocol specification
 - create dependency on the dockerfile-language-service module ([#205](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/205))
 - textDocument/codeAction
   - create docker.command.removeEmptyContinuationLine to remove empty continuation lines in instructions that span multiple lines ([#203](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/203))
@@ -15,12 +16,17 @@ All notable changes to this project will be documented in this file.
   - warn if FROM's base image's digest is invalid ([rcjsuen/dockerfile-utils#15](https://github.com/rcjsuen/dockerfile-utils/issues/15))
   - warn if FROM's base image's tag is invalid ([rcjsuen/dockerfile-utils#20](https://github.com/rcjsuen/dockerfile-utils/issues/20))
 
+### Changed
+- this module now depends on version 4.0.0 of the vscode-languageserver npm module
+
 ### Fixed
 - merge defined and default variables together when suggesting completion items ([#200](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/200))
 - do not suggest variables from another build stage as a completion item ([#201](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/201))
 - textDocument/publishDiagnostics
   - allow decimal values for HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#19](https://github.com/rcjsuen/dockerfile-utils/issues/19))
   - warn if STOPSIGNAL uses invalid variables for its argument ([rcjsuen/dockerfile-utils#11](https://github.com/rcjsuen/dockerfile-utils/issues/11))
+- workspace/configuration
+  - update code to consider it as a formal API instead of a proposed API ([#211](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/211))
 
 ### Removed
 - remove document analysis and processing code and tests in favor of the dockerfile-language-service module ([#205](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/205))

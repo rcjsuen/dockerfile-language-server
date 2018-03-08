@@ -12,9 +12,8 @@ import {
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
-	DidChangeConfigurationNotification, ProposedFeatures, DocumentLinkParams, DocumentLink
+	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink
 } from 'vscode-languageserver';
-import { ConfigurationItem } from 'vscode-languageserver-protocol/lib/protocol.configuration.proposed';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
 
@@ -30,7 +29,7 @@ let validatorSettings: ValidatorSettings | null = null;
  */
 let validatorConfigurations: Map<string, Thenable<ValidatorConfiguration>> = new Map();
 
-let connection = createConnection(ProposedFeatures.all);
+let connection = createConnection();
 let service = DockerfileLanguageServiceFactory.createLanguageService();
 service.setLogger({
 	log(message): void {
@@ -69,7 +68,7 @@ connection.onInitialized(() => {
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	snippetSupport = supportsSnippets(params.capabilities);
 	applyEditSupport = params.capabilities.workspace && params.capabilities.workspace.applyEdit === true;
-	configurationSupport = params.capabilities.workspace && (params.capabilities.workspace as any).configuration === true;
+	configurationSupport = params.capabilities.workspace && params.capabilities.workspace.configuration === true;
 	return {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
