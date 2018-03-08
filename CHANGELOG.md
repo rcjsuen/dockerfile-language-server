@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - update to target version 3.6.0 of the Language Server Protocol specification
 - create dependency on the dockerfile-language-service module ([#205](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/205))
 - add package-lock.json file to help ensure a consistent dependency tree
+- update documentation to state that ARG was introduced in Docker 1.9 ([rcjsuen/dockerfile-language-service#7](https://github.com/rcjsuen/dockerfile-language-service/issues/7))
 - textDocument/codeAction
   - create docker.command.removeEmptyContinuationLine to remove empty continuation lines in instructions that span multiple lines ([#203](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/203))
 - textDocument/documentLink
@@ -23,9 +24,16 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - merge defined and default variables together when suggesting completion items ([#200](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/200))
 - do not suggest variables from another build stage as a completion item ([#201](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/201))
+- change documentation to state that STOPSIGNAL was added in Docker 1.9 instead of Docker 1.12 ([rcjsuen/dockerfile-language-service#6](https://github.com/rcjsuen/dockerfile-language-service/issues/6))
+- ignore and return null for hover computations with an invalid position ([#22](https://github.com/rcjsuen/dockerfile-language-service/issues/22))
 - textDocument/publishDiagnostics
   - allow decimal values for HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#19](https://github.com/rcjsuen/dockerfile-utils/issues/19))
   - warn if STOPSIGNAL uses invalid variables for its argument ([rcjsuen/dockerfile-utils#11](https://github.com/rcjsuen/dockerfile-utils/issues/11))
+  - handle invalid decimal values without a leading zero for duration flags ([rcjsuen/dockerfile-utils#23](https://github.com/rcjsuen/dockerfile-utils/issues/23))
+  - use a non-zero range for the diagnostic if FROM's base image's digest is the empty string ([rcjsuen/dockerfile-utils#21](https://github.com/rcjsuen/dockerfile-utils/issues/21))
+  - ignore multiple CMD, ENTRYPOINT, and HEALTHCHECK instructions in a Dockerfile if there is only ever one in a build stage ([rcjsuen/dockerfile-utils#22](https://github.com/rcjsuen/dockerfile-utils/issues/22))
+- textDocument/signatureHelp
+  - align active parameter amongst all displayed signatures for a FROM with a build stage name ([rcjsuen/dockerfile-language-service#8](https://github.com/rcjsuen/dockerfile-language-service/issues/8))
 - workspace/configuration
   - update code to consider it as a formal API instead of a proposed API ([#211](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/211))
 

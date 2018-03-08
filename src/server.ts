@@ -37,8 +37,6 @@ service.setLogger({
 	}
 });
 
-let snippetSupport: boolean = false;
-
 /**
  * Whether the client supports the workspace/applyEdit request.
  */
@@ -66,7 +64,7 @@ connection.onInitialized(() => {
 });
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
-	snippetSupport = supportsSnippets(params.capabilities);
+	service.setCapabilities({ completion: { completionItem: { snippetSupport: supportsSnippets(params.capabilities) }}});
 	applyEditSupport = params.capabilities.workspace && params.capabilities.workspace.applyEdit === true;
 	configurationSupport = params.capabilities.workspace && params.capabilities.workspace.configuration === true;
 	return {
@@ -283,7 +281,7 @@ connection.onDidChangeConfiguration((change) => {
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] | PromiseLike<CompletionItem[]> => {
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document) {
-		return service.computeCompletionItems(document.getText(), textDocumentPosition.position, snippetSupport);
+		return service.computeCompletionItems(document.getText(), textDocumentPosition.position);
 	}
 	return null;
 });
@@ -315,7 +313,7 @@ connection.onHover((textDocumentPosition: TextDocumentPositionParams): Hover => 
 connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams): DocumentHighlight[] => {
 	let document = documents[textDocumentPosition.textDocument.uri];
 	if (document) {
-		return service.computeHighlightRanges(textDocumentPosition.textDocument, document.getText(), textDocumentPosition.position);
+		return service.computeHighlightRanges(document.getText(), textDocumentPosition.position);
 	}
 	return [];
 });
@@ -332,9 +330,13 @@ connection.onExecuteCommand((params: ExecuteCommandParams): void => {
 		let uri: string = params.arguments[0];
 		let document = documents[uri];
 		if (document) {
-			let edit = service.createWorkspaceEdit(document.getText(), params.command, params.arguments);
-			if (edit) {
-				connection.workspace.applyEdit(edit);
+			let edits = service.computeCommandEdits(document.getText(), params.command, params.arguments);
+			if (edits) {
+				connection.workspace.applyEdit({
+					changes: {
+						[ uri ]: edits
+					}
+				});
 			}
 		}
 	}
