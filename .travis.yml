@@ -13,6 +13,7 @@ services:
   - docker
 
 node_js:
+  - "9"
   - "8"
   - "6"
 
