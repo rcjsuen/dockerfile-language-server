@@ -12,7 +12,7 @@ import {
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
-	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind
+	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind, VersionedTextDocumentIdentifier, TextDocumentEdit
 } from 'vscode-languageserver';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
@@ -46,6 +46,8 @@ let applyEditSupport: boolean = false;
  * Whether the client supports the workspace/configuration request.
  */
 let configurationSupport: boolean = false;
+
+let documentChangesSupport: boolean = false;
 
 let documents: { [ uri: string ]: TextDocument } = {};
 
@@ -85,6 +87,7 @@ connection.onInitialized(() => {
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 	setServiceCapabilities(params.capabilities);
 	applyEditSupport = params.capabilities.workspace && params.capabilities.workspace.applyEdit === true;
+	documentChangesSupport = params.capabilities.workspace && params.capabilities.workspace.workspaceEdit && params.capabilities.workspace.workspaceEdit.documentChanges === true;
 	configurationSupport = params.capabilities.workspace && params.capabilities.workspace.configuration === true;
 	return {
 		capabilities: {
@@ -351,11 +354,20 @@ connection.onExecuteCommand((params: ExecuteCommandParams): void => {
 		if (document) {
 			let edits = service.computeCommandEdits(document.getText(), params.command, params.arguments);
 			if (edits) {
-				connection.workspace.applyEdit({
-					changes: {
-						[ uri ]: edits
-					}
-				});
+				if (documentChangesSupport) {
+					let identifier = VersionedTextDocumentIdentifier.create(uri, document.version);
+					connection.workspace.applyEdit({
+						documentChanges: [
+							TextDocumentEdit.create(identifier, edits)
+						]
+					});
+				} else {
+					connection.workspace.applyEdit({
+						changes: {
+							[ uri ]: edits
+						}
+					});
+				}
 			}
 		}
 	}

@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
   - warn if COPY has more than two arguments and its last argument is not a directory ([rcjsuen/dockerfile-utils#14](https://github.com/rcjsuen/dockerfile-utils/issues/14))
   - warn if FROM's base image's digest is invalid ([rcjsuen/dockerfile-utils#15](https://github.com/rcjsuen/dockerfile-utils/issues/15))
   - warn if FROM's base image's tag is invalid ([rcjsuen/dockerfile-utils#20](https://github.com/rcjsuen/dockerfile-utils/issues/20))
+- workspace/applyEdit
+  - use versioned edits if the client supports it via the documentChanges client capability ([#202](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/202))
 
 ### Changed
 - this module now depends on version 4.0.0 of the vscode-languageserver npm module

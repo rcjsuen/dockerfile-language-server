@@ -33,7 +33,7 @@ function sendNotification(method: string, params: any) {
 	lspProcess.send(message);
 }
 
-function initialize(): number {
+function initialize(applyEdit: boolean): number {
 	return sendRequest("initialize", {
 		rootPath: process.cwd(),
 		processId: process.pid,
@@ -49,6 +49,10 @@ function initialize(): number {
 				}
 			},
 			workspace: {
+				applyEdit: applyEdit,
+				workspaceEdit: {
+					documentChanges: true
+				}
 			}
 		}
 	});
@@ -57,7 +61,7 @@ function initialize(): number {
 describe("Dockerfile LSP Tests", function() {
 	it("initialize", function(finished) {
 		this.timeout(5000);
-		const responseId = initialize();
+		const responseId = initialize(false);
 		lspProcess.once('message', function (json) {
 			assert.equal(json.id, responseId);
 			let capabilities = json.result.capabilities;
@@ -147,6 +151,33 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", (json) => {
 			if (json.id === id) {
 				assert.equal(json.result.contents.kind, MarkupKind.PlainText);
+				finished();
+			}
+		});
+	});
+
+	it("issue #202", function(finished) {
+		this.timeout(5000);
+		initialize(true);
+		const executeCommandResponseId = sendRequest("workspace/executeCommand", {
+			command: CommandIds.UPPERCASE,
+			arguments: [
+				"uri://dockerfile/x.txt",
+				{
+					start: {
+						line: 0,
+						character: 0
+					},
+					end: {
+						line: 0,
+						character: 4
+					}
+				}
+			]
+		});
+		lspProcess.on("message", (json) => {
+			if (json.method === "workspace/applyEdit") {
+				assert.equal(json.params.edit.documentChanges.length, 1);
 				finished();
 			}
 		});
