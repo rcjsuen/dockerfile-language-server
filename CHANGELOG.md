@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - update to target version 3.6.0 of the Language Server Protocol specification
 - create dependency on the dockerfile-language-service module ([#205](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/205))
-- add package-lock.json file to help ensure a consistent dependency tree
+- add package-lock.json file to help ensure a consistent dependency tree ([#210](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/210))
 - update documentation to state that ARG was introduced in Docker 1.9 ([rcjsuen/dockerfile-language-service#7](https://github.com/rcjsuen/dockerfile-language-service/issues/7))
 - textDocument/codeAction
   - create docker.command.removeEmptyContinuationLine to remove empty continuation lines in instructions that span multiple lines ([#203](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/203))
