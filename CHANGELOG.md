@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- clear diagnostics when server receives textDocument/didClose so that they do not linger in the client ([#214](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/214))
+
 ## [0.0.14] - 2018-03-08
 ### Added
 - update to target version 3.6.0 of the Language Server Protocol specification
@@ -318,6 +322,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.14...HEAD
 [0.0.14]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.12...v0.0.13
 [0.0.12]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.11...v0.0.12

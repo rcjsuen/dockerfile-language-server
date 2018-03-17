@@ -499,6 +499,7 @@ connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDo
 
 connection.onDidCloseTextDocument((didCloseTextDocumentParams: DidCloseTextDocumentParams): void => {
 	validatorConfigurations.delete(didCloseTextDocumentParams.textDocument.uri);
+	connection.sendDiagnostics({ uri: didCloseTextDocumentParams.textDocument.uri, diagnostics: [] });
 	delete documents[didCloseTextDocumentParams.textDocument.uri];
 });
 

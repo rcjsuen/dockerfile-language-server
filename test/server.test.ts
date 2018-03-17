@@ -182,4 +182,21 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		});
 	});
+
+	it("issue #214", function(finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didClose", {
+			textDocument: {
+				uri: "uri://dockerfile/x.txt",
+			}
+		});
+
+		lspProcess.once("message", (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				assert.equal(json.params.uri, "uri://dockerfile/x.txt");
+				assert.equal(json.params.diagnostics.length, 0);
+				finished();
+			}
+		});
+	});
 });
