@@ -442,15 +442,6 @@ connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocument
 	validateTextDocument(document);
 });
 
-function getLaterChange(changes: TextDocumentContentChangeEvent[], i: number, j: number): number {
-	if (changes[i].range.start.line === changes[j].range.start.line) {
-		return changes[i].range.start.character < changes[j].range.start.character ? j : i;
-	} else if (changes[i].range.start.line < changes[j].range.start.line) {
-		return j;
-	}
-	return i;
-}
-
 connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
 	let document = documents[didChangeTextDocumentParams.textDocument.uri];
 	let buffer = document.getText();
