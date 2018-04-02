@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Fixed
 - clear diagnostics when server receives textDocument/didClose so that they do not linger in the client ([#214](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/214))
+- apply received changes in a textDocument/didChange in the order given in the JSON result instead of trying to sort them and apply them backwards ([#216](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/216))
 
 ## [0.0.14] - 2018-03-08
 ### Added

@@ -199,4 +199,92 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		});
 	});
+
+	it("issue #216", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/216.txt",
+				text: "FROM node\nVOLUME \nARG arg"
+			}
+		});
+
+		lspProcess.once("message", (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				sendNotification("textDocument/didChange", {
+					textDocument: {
+						version: 2,
+						uri: "uri://dockerfile/216.txt",
+					},
+					contentChanges: [
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 7
+								},
+								end: {
+									line: 1,
+									character: 7
+								}
+							},
+							rangeLength: 0,
+							text: "/"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 8
+								},
+								end: {
+									line: 1,
+									character: 8
+								}
+							},
+							rangeLength: 0,
+							text: "t"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 9
+								},
+								end: {
+									line: 1,
+									character: 9
+								}
+							},
+							rangeLength: 0,
+							text: "m"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 10
+								},
+								end: {
+									line: 1,
+									character: 10
+								}
+							},
+							rangeLength: 0,
+							text: "p"
+						}
+					]
+				});
+				lspProcess.once("message", (json) => {
+					if (json.method === "textDocument/publishDiagnostics") {
+						assert.equal(json.params.uri, "uri://dockerfile/216.txt");
+						assert.equal(json.params.diagnostics.length, 0);
+						finished();
+					}
+				});
+			}
+		});
+	});
 });

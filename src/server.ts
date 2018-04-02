@@ -451,48 +451,24 @@ function getLaterChange(changes: TextDocumentContentChangeEvent[], i: number, j:
 	return i;
 }
 
-function sortChanges(changes: TextDocumentContentChangeEvent[]): TextDocumentContentChangeEvent[] {
-	let sorted: TextDocumentContentChangeEvent[] = [];
-	let length = changes.length;
-	for (let i = 0; i < length; i++) {
-		let candidate = 0;
-		for (let j = 1; j < changes.length; j++) {
-			candidate = getLaterChange(changes, candidate, j);
-		}
-		sorted.push(changes[candidate]);
-		changes.splice(candidate, 1);
-	}
-	return sorted;
-}
-
-function handleChanges(document: TextDocument, content: string, changes: TextDocumentContentChangeEvent[]) {
-	if (changes.length === 1 && !changes[0].range) {
-		// not an incremental change
-		return changes[0].text;
-	} else if (changes.length !== 0) {
-		changes = sortChanges(changes);
-		for (let i = 0; i < changes.length; i++) {
-			let offset = document.offsetAt(changes[i].range.start);
-			let end: number = null;
-			if (changes[i].range.end) {
-				end = document.offsetAt(changes[i].range.end);
-			} else {
-				end = offset + changes[i].rangeLength;
-			}
-			content = content.substring(0, offset) + changes[i].text + content.substring(end);
-		}
-	}
-	return content;
-}
-
 connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
 	let document = documents[didChangeTextDocumentParams.textDocument.uri];
 	let buffer = document.getText();
+	let content = buffer;
 	let changes = didChangeTextDocumentParams.contentChanges;
-	let changed = handleChanges(document, buffer, changes)
-	if (changed !== buffer) {
-		document = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, changed);
-		documents[didChangeTextDocumentParams.textDocument.uri] = document;
+	for (let i = 0; i < changes.length; i++) {
+		let offset = document.offsetAt(changes[i].range.start);
+		let end = null;
+		if (changes[i].range.end) {
+			end = document.offsetAt(changes[i].range.end);
+		} else {
+			end = offset + changes[i].rangeLength;
+		}
+		buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
+	}
+	document = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
+	documents[didChangeTextDocumentParams.textDocument.uri] = document;
+	if (content !== buffer) {
 		validateTextDocument(document);
 	}
 });
