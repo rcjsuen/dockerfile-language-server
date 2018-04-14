@@ -2,9 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+- settings
+  - docker.languageserver.diagnostics.instructionJSONInSingleQuotes? ([#217](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/217))
+    - value = ( "ignore" | "warning" | "error" )
+
 ### Fixed
-- clear diagnostics when server receives textDocument/didClose so that they do not linger in the client ([#214](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/214))
-- apply received changes in a textDocument/didChange in the order given in the JSON result instead of trying to sort them and apply them backwards ([#216](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/216))
+- textDocument/didChange
+  - apply received changes in a textDocument/didChange in the order given in the JSON result instead of trying to sort them and apply them backwards ([#216](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/216))
+- textDocument/publishDiagnostics
+  - clear diagnostics when server receives textDocument/didClose so that they do not linger in the client ([#214](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/214))
+  - fix incorrect validation error if a COPY uses JSON arguments and its last string argument is correctly defined as a folder ([#217](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/217))
 
 ## [0.0.14] - 2018-03-08
 ### Added

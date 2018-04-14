@@ -96,6 +96,7 @@ interface Settings {
         instructionCmdMultiple?: string,
         instructionEntrypointMultiple?: string
         instructionHealthcheckMultiple?: string
+        instructionJSONInSingleQuotes?: string
       }
     }
   }

@@ -156,6 +156,7 @@ function validateTextDocument(textDocument: TextDocument): void {
 			let instructionCmdMultiple = ValidationSeverity.WARNING;
 			let instructionEntrypointMultiple = ValidationSeverity.WARNING;
 			let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
+			let instructionJSONInSingleQuotes = ValidationSeverity.WARNING;
 			if (config) {
 				maintainer = getSeverity(config.deprecatedMaintainer);
 				directiveCasing = getSeverity(config.directiveCasing);
@@ -164,6 +165,7 @@ function validateTextDocument(textDocument: TextDocument): void {
 				instructionCmdMultiple = getSeverity(config.instructionCmdMultiple);
 				instructionEntrypointMultiple = getSeverity(config.instructionEntrypointMultiple);
 				instructionHealthcheckMultiple = getSeverity(config.instructionHealthcheckMultiple);
+				instructionJSONInSingleQuotes = getSeverity(config.instructionHealthcheckMultiple);
 			}
 			const fileSettings = {
 				deprecatedMaintainer: maintainer,
@@ -172,7 +174,8 @@ function validateTextDocument(textDocument: TextDocument): void {
 				instructionCasing: instructionCasing,
 				instructionCmdMultiple: instructionCmdMultiple,
 				instructionEntrypointMultiple: instructionEntrypointMultiple,
-				instructionHealthcheckMultiple: instructionHealthcheckMultiple
+				instructionHealthcheckMultiple: instructionHealthcheckMultiple,
+				instructionJSONInSingleQuotes: instructionJSONInSingleQuotes
 			};
 			const diagnostics = service.validate(textDocument.getText(), fileSettings);
 			connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
@@ -190,7 +193,8 @@ interface ValidatorConfiguration {
 	instructionCasing?: string,
 	instructionCmdMultiple?: string,
 	instructionEntrypointMultiple?: string,
-	instructionHealthcheckMultiple?: string
+	instructionHealthcheckMultiple?: string,
+	instructionJSONInSingleQuotes?: string
 }
 
 interface Settings {
