@@ -355,16 +355,23 @@ describe("Dockerfile LSP Tests", function() {
 		});
 
 		let first = true;
-		lspProcess.on("message", (json) => {
+		const listener218 = (json) => {
 			if (json.method === "textDocument/publishDiagnostics") {
 				if (first) {
 					assert.equal(json.params.diagnostics.length, 1);
 					first = false;
 				} else {
 					assert.equal(json.params.diagnostics.length, 0);
+					lspProcess.removeListener("message", listener218);
+					sendNotification("textDocument/didClose", {
+						textDocument: {
+							uri: "uri://dockerfile/218.txt"
+						}
+					});
 					finished();
 				}
 			}
-		});
+		};
+		lspProcess.on("message", listener218);
 	});
 });
