@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/publishDiagnostics
+  - fix validator to consider the instructionJSONInSingleQuotes setting ([#218](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/218))
+
 ## [0.0.15] - 2018-04-14
 ### Added
 - settings
@@ -341,6 +346,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.15...HEAD
 [0.0.15]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.12...v0.0.13

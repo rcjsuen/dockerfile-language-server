@@ -160,37 +160,41 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	}
 });
 
+function convertValidatorConfiguration(config: ValidatorConfiguration): ValidatorSettings {
+	let deprecatedMaintainer = ValidationSeverity.WARNING;
+	let directiveCasing = ValidationSeverity.WARNING;
+	let emptyContinuationLine = ValidationSeverity.WARNING;
+	let instructionCasing = ValidationSeverity.WARNING;
+	let instructionCmdMultiple = ValidationSeverity.WARNING;
+	let instructionEntrypointMultiple = ValidationSeverity.WARNING;
+	let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
+	let instructionJSONInSingleQuotes = ValidationSeverity.WARNING;
+	if (config) {
+		deprecatedMaintainer = getSeverity(config.deprecatedMaintainer);
+		directiveCasing = getSeverity(config.directiveCasing);
+		emptyContinuationLine = getSeverity(config.emptyContinuationLine);
+		instructionCasing = getSeverity(config.instructionCasing);
+		instructionCmdMultiple = getSeverity(config.instructionCmdMultiple);
+		instructionEntrypointMultiple = getSeverity(config.instructionEntrypointMultiple);
+		instructionHealthcheckMultiple = getSeverity(config.instructionHealthcheckMultiple);
+		instructionJSONInSingleQuotes = getSeverity(config.instructionJSONInSingleQuotes);
+	}
+	return {
+		deprecatedMaintainer,
+		directiveCasing,
+		emptyContinuationLine,
+		instructionCasing,
+		instructionCmdMultiple,
+		instructionEntrypointMultiple,
+		instructionHealthcheckMultiple,
+		instructionJSONInSingleQuotes
+	};
+}
+
 function validateTextDocument(textDocument: TextDocument): void {
 	if (configurationSupport) {
 		getConfiguration(textDocument.uri).then((config: ValidatorConfiguration) => {
-			let maintainer = ValidationSeverity.WARNING;
-			let directiveCasing = ValidationSeverity.WARNING;
-			let emptyContinuationLine = ValidationSeverity.WARNING;
-			let instructionCasing = ValidationSeverity.WARNING;
-			let instructionCmdMultiple = ValidationSeverity.WARNING;
-			let instructionEntrypointMultiple = ValidationSeverity.WARNING;
-			let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
-			let instructionJSONInSingleQuotes = ValidationSeverity.WARNING;
-			if (config) {
-				maintainer = getSeverity(config.deprecatedMaintainer);
-				directiveCasing = getSeverity(config.directiveCasing);
-				emptyContinuationLine = getSeverity(config.emptyContinuationLine);
-				instructionCasing = getSeverity(config.instructionCasing);
-				instructionCmdMultiple = getSeverity(config.instructionCmdMultiple);
-				instructionEntrypointMultiple = getSeverity(config.instructionEntrypointMultiple);
-				instructionHealthcheckMultiple = getSeverity(config.instructionHealthcheckMultiple);
-				instructionJSONInSingleQuotes = getSeverity(config.instructionHealthcheckMultiple);
-			}
-			const fileSettings = {
-				deprecatedMaintainer: maintainer,
-				directiveCasing: directiveCasing,
-				emptyContinuationLine: emptyContinuationLine,
-				instructionCasing: instructionCasing,
-				instructionCmdMultiple: instructionCmdMultiple,
-				instructionEntrypointMultiple: instructionEntrypointMultiple,
-				instructionHealthcheckMultiple: instructionHealthcheckMultiple,
-				instructionJSONInSingleQuotes: instructionJSONInSingleQuotes
-			};
+			const fileSettings = convertValidatorConfiguration(config);
 			const diagnostics = service.validate(textDocument.getText(), fileSettings);
 			connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 		});
@@ -286,31 +290,11 @@ connection.onDidChangeConfiguration((change) => {
 		refreshConfigurations();
 	} else {
 		let settings = <Settings>change.settings;
-		let maintainer = ValidationSeverity.WARNING;
-		let directiveCasing = ValidationSeverity.WARNING;
-		let emptyContinuationLine = ValidationSeverity.WARNING;
-		let instructionCasing = ValidationSeverity.WARNING;
-		let instructionCmdMultiple = ValidationSeverity.WARNING;
-		let instructionEntrypointMultiple = ValidationSeverity.WARNING;
-		let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
 		if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
-			maintainer = getSeverity(settings.docker.languageserver.diagnostics.deprecatedMaintainer);
-			directiveCasing = getSeverity(settings.docker.languageserver.diagnostics.directiveCasing);
-			emptyContinuationLine = getSeverity(settings.docker.languageserver.diagnostics.emptyContinuationLine);
-			instructionCasing = getSeverity(settings.docker.languageserver.diagnostics.instructionCasing);
-			instructionCmdMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionCmdMultiple);
-			instructionEntrypointMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionEntrypointMultiple);
-			instructionHealthcheckMultiple = getSeverity(settings.docker.languageserver.diagnostics.instructionHealthcheckMultiple);
+			validatorSettings = convertValidatorConfiguration(settings.docker.languageserver.diagnostics);
+		} else {
+			validatorSettings = convertValidatorConfiguration(null);
 		}
-		validatorSettings = {
-			deprecatedMaintainer: maintainer,
-			directiveCasing: directiveCasing,
-			emptyContinuationLine: emptyContinuationLine,
-			instructionCasing: instructionCasing,
-			instructionCmdMultiple: instructionCmdMultiple,
-			instructionEntrypointMultiple: instructionEntrypointMultiple,
-			instructionHealthcheckMultiple: instructionHealthcheckMultiple
-		};
 		// validate all the documents again
 		Object.keys(documents).forEach((key) => {
 			validateTextDocument(documents[key]);

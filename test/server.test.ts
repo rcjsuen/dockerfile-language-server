@@ -282,6 +282,11 @@ describe("Dockerfile LSP Tests", function() {
 					if (json.method === "textDocument/publishDiagnostics") {
 						assert.equal(json.params.uri, "uri://dockerfile/216.txt");
 						assert.equal(json.params.diagnostics.length, 0);
+						sendNotification("textDocument/didClose", {
+							textDocument: {
+								uri: "uri://dockerfile/216.txt"
+							}
+						});
 						finished();
 					}
 				});
@@ -316,9 +321,50 @@ describe("Dockerfile LSP Tests", function() {
 			} else if (json.id === id2) {
 				assert.equal(json.result.documentation.kind, MarkupKind.Markdown);
 				lspProcess.removeListener("message", listener207);
+				sendNotification("textDocument/didClose", {
+					textDocument: {
+						uri: "uri://dockerfile/207.txt"
+					}
+				});
 				finished();
 			}
 		};
 		lspProcess.on("message", listener207);
+	});
+
+	it("issue #218", function(finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/218.txt",
+				text: "FROM node\nRUN ['a']"
+			}
+		});
+		sendNotification("workspace/didChangeConfiguration", {
+			settings: {
+				docker: {
+					languageserver: {
+						diagnostics: {
+							instructionJSONInSingleQuotes: "ignore"
+						}
+					}
+				}
+			}
+		});
+
+		let first = true;
+		lspProcess.on("message", (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				if (first) {
+					assert.equal(json.params.diagnostics.length, 1);
+					first = false;
+				} else {
+					assert.equal(json.params.diagnostics.length, 0);
+					finished();
+				}
+			}
+		});
 	});
 });
