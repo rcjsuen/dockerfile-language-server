@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.0.15] - 2018-04-14
 ### Added
 - settings
   - docker.languageserver.diagnostics.instructionJSONInSingleQuotes? ([#217](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/217))
@@ -341,7 +341,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.14...HEAD
+[v0.0.15]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.12...v0.0.13
 [0.0.12]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.11...v0.0.12
