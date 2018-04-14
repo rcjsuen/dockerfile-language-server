@@ -41,6 +41,7 @@ function initialize(applyEdit: boolean): number {
 			textDocument: {
 				completion: {
 					completionItem: {
+						documentationFormat: [ MarkupKind.Markdown ],
 						snippetSupport: true
 					}
 				},
@@ -286,5 +287,38 @@ describe("Dockerfile LSP Tests", function() {
 				});
 			}
 		});
+	});
+
+	it("issue #207", function(finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/207.txt",
+				text: "FRO"
+			}
+		});
+		let id2 = -1;
+		let id = sendRequest("textDocument/completion", {
+			textDocument: {
+				uri: "uri://dockerfile/207.txt"
+			},
+			position: {
+				line: 0,
+				character: 3
+			}
+		});
+
+		const listener207 = (json) => {
+			if (json.id === id) {
+				id2 = sendRequest("completionItem/resolve", json.result[0]);
+			} else if (json.id === id2) {
+				assert.equal(json.result.documentation.kind, MarkupKind.Markdown);
+				lspProcess.removeListener("message", listener207);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener207);
 	});
 });

@@ -58,6 +58,19 @@ function supportsSnippets(capabilities: ClientCapabilities): boolean {
 		&& capabilities.textDocument.completion.completionItem.snippetSupport;
 }
 
+/**
+ * Gets the MarkupKind[] that the client supports for the
+ * documentation field of a CompletionItem.
+ * 
+ * @return the supported MarkupKind[], may be null or undefined
+ */
+function getCompletionItemDocumentationFormat(capabilities: ClientCapabilities): MarkupKind[] | null | undefined {
+	return capabilities.textDocument
+		&& capabilities.textDocument.completion
+		&& capabilities.textDocument.completion.completionItem
+		&& capabilities.textDocument.completion.completionItem.documentationFormat;
+}
+
 function getHoverContentFormat(capabilities: ClientCapabilities): MarkupKind[] {
 	return capabilities.textDocument
 		&& capabilities.textDocument.hover
@@ -68,6 +81,7 @@ function setServiceCapabilities(capabilities: ClientCapabilities): void {
 	service.setCapabilities({
 		completion: {
 			completionItem: {
+				documentationFormat: getCompletionItemDocumentationFormat(capabilities),
 				snippetSupport: supportsSnippets(capabilities)
 			}
 		},

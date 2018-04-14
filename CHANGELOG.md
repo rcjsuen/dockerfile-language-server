@@ -2,9 +2,12 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
 - settings
   - docker.languageserver.diagnostics.instructionJSONInSingleQuotes? ([#217](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/217))
     - value = ( "ignore" | "warning" | "error" )
+- completionItem/resolve
+  - use Markdown for a completion item's documentation field if the client supports it ([#207](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/207))
 
 ### Fixed
 - textDocument/didChange
