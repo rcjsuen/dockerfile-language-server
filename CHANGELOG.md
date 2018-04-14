@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
     - value = ( "ignore" | "warning" | "error" )
 - completionItem/resolve
   - use Markdown for a completion item's documentation field if the client supports it ([#207](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/207))
+- textDocument/publishDiagnostics
+  - warn if hyphens are being parsed as a unit of time in HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#24](https://github.com/rcjsuen/dockerfile-utils/issues/24))
+  - warn if two or more decimals found in a unit of time in HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#25](https://github.com/rcjsuen/dockerfile-utils/issues/25))
+  - warn if two hyphens are found in HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#26](https://github.com/rcjsuen/dockerfile-utils/issues/26))
+  - warn if instruction is written in JSON form incorrectly with single quotes ([rcjsuen/dockerfile-utils#28](https://github.com/rcjsuen/dockerfile-utils/issues/28))
 
 ### Fixed
 - textDocument/didChange
@@ -15,6 +20,9 @@ All notable changes to this project will be documented in this file.
 - textDocument/publishDiagnostics
   - clear diagnostics when server receives textDocument/didClose so that they do not linger in the client ([#214](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/214))
   - fix incorrect validation error if a COPY uses JSON arguments and its last string argument is correctly defined as a folder ([#217](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/217))
+  - fix incorrect validation error if an ADD uses JSON arguments and its last string argument is correctly defined as a folder ([rcjsuen/dockerfile-utils#30](https://github.com/rcjsuen/dockerfile-utils/issues/30))
+  - skip validation of content after a JSON's closing bracket ([rcjsuen/dockerfile-utils#33](https://github.com/rcjsuen/dockerfile-utils/issues/33))
+  - fix validation of number of arguments for ADD and COPY instructions written in JSON ([rcjsuen/dockerfile-utils#34](https://github.com/rcjsuen/dockerfile-utils/issues/34))
 
 ## [0.0.14] - 2018-03-08
 ### Added
