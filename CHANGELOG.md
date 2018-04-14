@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- support fulfillment of textDocument requests to the server even if textDocument/didOpen has not been sent for a file ([#215](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/215))
+
 ## [0.0.16] - 2018-04-14
 ### Fixed
 - textDocument/publishDiagnostics
@@ -346,6 +350,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.16...HEAD
 [0.0.16]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.13...v0.0.14

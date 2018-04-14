@@ -4,8 +4,9 @@
  * ------------------------------------------------------------------------------------------ */
 'use strict';
 
+import * as fs from "fs";
 import {
-	createConnection, InitializeParams, InitializeResult, ClientCapabilities,
+	createConnection, InitializeParams, InitializeResult, ClientCapabilities, Files,
 	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams,
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
@@ -50,6 +51,33 @@ let configurationSupport: boolean = false;
 let documentChangesSupport: boolean = false;
 
 let documents: { [ uri: string ]: TextDocument } = {};
+
+/**
+ * Retrieves a text document for the file located at the given URI
+ * string.
+ * 
+ * @param uri the URI of the interested file, must be defined and not
+ *            null
+ * @return the text document for the file, or null if no file exists
+ *         at the given location
+ */
+function getDocument(uri: string): PromiseLike<TextDocument> {
+	if (documents[uri]) {
+		return Promise.resolve(documents[uri]);
+	}
+	return new Promise((resolve, reject) => {
+		let file = Files.uriToFilePath(uri);
+		fs.exists(file, (exists) => {
+			if (exists) {
+				fs.readFile(file, (err, data) => {
+					resolve(TextDocument.create(uri, "dockerfile", 1, data.toString()));
+				});
+			} else {
+				resolve(null);
+			}
+		});
+	});
+}
 
 function supportsSnippets(capabilities: ClientCapabilities): boolean {
 	return capabilities.textDocument
@@ -302,44 +330,48 @@ connection.onDidChangeConfiguration((change) => {
 	}
 });
 
-connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] | PromiseLike<CompletionItem[]> => {
-	let document = documents[textDocumentPosition.textDocument.uri];
-	if (document) {
-		return service.computeCompletionItems(document.getText(), textDocumentPosition.position);
-	}
-	return null;
+connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): PromiseLike<CompletionItem[]> => {
+	return getDocument(textDocumentPosition.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeCompletionItems(document.getText(), textDocumentPosition.position);
+		}
+		return null;
+	});
 });
 
-connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
-	let document = documents[textDocumentPosition.textDocument.uri];
-	if (document !== null) {
-		return service.computeSignatureHelp(document.getText(), textDocumentPosition.position);
-	}
-	return {
-		signatures: [],
-		activeSignature: null,
-		activeParameter: null,
-	};
+connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): PromiseLike<SignatureHelp> => {
+	return getDocument(textDocumentPosition.textDocument.uri).then((document) => {
+		if (document !== null) {
+			return service.computeSignatureHelp(document.getText(), textDocumentPosition.position);
+		}
+		return {
+			signatures: [],
+			activeSignature: null,
+			activeParameter: null,
+		};
+	});
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 	return service.resolveCompletionItem(item);
 });
 
-connection.onHover((textDocumentPosition: TextDocumentPositionParams): Hover => {
-	let document = documents[textDocumentPosition.textDocument.uri];
-	if (document !== null) {
-		return service.computeHover(document.getText(), textDocumentPosition.position);
-	}
-	return null;
+connection.onHover((textDocumentPosition: TextDocumentPositionParams): PromiseLike<Hover> => {
+	return getDocument(textDocumentPosition.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeHover(document.getText(), textDocumentPosition.position);
+		}
+		return null;
+	});
 });
 
-connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams): DocumentHighlight[] => {
-	let document = documents[textDocumentPosition.textDocument.uri];
-	if (document) {
-		return service.computeHighlightRanges(document.getText(), textDocumentPosition.position);
-	}
-	return [];
+connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams): PromiseLike<DocumentHighlight[]> => {
+	return getDocument(textDocumentPosition.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeHighlightRanges(document.getText(), textDocumentPosition.position);
+		}
+		return [];
+	});
 });
 
 connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {
@@ -352,90 +384,97 @@ connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {
 connection.onExecuteCommand((params: ExecuteCommandParams): void => {
 	if (applyEditSupport) {
 		let uri: string = params.arguments[0];
-		let document = documents[uri];
-		if (document) {
-			let edits = service.computeCommandEdits(document.getText(), params.command, params.arguments);
-			if (edits) {
-				if (documentChangesSupport) {
-					let identifier = VersionedTextDocumentIdentifier.create(uri, document.version);
-					connection.workspace.applyEdit({
-						documentChanges: [
-							TextDocumentEdit.create(identifier, edits)
-						]
-					});
-				} else {
-					connection.workspace.applyEdit({
-						changes: {
-							[ uri ]: edits
-						}
-					});
+		getDocument(uri).then((document) => {
+			if (document) {
+				let edits = service.computeCommandEdits(document.getText(), params.command, params.arguments);
+				if (edits) {
+					if (documentChangesSupport) {
+						let identifier = VersionedTextDocumentIdentifier.create(uri, document.version);
+						connection.workspace.applyEdit({
+							documentChanges: [
+								TextDocumentEdit.create(identifier, edits)
+							]
+						});
+					} else {
+						connection.workspace.applyEdit({
+							changes: {
+								[ uri ]: edits
+							}
+						});
+					}
 				}
 			}
+			return null;
+		});
+	}
+});
+
+connection.onDefinition((textDocumentPosition: TextDocumentPositionParams): PromiseLike<Location> => {
+	return getDocument(textDocumentPosition.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeDefinition(textDocumentPosition.textDocument, document.getText(), textDocumentPosition.position);
 		}
-	}
+		return null;
+	});
 });
 
-connection.onDefinition((textDocumentPosition: TextDocumentPositionParams): Location => {
-	let uri = textDocumentPosition.textDocument.uri;
-	let document = documents[uri];
-	if (document) {
-		return service.computeDefinition(textDocumentPosition.textDocument, document.getText(), textDocumentPosition.position);
-	}
-	return null;
+connection.onRenameRequest((params: RenameParams): PromiseLike<WorkspaceEdit> => {
+	return getDocument(params.textDocument.uri).then((document) => {
+		if (document) {
+			let edits = service.computeRename(params.textDocument, document.getText(), params.position, params.newName);
+			return {
+				changes: {
+					[ params.textDocument.uri ]: edits
+				}
+			};
+		}
+		return null;
+	});
 });
 
-connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
-	let document = documents[params.textDocument.uri];
-	if (document) {
-		let edits = service.computeRename(params.textDocument, document.getText(), params.position, params.newName);
-		return {
-			changes: {
-				[ params.textDocument.uri ]: edits
-			}
-		};
-	}
-	return null;
+connection.onDocumentSymbol((documentSymbolParams: DocumentSymbolParams): PromiseLike<SymbolInformation[]> => {
+	return getDocument(documentSymbolParams.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeSymbols(documentSymbolParams.textDocument, document.getText());
+		}
+		return [];
+	});
 });
 
-connection.onDocumentSymbol((documentSymbolParams: DocumentSymbolParams): SymbolInformation[] => {
-	let uri = documentSymbolParams.textDocument.uri;
-	let document = documents[uri];
-	if (document) {
-		return service.computeSymbols(documentSymbolParams.textDocument, document.getText());
-	}
-	return [];
+connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingParams): PromiseLike<TextEdit[]> => {
+	return getDocument(documentFormattingParams.textDocument.uri).then((document) => {
+		if (document) {
+			return service.format(document.getText(), documentFormattingParams.options);
+		}
+		return [];
+	});
+});	
+
+connection.onDocumentRangeFormatting((rangeFormattingParams: DocumentRangeFormattingParams): PromiseLike<TextEdit[]> => {
+	return getDocument(rangeFormattingParams.textDocument.uri).then((document) => {
+		if (document) {
+			return service.formatRange(document.getText(), rangeFormattingParams.range, rangeFormattingParams.options);
+		}
+		return [];
+	});
 });
 
-connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingParams): TextEdit[] => {
-	let document = documents[documentFormattingParams.textDocument.uri];
-	if (document) {
-		return service.format(document.getText(), documentFormattingParams.options);
-	}
-	return [];
+connection.onDocumentOnTypeFormatting((onTypeFormattingParams: DocumentOnTypeFormattingParams): PromiseLike<TextEdit[]> => {
+	return getDocument(onTypeFormattingParams.textDocument.uri).then((document) => {
+		if (document) {
+			return service.formatOnType(document.getText(), onTypeFormattingParams.position, onTypeFormattingParams.ch, onTypeFormattingParams.options);
+		}
+		return [];
+	});
 });
 
-connection.onDocumentRangeFormatting((rangeFormattingParams: DocumentRangeFormattingParams): TextEdit[] => {
-	let document = documents[rangeFormattingParams.textDocument.uri];
-	if (document) {
-		return service.formatRange(document.getText(), rangeFormattingParams.range, rangeFormattingParams.options);
-	}
-	return [];
-});
-
-connection.onDocumentOnTypeFormatting((onTypeFormattingParams: DocumentOnTypeFormattingParams): TextEdit[] => {
-	const document = documents[onTypeFormattingParams.textDocument.uri];
-	if (document) {
-		return service.formatOnType(document.getText(), onTypeFormattingParams.position, onTypeFormattingParams.ch, onTypeFormattingParams.options);
-	}
-	return [];
-});
-
-connection.onDocumentLinks((documentLinkParams: DocumentLinkParams): DocumentLink[] => {
-	let document = documents[documentLinkParams.textDocument.uri];
-	if (document) {
-		return service.computeLinks(document.getText());
-	}
-	return null;
+connection.onDocumentLinks((documentLinkParams: DocumentLinkParams): PromiseLike<DocumentLink[]> => {
+	return getDocument(documentLinkParams.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeLinks(document.getText());
+		}
+		return [];
+	});
 });
 
 connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {
