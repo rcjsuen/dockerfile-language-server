@@ -94,8 +94,8 @@ interface Settings {
         emptyContinuationLine?: string,
         instructionCasing?: string,
         instructionCmdMultiple?: string,
-        instructionEntrypointMultiple?: string
-        instructionHealthcheckMultiple?: string
+        instructionEntrypointMultiple?: string,
+        instructionHealthcheckMultiple?: string,
         instructionJSONInSingleQuotes?: string
       }
     }
