@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - support fulfillment of textDocument requests to the server even if textDocument/didOpen has not been sent for a file ([#215](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/215))
 
+### Fixed
+- do not flag FROM instructions that use variables with an error ([rcjsuen/dockerfile-utils#35](https://github.com/rcjsuen/dockerfile-utils/issues/35))
+
 ## [0.0.16] - 2018-04-14
 ### Fixed
 - textDocument/publishDiagnostics
