@@ -342,17 +342,6 @@ describe("Dockerfile LSP Tests", function() {
 				text: "FROM node\nRUN ['a']"
 			}
 		});
-		sendNotification("workspace/didChangeConfiguration", {
-			settings: {
-				docker: {
-					languageserver: {
-						diagnostics: {
-							instructionJSONInSingleQuotes: "ignore"
-						}
-					}
-				}
-			}
-		});
 
 		let first = true;
 		const listener218 = (json) => {
@@ -360,6 +349,18 @@ describe("Dockerfile LSP Tests", function() {
 				if (first) {
 					assert.equal(json.params.diagnostics.length, 1);
 					first = false;
+
+					sendNotification("workspace/didChangeConfiguration", {
+						settings: {
+							docker: {
+								languageserver: {
+									diagnostics: {
+										instructionJSONInSingleQuotes: "ignore"
+									}
+								}
+							}
+						}
+					});
 				} else {
 					assert.equal(json.params.diagnostics.length, 0);
 					lspProcess.removeListener("message", listener218);
