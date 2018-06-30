@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/documentSymbol
+  - MAINTAINER instructions flagged as being deprecated ([#36](https://github.com/rcjsuen/dockerfile-language-service/issues/36))
+
 ## [0.0.17] - 2018-04-16
 ### Added
 - support fulfillment of textDocument requests to the server even if textDocument/didOpen has not been sent for a file ([#215](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/215))
@@ -353,6 +358,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.17...HEAD
 [0.0.17]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.16...v0.0.17
 [0.0.16]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.14...v0.0.15
