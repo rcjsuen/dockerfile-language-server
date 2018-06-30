@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.0.18] - 2018-06-30
 ### Added
 - documentLink/resolve
   - document links are now resolved in a two-step process ([#221](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/221))
@@ -378,7 +378,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.17...HEAD
+[0.0.18]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.17...v0.0.18
 [0.0.17]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.16...v0.0.17
 [0.0.16]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.15...v0.0.16
 [0.0.15]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.14...v0.0.15
