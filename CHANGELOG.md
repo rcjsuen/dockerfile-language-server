@@ -5,8 +5,26 @@ All notable changes to this project will be documented in this file.
 ### Added
 - documentLink/resolve
   - document links are now resolved in a two-step process ([#221](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/221))
+- textDocument/completion
+  - MAINTAINER instructions flagged as being deprecated ([rcjsuen/dockerfile-language-service#35](https://github.com/rcjsuen/dockerfile-language-service/issues/35))
 - textDocument/documentSymbol
   - MAINTAINER instructions flagged as being deprecated ([#223](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/223))
+- textDocument/publishDiagnostics
+  - flag FROM instructions that refer to an invalid image digest in a private registry with a port as an error ([rcjsuen/dockerfile-utils#42](https://github.com/rcjsuen/dockerfile-utils/issues/42))
+  - flag variables that have an invalid modifier set ([rcjsuen/dockerfile-utils#38](https://github.com/rcjsuen/dockerfile-utils/issues/38))
+  - warn if ARG instruction does not define a name for the variable ([rcjsuen/dockerfile-utils#45](https://github.com/rcjsuen/dockerfile-utils/issues/45))
+  - flag incorrectly quoted arguments for ARG, ENV, and LABEL ([rcjsuen/dockerfile-utils#40](https://github.com/rcjsuen/dockerfile-utils/issues/40))
+
+### Fixed
+- textDocument/completion
+  - image tag completion inserts extra text if word boundary is ambiguous ([rcjsuen/dockerfile-language-service#39](https://github.com/rcjsuen/dockerfile-language-service/issues/39))
+- textDocument/hover
+  - resolve variables to uninitialized ARGs with ARGs at the top of the Dockerfile if they exist ([rcjsuen/dockerfile-language-service#34](https://github.com/rcjsuen/dockerfile-language-service/issues/34))
+- textDocument/publishDiagnostics
+  - fix incorrect validation warning in ARG, ENV, and LABEL instructions caused by quotes being used in variable replacements ([rcjsuen/dockerfile-utils#36](https://github.com/rcjsuen/dockerfile-utils/issues/36))
+  - fix incorrect validation of tagged images caused by FROM referencing images in a private registry ([rcjsuen/dockerfile-utils#39](https://github.com/rcjsuen/dockerfile-utils/issues/39))
+  - allow variables to be used in a FROM's base image argument ([rcjsuen/dockerfile-utils#43](https://github.com/rcjsuen/dockerfile-utils/issues/43))
+  - handle ARG instructions with escaped newlines that lead to an EOF comment ([rcjsuen/dockerfile-utils#44](https://github.com/rcjsuen/dockerfile-utils/issues/44))
 
 ## [0.0.17] - 2018-04-16
 ### Added
