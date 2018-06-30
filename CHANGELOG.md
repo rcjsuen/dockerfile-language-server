@@ -71,7 +71,7 @@ All notable changes to this project will be documented in this file.
 - merge defined and default variables together when suggesting completion items ([#200](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/200))
 - do not suggest variables from another build stage as a completion item ([#201](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/201))
 - change documentation to state that STOPSIGNAL was added in Docker 1.9 instead of Docker 1.12 ([rcjsuen/dockerfile-language-service#6](https://github.com/rcjsuen/dockerfile-language-service/issues/6))
-- ignore and return null for hover computations with an invalid position ([#22](https://github.com/rcjsuen/dockerfile-language-service/issues/22))
+- ignore and return null for hover computations with an invalid position ([rcjsuen/dockerfile-language-service#22](https://github.com/rcjsuen/dockerfile-language-service/issues/22))
 - textDocument/publishDiagnostics
   - allow decimal values for HEALTHCHECK duration flags ([rcjsuen/dockerfile-utils#19](https://github.com/rcjsuen/dockerfile-utils/issues/19))
   - warn if STOPSIGNAL uses invalid variables for its argument ([rcjsuen/dockerfile-utils#11](https://github.com/rcjsuen/dockerfile-utils/issues/11))
