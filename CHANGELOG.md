@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 - documentLink/resolve
   - document links are now resolved in a two-step process ([#221](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/221))
 - textDocument/documentSymbol
-  - MAINTAINER instructions flagged as being deprecated ([#36](https://github.com/rcjsuen/dockerfile-language-service/issues/36))
+  - MAINTAINER instructions flagged as being deprecated ([#223](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/223))
 
 ## [0.0.17] - 2018-04-16
 ### Added
