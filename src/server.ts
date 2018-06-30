@@ -182,7 +182,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				]
 			},
 			documentLinkProvider: {
-				resolveProvider: false
+				resolveProvider: true
 			}
 		}
 	}
@@ -475,6 +475,10 @@ connection.onDocumentLinks((documentLinkParams: DocumentLinkParams): PromiseLike
 		}
 		return [];
 	});
+});
+
+connection.onDocumentLinkResolve((documentLink: DocumentLink): DocumentLink => {
+	return service.resolveLink(documentLink);
 });
 
 connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {

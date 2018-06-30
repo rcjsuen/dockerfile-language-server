@@ -419,4 +419,46 @@ describe("Dockerfile LSP Tests", function() {
 		};
 		lspProcess.on("message", listener223);
 	});
+
+	it("issue #221", function (finished) {
+		this.timeout(5000);
+		let document = {
+			languageId: "dockerfile",
+			version: 1,
+			uri: "uri://dockerfile/221.txt",
+			text: "FROM node"
+		};
+		sendNotification("textDocument/didOpen", {
+			textDocument: document
+		});
+
+		let documentLink = sendRequest("textDocument/documentLink", {
+			textDocument: {
+				uri: document.uri
+			}
+		});
+		let resolve = -1;
+		const listener221 = (json) => {
+			if (json.id === documentLink) {
+				assert.equal(json.result.length, 1);
+				assert.strictEqual(json.result[0].target, undefined);
+				assert.equal(json.result[0].data, "_/node/");
+				assert.equal(json.result[0].range.start.line, 0);
+				assert.equal(json.result[0].range.start.character, 5);
+				assert.equal(json.result[0].range.end.line, 0);
+				assert.equal(json.result[0].range.end.character, 9);
+
+				resolve = sendRequest("documentLink/resolve", json.result[0]);
+			} else if (json.id === resolve) {
+				assert.equal(json.result.target, "https://hub.docker.com/_/node/");
+				assert.equal(json.result.data, "_/node/");
+				assert.equal(json.result.range.start.line, 0);
+				assert.equal(json.result.range.start.character, 5);
+				assert.equal(json.result.range.end.line, 0);
+				assert.equal(json.result.range.end.character, 9);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener221);
+	});
 });
