@@ -334,18 +334,20 @@ describe("Dockerfile LSP Tests", function() {
 
 	it("issue #218", function(finished) {
 		this.timeout(5000);
+		const document = {
+			languageId: "dockerfile",
+			version: 1,
+			uri: "uri://dockerfile/218.txt",
+			text: "FROM node\nRUN ['a']"
+		};
 		sendNotification("textDocument/didOpen", {
-			textDocument: {
-				languageId: "dockerfile",
-				version: 1,
-				uri: "uri://dockerfile/218.txt",
-				text: "FROM node\nRUN ['a']"
-			}
+			textDocument: document
 		});
 
 		let first = true;
 		const listener218 = (json) => {
-			if (json.method === "textDocument/publishDiagnostics") {
+			if (json.method === "textDocument/publishDiagnostics" &&
+					json.params.uri === document.uri) {
 				if (first) {
 					assert.equal(json.params.diagnostics.length, 1);
 					first = false;
