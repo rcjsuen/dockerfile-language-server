@@ -463,4 +463,9 @@ describe("Dockerfile LSP Tests", function() {
 		};
 		lspProcess.on("message", listener221);
 	});
+
+	after(() => {
+		// terminate the forked LSP process after all the tests have been run
+		lspProcess.kill();
+	});
 });
