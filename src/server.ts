@@ -79,6 +79,13 @@ function getDocument(uri: string): PromiseLike<TextDocument> {
 	});
 }
 
+function supportsDeprecatedItems(capabilities: ClientCapabilities): boolean {
+	return capabilities.textDocument
+		&& capabilities.textDocument.completion
+		&& capabilities.textDocument.completion.completionItem
+		&& capabilities.textDocument.completion.completionItem.deprecatedSupport;
+}
+
 function supportsSnippets(capabilities: ClientCapabilities): boolean {
 	return capabilities.textDocument
 		&& capabilities.textDocument.completion
@@ -109,6 +116,7 @@ function setServiceCapabilities(capabilities: ClientCapabilities): void {
 	service.setCapabilities({
 		completion: {
 			completionItem: {
+				deprecatedSupport: supportsDeprecatedItems(capabilities),
 				documentationFormat: getCompletionItemDocumentationFormat(capabilities),
 				snippetSupport: supportsSnippets(capabilities)
 			}

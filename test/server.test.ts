@@ -5,7 +5,7 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import { TextDocumentSyncKind, MarkupKind, SymbolKind } from 'vscode-languageserver';
+import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
 
@@ -41,6 +41,7 @@ function initialize(applyEdit: boolean): number {
 			textDocument: {
 				completion: {
 					completionItem: {
+						deprecatedSupport: true,
 						documentationFormat: [ MarkupKind.Markdown ],
 						snippetSupport: true
 					}
@@ -462,6 +463,47 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		};
 		lspProcess.on("message", listener221);
+	});
+
+	it("issue #224", function (finished) {
+		this.timeout(5000);
+		let document = {
+			languageId: "dockerfile",
+			version: 1,
+			uri: "uri://dockerfile/224.txt",
+			text: "FROM node\nMAIN"
+		};
+		sendNotification("textDocument/didOpen", {
+			textDocument: document
+		});
+
+		let completion = sendRequest("textDocument/completion", {
+			textDocument: {
+				uri: document.uri
+			},
+			position: {
+				line: 1,
+				character: 4
+			}
+		});
+		const listener224 = (json) => {
+			if (json.id === completion) {
+				lspProcess.removeListener("message", listener224);
+				assert.equal(json.result.length, 1);
+				assert.equal(json.result[0].data, "MAINTAINER");
+				assert.equal(json.result[0].deprecated, true);
+				assert.equal(json.result[0].insertTextFormat, InsertTextFormat.Snippet);
+				assert.equal(json.result[0].kind, CompletionItemKind.Keyword);
+				assert.equal(json.result[0].label, "MAINTAINER name");
+				assert.equal(json.result[0].textEdit.newText, "MAINTAINER ${1:name}");
+				assert.equal(json.result[0].textEdit.range.start.line, 1);
+				assert.equal(json.result[0].textEdit.range.start.character, 0);
+				assert.equal(json.result[0].textEdit.range.end.line, 1);
+				assert.equal(json.result[0].textEdit.range.end.character, 4);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener224);
 	});
 
 	after(() => {

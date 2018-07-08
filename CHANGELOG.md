@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
   - versions prior to 4.x of Mocha dependended on Growl 1.9.2 which contained a [security vulnerability](https://github.com/tj/node-growl/issues/60)
   - as Mocha is a `devDependencies` module, there is no reason to believe that consumers of the `dockerfile-language-server-nodejs` module itself was affected by this vulnerability
 
+### Fixed
+- textDocument/completion
+  - send back deprecated items for MAINTAINER if the client supports it  ([#224](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/224))
+
 ## [0.0.18] - 2018-06-30
 ### Added
 - documentLink/resolve
