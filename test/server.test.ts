@@ -5,7 +5,7 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind } from 'vscode-languageserver';
+import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
 
@@ -33,7 +33,7 @@ function sendNotification(method: string, params: any) {
 	lspProcess.send(message);
 }
 
-function initialize(applyEdit: boolean): number {
+function initialize(applyEdit: boolean, codeAction?: any): number {
 	return sendRequest("initialize", {
 		rootPath: process.cwd(),
 		processId: process.pid,
@@ -48,7 +48,8 @@ function initialize(applyEdit: boolean): number {
 				},
 				hover: {
 					contentFormat: [ MarkupKind.PlainText ]
-				}
+				},
+				codeAction
 			},
 			workspace: {
 				applyEdit: applyEdit,
@@ -504,6 +505,125 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		};
 		lspProcess.on("message", listener224);
+	});
+
+	it("issue #225 commands", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/225-commands.txt",
+				text: "from node"
+			}
+		});
+
+		const codeActionResponseId = sendRequest("textDocument/codeAction", {
+			textDocument: {
+				uri: "uri://dockerfile/225-commands.txt"
+			},
+			context: {
+				diagnostics: [
+					{
+						code: ValidationCode.CASING_INSTRUCTION,
+						range: {
+							start: {
+								line: 0,
+								character: 0
+							},
+							end: {
+								line: 0,
+								character: 4
+							}
+						}
+					}
+				]
+			}
+		});
+
+		const codeActionListener = function (json) {
+			if (json.id === codeActionResponseId) {
+				assert.ok(Array.isArray(json.result));
+				assert.equal(json.result.length, 1);
+				assert.equal(json.result[0].title, "Convert instruction to uppercase");
+				assert.equal(json.result[0].command, CommandIds.UPPERCASE);
+				assert.equal(json.result[0].arguments.length, 2);
+				assert.equal(json.result[0].arguments[0], "uri://dockerfile/225-commands.txt");
+				assert.equal(json.result[0].arguments[1].start.line, 0);
+				assert.equal(json.result[0].arguments[1].start.character, 0);
+				assert.equal(json.result[0].arguments[1].end.line, 0);
+				assert.equal(json.result[0].arguments[1].end.character, 4);
+				lspProcess.removeListener("message", codeActionListener);
+				finished();
+			}
+		};
+		lspProcess.on("message", codeActionListener);
+	});
+
+	it("issue #225 code actions", function (finished) {
+		this.timeout(5000);
+		initialize(true, {
+			codeActionLiteralSupport: {
+				codeActionKind: {
+					valueSet: [
+						CodeActionKind.QuickFix
+					]
+				}
+			}
+		});
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/225-codeActions.txt",
+				text: "from node"
+			}
+		});
+
+		const codeActionResponseId = sendRequest("textDocument/codeAction", {
+			textDocument: {
+				uri: "uri://dockerfile/225-codeActions.txt"
+			},
+			context: {
+				diagnostics: [
+					{
+						code: ValidationCode.CASING_INSTRUCTION,
+						range: {
+							start: {
+								line: 0,
+								character: 0
+							},
+							end: {
+								line: 0,
+								character: 4
+							}
+						}
+					}
+				]
+			}
+		});
+
+		const codeActionListener = function (json) {
+			if (json.id === codeActionResponseId) {
+				assert.ok(Array.isArray(json.result));
+				assert.equal(json.result.length, 1);
+				assert.equal(json.result[0].title, "Convert instruction to uppercase");
+
+				assert.equal(json.result[0].edit.documentChanges.length, 1);
+				assert.equal(json.result[0].edit.documentChanges[0].textDocument.uri, "uri://dockerfile/225-codeActions.txt");
+				assert.equal(json.result[0].edit.documentChanges[0].textDocument.version, 1);
+
+				assert.equal(json.result[0].edit.documentChanges[0].edits.length, 1);
+				assert.equal(json.result[0].edit.documentChanges[0].edits[0].newText, "FROM");
+				assert.equal(json.result[0].edit.documentChanges[0].edits[0].range.start.line, 0);
+				assert.equal(json.result[0].edit.documentChanges[0].edits[0].range.start.character, 0);
+				assert.equal(json.result[0].edit.documentChanges[0].edits[0].range.end.line, 0);
+				assert.equal(json.result[0].edit.documentChanges[0].edits[0].range.end.character, 4);
+				lspProcess.removeListener("message", codeActionListener);
+				finished();
+			}
+		};
+		lspProcess.on("message", codeActionListener);
 	});
 
 	after(() => {

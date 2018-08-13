@@ -13,7 +13,8 @@ import {
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
-	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind, VersionedTextDocumentIdentifier, TextDocumentEdit
+	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind,
+	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind
 } from 'vscode-languageserver';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
@@ -49,6 +50,8 @@ let applyEditSupport: boolean = false;
 let configurationSupport: boolean = false;
 
 let documentChangesSupport: boolean = false;
+
+let codeActionQuickFixSupport: boolean = false;
 
 let documents: { [ uri: string ]: TextDocument } = {};
 
@@ -91,6 +94,23 @@ function supportsSnippets(capabilities: ClientCapabilities): boolean {
 		&& capabilities.textDocument.completion
 		&& capabilities.textDocument.completion.completionItem
 		&& capabilities.textDocument.completion.completionItem.snippetSupport;
+}
+
+function supportsCodeActionQuickFixes(capabilities: ClientCapabilities): boolean {
+	let values = capabilities.textDocument
+		&& capabilities.textDocument.codeAction
+		&& capabilities.textDocument.codeAction.codeActionLiteralSupport
+		&& capabilities.textDocument.codeAction.codeActionLiteralSupport.codeActionKind
+		&& capabilities.textDocument.codeAction.codeActionLiteralSupport.codeActionKind.valueSet;
+	if (values === null || values === undefined) {
+		return false;
+	}
+	for (let value of values) {
+		if (value === CodeActionKind.QuickFix) {
+			return true;
+		}
+	}
+	return false;
 }
 
 /**
@@ -139,6 +159,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	applyEditSupport = params.capabilities.workspace && params.capabilities.workspace.applyEdit === true;
 	documentChangesSupport = params.capabilities.workspace && params.capabilities.workspace.workspaceEdit && params.capabilities.workspace.workspaceEdit.documentChanges === true;
 	configurationSupport = params.capabilities.workspace && params.capabilities.workspace.configuration === true;
+	codeActionQuickFixSupport = supportsCodeActionQuickFixes(params.capabilities);
 	return {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
@@ -382,34 +403,60 @@ connection.onDocumentHighlight((textDocumentPosition: TextDocumentPositionParams
 	});
 });
 
-connection.onCodeAction((codeActionParams: CodeActionParams): Command[] => {
+connection.onCodeAction((codeActionParams: CodeActionParams): Command[] | PromiseLike<CodeAction[]> => {
 	if (applyEditSupport && codeActionParams.context.diagnostics.length > 0) {
-		return service.computeCodeActions(codeActionParams.textDocument, codeActionParams.range, codeActionParams.context);
+		let commands = service.computeCodeActions(codeActionParams.textDocument, codeActionParams.range, codeActionParams.context);
+		if (codeActionQuickFixSupport) {
+			return getDocument(codeActionParams.textDocument.uri).then((document) => {
+				let codeActions = [];
+				for (let command of commands) {
+					let codeAction: CodeAction = {
+						title: command.title,
+						kind: CodeActionKind.QuickFix
+					}
+					let edit = computeWorkspaceEdit(codeActionParams.textDocument.uri, document, command.command, command.arguments);
+					if (edit) {
+						codeAction.edit = edit;
+					}
+					codeActions.push(codeAction);
+				}
+				return codeActions;
+			});
+		}
+		return commands;
 	}
 	return [];
 });
+
+function computeWorkspaceEdit(uri: string, document: TextDocument, command: string, args: any[]): WorkspaceEdit {
+	let edits = service.computeCommandEdits(document.getText(), command, args);
+	if (edits) {
+		if (documentChangesSupport) {
+			let identifier = VersionedTextDocumentIdentifier.create(uri, document.version);
+			return {
+				documentChanges: [
+					TextDocumentEdit.create(identifier, edits)
+				]
+			};
+		} else {
+			return {
+				changes: {
+					[ uri ]: edits
+				}
+			};
+		}
+	}
+	return null;
+}
 
 connection.onExecuteCommand((params: ExecuteCommandParams): void => {
 	if (applyEditSupport) {
 		let uri: string = params.arguments[0];
 		getDocument(uri).then((document) => {
 			if (document) {
-				let edits = service.computeCommandEdits(document.getText(), params.command, params.arguments);
-				if (edits) {
-					if (documentChangesSupport) {
-						let identifier = VersionedTextDocumentIdentifier.create(uri, document.version);
-						connection.workspace.applyEdit({
-							documentChanges: [
-								TextDocumentEdit.create(identifier, edits)
-							]
-						});
-					} else {
-						connection.workspace.applyEdit({
-							changes: {
-								[ uri ]: edits
-							}
-						});
-					}
+				let workspaceEdit = computeWorkspaceEdit(uri, document, params.command, params.arguments);
+				if (workspaceEdit) {
+					connection.workspace.applyEdit(workspaceEdit);
 				}
 			}
 			return null;
