@@ -5,7 +5,7 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind } from 'vscode-languageserver';
+import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
 
@@ -624,6 +624,54 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		};
 		lspProcess.on("message", codeActionListener);
+	});
+
+	it("issue #227", function (finished) {
+		this.timeout(5000);
+
+		let first = true;
+		const diagnosticsListener = (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				if (first) {
+					assert.equal(json.params.uri, "uri://dockerfile/227.txt");
+					assert.equal(json.params.diagnostics.length, 1);
+					assert.strictEqual(json.params.diagnostics[0].range.start.line, 0);
+					assert.strictEqual(json.params.diagnostics[0].range.start.character, 0);
+					assert.strictEqual(json.params.diagnostics[0].range.end.line, 0);
+					assert.strictEqual(json.params.diagnostics[0].range.end.character, 0);
+					assert.strictEqual(json.params.diagnostics[0].severity, DiagnosticSeverity.Error);
+					assert.strictEqual(json.params.diagnostics[0].code, ValidationCode.NO_SOURCE_IMAGE);
+					assert.strictEqual(json.params.diagnostics[0].source, "dockerfile-utils");
+					first = false;
+					sendNotification("textDocument/didChange", {
+						textDocument: {
+							uri: "uri://dockerfile/227.txt",
+							version: 2
+						},
+						contentChanges: [
+							{
+								text: "FROM node"
+							}
+						]
+					});
+				} else {
+					lspProcess.removeListener("message", diagnosticsListener);
+					assert.equal(json.params.uri, "uri://dockerfile/227.txt");
+					assert.equal(json.params.diagnostics.length, 0);
+					finished();
+				}
+			}
+		};
+		lspProcess.on("message", diagnosticsListener);
+
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/227.txt",
+				text: ""
+			}
+		});
 	});
 
 	after(() => {

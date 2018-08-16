@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - textDocument/completion
   - send back deprecated items for MAINTAINER if the client supports it  ([#224](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/224))
+- textDocument/didChange
+  - handle notifications that do not specify the range of the event ([#227](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/227))
 
 ## [0.0.18] - 2018-06-30
 ### Added

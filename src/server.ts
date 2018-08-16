@@ -548,6 +548,12 @@ connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDo
 	let content = buffer;
 	let changes = didChangeTextDocumentParams.contentChanges;
 	for (let i = 0; i < changes.length; i++) {
+		if (!changes[i].range && !changes[i].rangeLength) {
+			// no ranges defined, the text is the entire document then
+			buffer = changes[i].text;
+			break;
+		}
+
 		let offset = document.offsetAt(changes[i].range.start);
 		let end = null;
 		if (changes[i].range.end) {
