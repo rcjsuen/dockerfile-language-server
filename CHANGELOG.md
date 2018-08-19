@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
   - return code action literals if the client supports it ([#225](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/225))
 - textDocument/publishDiagnostics
   - add support for SCTP in EXPOSE instruction ([rcjsuen/dockerfile-utils#52](https://github.com/rcjsuen/dockerfile-utils/issues/52))
+  - warn if WORKDIR is not an absolute path ([#228](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/228))
 
 ### Changed
 - [upgraded the dependency of Mocha](https://github.com/mochajs/mocha/issues/2791) from 3.x to 5.x

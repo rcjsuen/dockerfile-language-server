@@ -226,6 +226,7 @@ function convertValidatorConfiguration(config: ValidatorConfiguration): Validato
 	let instructionEntrypointMultiple = ValidationSeverity.WARNING;
 	let instructionHealthcheckMultiple = ValidationSeverity.WARNING;
 	let instructionJSONInSingleQuotes = ValidationSeverity.WARNING;
+	let instructionWorkdirRelative = ValidationSeverity.WARNING;
 	if (config) {
 		deprecatedMaintainer = getSeverity(config.deprecatedMaintainer);
 		directiveCasing = getSeverity(config.directiveCasing);
@@ -235,6 +236,7 @@ function convertValidatorConfiguration(config: ValidatorConfiguration): Validato
 		instructionEntrypointMultiple = getSeverity(config.instructionEntrypointMultiple);
 		instructionHealthcheckMultiple = getSeverity(config.instructionHealthcheckMultiple);
 		instructionJSONInSingleQuotes = getSeverity(config.instructionJSONInSingleQuotes);
+		instructionWorkdirRelative = getSeverity(config.instructionWorkdirRelative);
 	}
 	return {
 		deprecatedMaintainer,
@@ -244,7 +246,8 @@ function convertValidatorConfiguration(config: ValidatorConfiguration): Validato
 		instructionCmdMultiple,
 		instructionEntrypointMultiple,
 		instructionHealthcheckMultiple,
-		instructionJSONInSingleQuotes
+		instructionJSONInSingleQuotes,
+		instructionWorkdirRelative
 	};
 }
 
@@ -269,7 +272,8 @@ interface ValidatorConfiguration {
 	instructionCmdMultiple?: string,
 	instructionEntrypointMultiple?: string,
 	instructionHealthcheckMultiple?: string,
-	instructionJSONInSingleQuotes?: string
+	instructionJSONInSingleQuotes?: string,
+	instructionWorkdirRelative?: string
 }
 
 interface Settings {
