@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/codeActions
   - return code action literals if the client supports it ([#225](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/225))
+- textDocument/publishDiagnostics
+  - add support for SCTP in EXPOSE instruction ([rcjsuen/dockerfile-utils#52](https://github.com/rcjsuen/dockerfile-utils/issues/52))
 
 ### Changed
 - [upgraded the dependency of Mocha](https://github.com/mochajs/mocha/issues/2791) from 3.x to 5.x
@@ -16,6 +18,8 @@ All notable changes to this project will be documented in this file.
   - send back deprecated items for MAINTAINER if the client supports it  ([#224](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/224))
 - textDocument/didChange
   - handle notifications that do not specify the range of the event ([#227](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/227))
+- textDocument/publishDiagnostics
+  - fix incorrect validation of ENV and LABEL instructions with many quoted properties on mulitple lines ([rcjsuen/dockerfile-utils#50](https://github.com/rcjsuen/dockerfile-utils/issues/50))
 
 ## [0.0.18] - 2018-06-30
 ### Added
