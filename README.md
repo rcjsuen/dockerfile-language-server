@@ -13,6 +13,7 @@ To [install and run](#installation-instructions) this language server, you will 
 - document highlight
 - document links
 - document symbols
+- folding ranges
 - formatting
 - hovers
 - rename

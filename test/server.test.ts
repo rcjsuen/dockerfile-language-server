@@ -5,7 +5,7 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity } from 'vscode-languageserver';
+import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
 
@@ -72,6 +72,7 @@ describe("Dockerfile LSP Tests", function() {
 			assert.equal(capabilities.codeActionProvider, false);
 			assert.equal(capabilities.completionProvider.resolveProvider, true);
 			assert.equal(capabilities.executeCommandProvider, undefined);
+			assert.equal(capabilities.foldingRangeProvider, true);
 			assert.equal(capabilities.hoverProvider, true);
 			finished();
 		});
@@ -672,6 +673,38 @@ describe("Dockerfile LSP Tests", function() {
 				text: ""
 			}
 		});
+	});
+
+	it("issue #226", function (finished) {
+		this.timeout(5000);
+
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/226.txt",
+				text: "# comment\n# comment2\n# comment3\nFROM node"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/foldingRange", {
+			textDocument: {
+				uri: "uri://dockerfile/226.txt",
+			}
+		});
+
+		const foldingRangeListener = (json) => {
+			if (json.id === requestId) {
+				assert.strictEqual(json.result.length, 1);
+				assert.strictEqual(json.result[0].startLine, 0);
+				assert.strictEqual(json.result[0].startCharacter, 9);
+				assert.strictEqual(json.result[0].endLine, 2);
+				assert.strictEqual(json.result[0].endCharacter, 10);
+				assert.strictEqual(json.result[0].kind, FoldingRangeKind.Comment);
+				finished();
+			}
+		};
+		lspProcess.on("message", foldingRangeListener);
 	});
 
 	after(() => {

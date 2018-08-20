@@ -14,7 +14,7 @@ import {
 	RenameParams, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
 	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind,
-	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind
+	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, FoldingRangeRequestParam
 } from 'vscode-languageserver';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
@@ -132,6 +132,18 @@ function getHoverContentFormat(capabilities: ClientCapabilities): MarkupKind[] {
 		&& capabilities.textDocument.hover.contentFormat;
 }
 
+function getLineFoldingOnly(capabilities: ClientCapabilities): boolean {
+	return capabilities.textDocument
+		&& capabilities.textDocument.foldingRange
+		&& capabilities.textDocument.foldingRange.lineFoldingOnly;
+}
+
+function getRangeLimit(capabilities: ClientCapabilities): number {
+	return capabilities.textDocument
+		&& capabilities.textDocument.foldingRange
+		&& capabilities.textDocument.foldingRange.rangeLimit;
+}
+
 function setServiceCapabilities(capabilities: ClientCapabilities): void {
 	service.setCapabilities({
 		completion: {
@@ -143,6 +155,10 @@ function setServiceCapabilities(capabilities: ClientCapabilities): void {
 		},
 		hover: {
 			contentFormat: getHoverContentFormat(capabilities)
+		},
+		foldingRange: {
+			lineFoldingOnly: getLineFoldingOnly(capabilities),
+			rangeLimit: getRangeLimit(capabilities)
 		}
 	});
 }
@@ -212,7 +228,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			},
 			documentLinkProvider: {
 				resolveProvider: true
-			}
+			},
+			foldingRangeProvider: true
 		}
 	}
 });
@@ -538,6 +555,15 @@ connection.onDocumentLinks((documentLinkParams: DocumentLinkParams): PromiseLike
 
 connection.onDocumentLinkResolve((documentLink: DocumentLink): DocumentLink => {
 	return service.resolveLink(documentLink);
+});
+
+connection.onFoldingRanges((foldingRangeParams: FoldingRangeRequestParam) => {
+	return getDocument(foldingRangeParams.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeFoldingRanges(document.getText());
+		}
+		return [];
+	});
 });
 
 connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocumentParams): void => {

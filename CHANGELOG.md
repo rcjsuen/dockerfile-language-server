@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/publishDiagnostics
   - add support for SCTP in EXPOSE instruction ([rcjsuen/dockerfile-utils#52](https://github.com/rcjsuen/dockerfile-utils/issues/52))
   - warn if WORKDIR is not an absolute path ([#228](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/228))
+- textDocument/foldingRange
+  - add support for computing folding ranges in a Dockerfile ([#226](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/226))
 
 ### Changed
 - [upgraded the dependency of Mocha](https://github.com/mochajs/mocha/issues/2791) from 3.x to 5.x
