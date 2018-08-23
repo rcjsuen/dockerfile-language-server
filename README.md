@@ -23,6 +23,7 @@ To [install and run](#installation-instructions) this language server, you will 
 - [vscode-docker](https://github.com/Microsoft/vscode-docker)
 - [atom-ide-docker](https://github.com/josa42/atom-ide-docker)
 - [Sourcegraph](https://sourcegraph.com/)
+- [Theia](https://theia-ide.org/)
 
 This repository only contains the code necessary for launching a Dockerfile language server that conforms to the language server protocol.
 The actual code for parsing a Dockerfile and offering editor features such as code completion or hovers is not contained within this repository.
