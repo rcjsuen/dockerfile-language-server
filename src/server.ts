@@ -139,9 +139,16 @@ function getLineFoldingOnly(capabilities: ClientCapabilities): boolean {
 }
 
 function getRangeLimit(capabilities: ClientCapabilities): number {
-	return capabilities.textDocument
+	let rangeLimit = capabilities.textDocument
 		&& capabilities.textDocument.foldingRange
 		&& capabilities.textDocument.foldingRange.rangeLimit;
+	if (rangeLimit === null || rangeLimit === undefined || typeof rangeLimit === "boolean" || isNaN(rangeLimit)) {
+		rangeLimit = Number.MAX_VALUE;
+	} else if (typeof rangeLimit !== "number") {
+		// isNaN === false and not a number, must be a string number, convert it
+		rangeLimit = Number(rangeLimit);
+	}
+	return rangeLimit;
 }
 
 function setServiceCapabilities(capabilities: ClientCapabilities): void {

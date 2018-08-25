@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- consider non-numeric values properly when checking the client's range limit for folding ranges ([#229](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/229))
+
 ## [0.0.19] - 2018-08-22
 ### Added
 - textDocument/codeActions
@@ -401,6 +405,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.19...HEAD
 [0.0.19]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.18...v0.0.19
 [0.0.18]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.17...v0.0.18
 [0.0.17]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.16...v0.0.17
