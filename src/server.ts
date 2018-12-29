@@ -11,7 +11,7 @@ import {
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams,
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
-	RenameParams, WorkspaceEdit, Location,
+	RenameParams, Range, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
 	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind,
 	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, FoldingRangeRequestParam
@@ -182,6 +182,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	applyEditSupport = params.capabilities.workspace && params.capabilities.workspace.applyEdit === true;
 	documentChangesSupport = params.capabilities.workspace && params.capabilities.workspace.workspaceEdit && params.capabilities.workspace.workspaceEdit.documentChanges === true;
 	configurationSupport = params.capabilities.workspace && params.capabilities.workspace.configuration === true;
+	const renamePrepareSupport = params.capabilities.textDocument && params.capabilities.textDocument.rename && params.capabilities.textDocument.rename.prepareSupport === true;
 	codeActionQuickFixSupport = supportsCodeActionQuickFixes(params.capabilities);
 	return {
 		capabilities: {
@@ -222,7 +223,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			hoverProvider: true,
 			documentSymbolProvider: true,
 			documentHighlightProvider: true,
-			renameProvider: true,
+			renameProvider: renamePrepareSupport ? {
+				prepareProvider: true
+			} : true,
 			definitionProvider: true,
 			signatureHelpProvider: {
 				triggerCharacters: [
@@ -510,6 +513,15 @@ connection.onRenameRequest((params: RenameParams): PromiseLike<WorkspaceEdit> =>
 					[ params.textDocument.uri ]: edits
 				}
 			};
+		}
+		return null;
+	});
+});
+
+connection.onPrepareRename((params: TextDocumentPositionParams): PromiseLike<Range> => {
+	return getDocument(params.textDocument.uri).then((document) => {
+		if (document) {
+			return service.prepareRename(document.getText(), params.position);
 		}
 		return null;
 	});

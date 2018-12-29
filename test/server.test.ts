@@ -5,7 +5,10 @@
 import * as child_process from "child_process";
 import * as assert from "assert";
 
-import { TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind } from 'vscode-languageserver';
+import {
+	Position, Range,
+	TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind
+} from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
 
@@ -33,7 +36,7 @@ function sendNotification(method: string, params: any) {
 	lspProcess.send(message);
 }
 
-function initialize(applyEdit: boolean, codeAction?: any): number {
+function initialize(applyEdit: boolean, codeAction?: any, rename?: any): number {
 	return sendRequest("initialize", {
 		rootPath: process.cwd(),
 		processId: process.pid,
@@ -49,7 +52,8 @@ function initialize(applyEdit: boolean, codeAction?: any): number {
 				hover: {
 					contentFormat: [ MarkupKind.PlainText ]
 				},
-				codeAction
+				codeAction,
+				rename
 			},
 			workspace: {
 				applyEdit: applyEdit,
@@ -74,11 +78,48 @@ describe("Dockerfile LSP Tests", function() {
 			assert.equal(capabilities.executeCommandProvider, undefined);
 			assert.equal(capabilities.foldingRangeProvider, true);
 			assert.equal(capabilities.hoverProvider, true);
+			assert.equal(capabilities.renameProvider, true);
+			assert.equal(capabilities.renameProvider.prepareProvider, undefined);
 			finished();
 		});
 	});
 
-	it("initialized", function() {
+	it("initialize", function (finished) {
+		this.timeout(5000);
+		const responseId = initialize(false, {}, { prepareSupport: false });
+		lspProcess.once('message', function (json) {
+			assert.equal(json.id, responseId);
+			let capabilities = json.result.capabilities;
+			assert.equal(capabilities.textDocumentSync, TextDocumentSyncKind.Incremental);
+			assert.equal(capabilities.codeActionProvider, false);
+			assert.equal(capabilities.completionProvider.resolveProvider, true);
+			assert.equal(capabilities.executeCommandProvider, undefined);
+			assert.equal(capabilities.foldingRangeProvider, true);
+			assert.equal(capabilities.hoverProvider, true);
+			assert.equal(capabilities.renameProvider, true);
+			assert.equal(capabilities.renameProvider.prepareProvider, undefined);
+			finished();
+		});
+	});
+
+	it("initialize", function (finished) {
+		this.timeout(5000);
+		const responseId = initialize(false, {}, { prepareSupport: true });
+		lspProcess.once('message', function (json) {
+			assert.equal(json.id, responseId);
+			let capabilities = json.result.capabilities;
+			assert.equal(capabilities.textDocumentSync, TextDocumentSyncKind.Incremental);
+			assert.equal(capabilities.codeActionProvider, false);
+			assert.equal(capabilities.completionProvider.resolveProvider, true);
+			assert.equal(capabilities.executeCommandProvider, undefined);
+			assert.equal(capabilities.foldingRangeProvider, true);
+			assert.equal(capabilities.hoverProvider, true);
+			assert.equal(capabilities.renameProvider.prepareProvider, true);
+			finished();
+		});
+	});
+
+	it("initialized", function () {
 		sendNotification("initialized", {});
 	});
 
@@ -705,6 +746,98 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		};
 		lspProcess.on("message", foldingRangeListener);
+	});
+
+	function test231(uri: string, content: string, position: Position, range: Range, callback: Function) {
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri,
+				text: content
+			}
+		});
+
+		const requestId = sendRequest("textDocument/prepareRename", {
+			textDocument: {
+				uri,
+			},
+			position
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				if (range === null) {
+					assert.strictEqual(json.result, null);
+				} else {
+					assert.strictEqual(json.result.start.line, range.start.line);
+					assert.strictEqual(json.result.start.character, range.start.character);
+					assert.strictEqual(json.result.end.line, range.end.line);
+					assert.strictEqual(json.result.end.character, range.end.character);
+				}
+				callback();
+			}
+		};
+		lspProcess.on("message", listener);
+	}
+
+	it("issue #231 build stage", function (finished) {
+		this.timeout(5000);
+		test231(
+			"uri://dockerfile/231-build-stage.txt",
+			"FROM node as setup",
+			{
+				line: 0,
+				character: 15
+			}, {
+				start: {
+					line: 0,
+					character: 13
+				},
+				end: {
+					line: 0,
+					character: 18
+				}
+			},
+			finished
+		);
+	});
+
+	it("issue #231 variable", function (finished) {
+		this.timeout(5000);
+		test231(
+			"uri://dockerfile/231-variable.txt",
+			"FROM node as setup\nARG test",
+			{
+				line: 1,
+				character: 6
+			}, {
+				start: {
+					line: 1,
+					character: 4
+				},
+				end: {
+					line: 1,
+					character: 8
+				}
+			},
+			finished
+		);
+	});
+
+	it("issue #231 instruction", function (finished) {
+		this.timeout(5000);
+		test231(
+			"uri://dockerfile/231-instruction.txt",
+			"FROM node",
+			{
+				line: 0,
+				character: 7
+			},
+			null,
+			finished
+		);
 	});
 
 	after(() => {

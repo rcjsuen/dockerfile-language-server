@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - support folding of instructions that span multiple lines ([rcjsuen/dockerfile-language-service#43](https://github.com/rcjsuen/dockerfile-language-service/issues/43))
+- textDocument/prepareRename
+  - add support for determining whether something in a Dockerfile can be renamed or not ([#231](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/231))
 
 ### Fixed
 - consider non-numeric values properly when checking the client's range limit for folding ranges ([#229](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/229))
