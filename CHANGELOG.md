@@ -2,8 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- support folding of instructions that span multiple lines ([rcjsuen/dockerfile-language-service#43](https://github.com/rcjsuen/dockerfile-language-service/issues/43))
+
 ### Fixed
 - consider non-numeric values properly when checking the client's range limit for folding ranges ([#229](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/229))
+- ignore variables when validating directories for ARGs and COPYs ([rcjsuen/dockerfile-utils#54](https://github.com/rcjsuen/dockerfile-utils/issues/54))
+- allow build stages to be case insensitive when looking up its definition ([rcjsuen/dockerfile-language-service#41](https://github.com/rcjsuen/dockerfile-language-service/issues/41))
+- allow build stages to be case insensitive when highlighting them ([rcjsuen/dockerfile-language-service#41](https://github.com/rcjsuen/dockerfile-language-service/issues/41))
+- allow build stages to be case insensitive when renaming them ([rcjsuen/dockerfile-language-service#41](https://github.com/rcjsuen/dockerfile-language-service/issues/41))
+- consider all build stages with the same name in FROMs when highlighting or renaming ([rcjsuen/dockerfile-language-service#42](https://github.com/rcjsuen/dockerfile-language-service/issues/42))
 
 ## [0.0.19] - 2018-08-22
 ### Added
