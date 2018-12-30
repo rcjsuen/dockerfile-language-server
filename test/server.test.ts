@@ -602,6 +602,68 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", codeActionListener);
 	});
 
+	it("issue #225 code actions without quick fixes", function (finished) {
+		this.timeout(5000);
+		initialize(true, {
+			codeActionLiteralSupport: {
+				codeActionKind: {
+					valueSet: [
+						CodeActionKind.Refactor
+					]
+				}
+			}
+		});
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/225-codeActions-no-quick-fix.txt",
+				text: "from node"
+			}
+		});
+
+		const codeActionResponseId = sendRequest("textDocument/codeAction", {
+			textDocument: {
+				uri: "uri://dockerfile/225-codeActions-no-quick-fix.txt"
+			},
+			context: {
+				diagnostics: [
+					{
+						code: ValidationCode.CASING_INSTRUCTION,
+						range: {
+							start: {
+								line: 0,
+								character: 0
+							},
+							end: {
+								line: 0,
+								character: 4
+							}
+						}
+					}
+				]
+			}
+		});
+
+		const codeActionListener = function (json) {
+			if (json.id === codeActionResponseId) {
+				lspProcess.removeListener("message", codeActionListener);
+				assert.ok(Array.isArray(json.result));
+				assert.equal(json.result.length, 1);
+				assert.equal(json.result[0].title, "Convert instruction to uppercase");
+				assert.equal(json.result[0].command, CommandIds.UPPERCASE);
+				assert.equal(json.result[0].arguments.length, 2);
+				assert.equal(json.result[0].arguments[0], "uri://dockerfile/225-codeActions-no-quick-fix.txt");
+				assert.equal(json.result[0].arguments[1].start.line, 0);
+				assert.equal(json.result[0].arguments[1].start.character, 0);
+				assert.equal(json.result[0].arguments[1].end.line, 0);
+				assert.equal(json.result[0].arguments[1].end.character, 4);
+				finished();
+			}
+		};
+		lspProcess.on("message", codeActionListener);
+	});
+
 	it("issue #225 code actions", function (finished) {
 		this.timeout(5000);
 		initialize(true, {
