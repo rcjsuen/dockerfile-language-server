@@ -840,6 +840,64 @@ describe("Dockerfile LSP Tests", function() {
 		);
 	});
 
+	function testInvalidFile(request: string, assertionCallback: Function) {
+		it(request, function(finished) {
+			this.timeout(5000);
+			const requestId = sendRequest(request, {
+				textDocument: {
+					uri: "file://dockerfile-lsp-test/non-existent-file.txt",
+				},
+				position: {
+					line: 0,
+					character: 0
+				}
+			});
+	
+			const listener = (json) => {
+				if (json.id === requestId) {
+					lspProcess.removeListener("message", listener);
+					assertionCallback(json.result);
+					finished();
+				}
+			};
+			lspProcess.on("message", listener);
+		});
+	}
+
+	function testInvalidFileNullResponse(request: string) {
+		testInvalidFile(request, function(result: any) {
+			assert.strictEqual(result, null);
+		});
+	}
+
+	function testInvalidFileEmptyArrayResponse(request: string) {
+		testInvalidFile(request, function(result: any) {
+			assert.ok(result instanceof Array);
+			assert.strictEqual(result.length, 0);
+		});
+	}
+
+	describe("test invalid file URI", function() {
+		testInvalidFileNullResponse("textDocument/completion");
+		testInvalidFileNullResponse("textDocument/definition");
+		testInvalidFileEmptyArrayResponse("textDocument/foldingRange");
+		testInvalidFileEmptyArrayResponse("textDocument/documentHighlight");
+		testInvalidFileEmptyArrayResponse("textDocument/documentLink");
+		testInvalidFileEmptyArrayResponse("textDocument/documentSymbol");
+		testInvalidFileEmptyArrayResponse("textDocument/formatting");
+		testInvalidFileNullResponse("textDocument/hover");
+		testInvalidFileEmptyArrayResponse("textDocument/onTypeFormatting");
+		testInvalidFileNullResponse("textDocument/prepareRename");
+		testInvalidFileEmptyArrayResponse("textDocument/rangeFormatting");
+		testInvalidFileNullResponse("textDocument/rename");
+		testInvalidFile("textDocument/signatureHelp", function(result: any) {
+			assert.ok(result.signatures instanceof Array);
+			assert.strictEqual(result.signatures.length, 0);
+			assert.strictEqual(result.activeParameter, null);
+			assert.strictEqual(result.activeSignature, null);
+		});
+	});
+
 	after(() => {
 		// terminate the forked LSP process after all the tests have been run
 		lspProcess.kill();
