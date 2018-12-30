@@ -734,6 +734,81 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", codeActionListener);
 	});
 
+	it("unversioned workspace edits", function (finished) {
+		this.timeout(5000);
+		initializeCustomCapabilities({
+			textDocument: {
+				codeAction: {
+					codeActionLiteralSupport: {
+						codeActionKind: {
+							valueSet: [
+								CodeActionKind.QuickFix
+							]
+						}
+					}
+				}
+			},
+			workspace: {
+				applyEdit: true,
+				workspaceEdit: {
+					documentChanges: false
+				}
+			}
+		});
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/225-codeActions-unversioned.txt",
+				text: "from node"
+			}
+		});
+
+		const codeActionResponseId = sendRequest("textDocument/codeAction", {
+			textDocument: {
+				uri: "uri://dockerfile/225-codeActions-unversioned.txt"
+			},
+			context: {
+				diagnostics: [
+					{
+						code: ValidationCode.CASING_INSTRUCTION,
+						range: {
+							start: {
+								line: 0,
+								character: 0
+							},
+							end: {
+								line: 0,
+								character: 4
+							}
+						}
+					}
+				]
+			}
+		});
+
+		const codeActionListener = function (json) {
+			if (json.id === codeActionResponseId) {
+				lspProcess.removeListener("message", codeActionListener);
+
+				assert.ok(Array.isArray(json.result));
+				assert.equal(json.result.length, 1);
+				assert.equal(json.result[0].title, "Convert instruction to uppercase");
+				assert.equal(json.result[0].kind, CodeActionKind.QuickFix);
+
+				const changes = json.result[0].edit.changes["uri://dockerfile/225-codeActions-unversioned.txt"];
+				assert.equal(changes.length, 1);
+				assert.equal(changes[0].newText, "FROM");
+				assert.equal(changes[0].range.start.line, 0);
+				assert.equal(changes[0].range.start.character, 0);
+				assert.equal(changes[0].range.end.line, 0);
+				assert.equal(changes[0].range.end.character, 4);
+				finished();
+			}
+		};
+		lspProcess.on("message", codeActionListener);
+	});
+
 	it("issue #227", function (finished) {
 		this.timeout(5000);
 
