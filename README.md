@@ -16,6 +16,7 @@ To [install and run](#installation-instructions) this language server, you will 
 - folding ranges
 - formatting
 - hovers
+- prepare rename
 - rename
 - signature help
 
