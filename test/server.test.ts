@@ -7,7 +7,7 @@ import * as assert from "assert";
 
 import {
 	Position, Range,
-	TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind
+	TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind, DocumentHighlightKind
 } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
@@ -838,6 +838,76 @@ describe("Dockerfile LSP Tests", function() {
 			null,
 			finished
 		);
+	});
+
+	it("document highlight", function(finished) {
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/document-highlight.txt",
+				text: "FROM node AS setup"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/documentHighlight", {
+			textDocument: {
+				uri: "uri://dockerfile/document-highlight.txt",
+			},
+			position: {
+				line: 0,
+				character: 15
+			}
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				assert.ok(json.result instanceof Array);
+				assert.strictEqual(json.result.length, 1);
+				assert.strictEqual(json.result[0].kind, DocumentHighlightKind.Write);
+				assert.strictEqual(json.result[0].range.start.line, 0);
+				assert.strictEqual(json.result[0].range.start.character, 13);
+				assert.strictEqual(json.result[0].range.end.line, 0);
+				assert.strictEqual(json.result[0].range.end.character, 18);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+	});
+
+	it("definition", function(finished) {
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/definition.txt",
+				text: "FROM node AS setup"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/definition", {
+			textDocument: {
+				uri: "uri://dockerfile/definition.txt",
+			},
+			position: {
+				line: 0,
+				character: 15
+			}
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				assert.strictEqual(json.result.uri, "uri://dockerfile/definition.txt");
+				assert.strictEqual(json.result.range.start.line, 0);
+				assert.strictEqual(json.result.range.start.character, 13);
+				assert.strictEqual(json.result.range.end.line, 0);
+				assert.strictEqual(json.result.range.end.character, 18);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
 	});
 
 	function testInvalidFile(request: string, assertionCallback: Function) {
