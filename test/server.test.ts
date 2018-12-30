@@ -37,31 +37,35 @@ function sendNotification(method: string, params: any) {
 }
 
 function initialize(applyEdit: boolean, codeAction?: any, rename?: any): number {
+	return initializeCustomCapabilities({
+		textDocument: {
+			completion: {
+				completionItem: {
+					deprecatedSupport: true,
+					documentationFormat: [ MarkupKind.Markdown ],
+					snippetSupport: true
+				}
+			},
+			hover: {
+				contentFormat: [ MarkupKind.PlainText ]
+			},
+			codeAction,
+			rename
+		},
+		workspace: {
+			applyEdit: applyEdit,
+			workspaceEdit: {
+				documentChanges: true
+			}
+		}
+	});
+}
+
+function initializeCustomCapabilities(capabilities: any): number {
 	return sendRequest("initialize", {
 		rootPath: process.cwd(),
 		processId: process.pid,
-		capabilities: {
-			textDocument: {
-				completion: {
-					completionItem: {
-						deprecatedSupport: true,
-						documentationFormat: [ MarkupKind.Markdown ],
-						snippetSupport: true
-					}
-				},
-				hover: {
-					contentFormat: [ MarkupKind.PlainText ]
-				},
-				codeAction,
-				rename
-			},
-			workspace: {
-				applyEdit: applyEdit,
-				workspaceEdit: {
-					documentChanges: true
-				}
-			}
-		}
+		capabilities
 	});
 }
 
@@ -803,6 +807,46 @@ describe("Dockerfile LSP Tests", function() {
 				assert.strictEqual(json.result[0].startCharacter, 9);
 				assert.strictEqual(json.result[0].endLine, 2);
 				assert.strictEqual(json.result[0].endCharacter, 10);
+				assert.strictEqual(json.result[0].kind, FoldingRangeKind.Comment);
+				finished();
+			}
+		};
+		lspProcess.on("message", foldingRangeListener);
+	});
+
+	it("folding range lines only", function (finished) {
+		this.timeout(5000);
+		initializeCustomCapabilities(
+			{
+				textDocument: {
+					foldingRange: {
+						lineFoldingOnly: true
+					}
+				}
+			}
+		);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/folding-lines-only.txt",
+				text: "# comment\n# comment2\n# comment3\nFROM node"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/foldingRange", {
+			textDocument: {
+				uri: "uri://dockerfile/folding-lines-only.txt",
+			}
+		});
+
+		const foldingRangeListener = (json) => {
+			if (json.id === requestId) {
+				assert.strictEqual(json.result.length, 1);
+				assert.strictEqual(json.result[0].startLine, 0);
+				assert.strictEqual(json.result[0].startCharacter, undefined);
+				assert.strictEqual(json.result[0].endLine, 2);
+				assert.strictEqual(json.result[0].endCharacter, undefined);
 				assert.strictEqual(json.result[0].kind, FoldingRangeKind.Comment);
 				finished();
 			}
