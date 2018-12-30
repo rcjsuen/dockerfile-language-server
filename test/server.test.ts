@@ -910,6 +910,126 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener);
 	});
 
+	it("formatting", function(finished) {
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/formatting.txt",
+				text: " FROM node AS setup"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/formatting", {
+			textDocument: {
+				uri: "uri://dockerfile/formatting.txt",
+			},
+			options: {
+				insertSpaces: true,
+				tabSize: 4
+			}
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				assert.ok(json.result instanceof Array);
+				assert.strictEqual(json.result.length, 1);
+				assert.strictEqual(json.result[0].newText, "");
+				assert.strictEqual(json.result[0].range.start.line, 0);
+				assert.strictEqual(json.result[0].range.start.character, 0);
+				assert.strictEqual(json.result[0].range.end.line, 0);
+				assert.strictEqual(json.result[0].range.end.character, 1);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+	});
+
+	it("range formatting", function(finished) {
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/range-formatting.txt",
+				text: " FROM node AS setup"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/rangeFormatting", {
+			textDocument: {
+				uri: "uri://dockerfile/range-formatting.txt",
+			},
+			range: {
+				start: {
+					line: 0,
+					character: 0
+				},
+				end: {
+					line: 0,
+					character: 3
+				}
+			},
+			options: {
+				insertSpaces: true,
+				tabSize: 4
+			}
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				assert.ok(json.result instanceof Array);
+				assert.strictEqual(json.result.length, 1);
+				assert.strictEqual(json.result[0].newText, "");
+				assert.strictEqual(json.result[0].range.start.line, 0);
+				assert.strictEqual(json.result[0].range.start.character, 0);
+				assert.strictEqual(json.result[0].range.end.line, 0);
+				assert.strictEqual(json.result[0].range.end.character, 1);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+	});
+
+	it("rename", function(finished) {
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/rename.txt",
+				text: "FROM node AS setup"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/rename", {
+			textDocument: {
+				uri: "uri://dockerfile/rename.txt",
+			},
+			position: {
+				line: 0,
+				character: 15
+			},
+			newName: "build"
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				const changes = json.result.changes["uri://dockerfile/rename.txt"];
+				assert.ok(changes instanceof Array);
+				assert.strictEqual(changes.length, 1);
+				assert.strictEqual(changes[0].newText, "build");
+				assert.strictEqual(changes[0].range.start.line, 0);
+				assert.strictEqual(changes[0].range.start.character, 13);
+				assert.strictEqual(changes[0].range.end.line, 0);
+				assert.strictEqual(changes[0].range.end.character, 18);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+	});
+
 	function testInvalidFile(request: string, assertionCallback: Function) {
 		it(request, function(finished) {
 			this.timeout(5000);
