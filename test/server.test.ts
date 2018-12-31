@@ -1245,6 +1245,47 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener);
 	});
 
+	it("on type formatting", function(finished) {
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/on-type-formatting.txt",
+				text: "FROM node AS setup\nRUN echo \necho"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/onTypeFormatting", {
+			textDocument: {
+				uri: "uri://dockerfile/on-type-formatting.txt",
+			},
+			position: {
+				line: 1,
+				character: 9
+			},
+			ch: '\\',
+			options: {
+				insertSpaces: true,
+				tabSize: 4
+			}
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				assert.ok(json.result instanceof Array);
+				assert.strictEqual(json.result.length, 1);
+				assert.strictEqual(json.result[0].newText, "    ");
+				assert.strictEqual(json.result[0].range.start.line, 2);
+				assert.strictEqual(json.result[0].range.start.character, 0);
+				assert.strictEqual(json.result[0].range.end.line, 2);
+				assert.strictEqual(json.result[0].range.end.character, 0);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+	});
+
 	it("rename", function(finished) {
 		sendNotification("textDocument/didOpen", {
 			textDocument: {
