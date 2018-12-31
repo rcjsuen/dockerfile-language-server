@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
   - add support for determining whether something in a Dockerfile can be renamed or not ([#231](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/231))
 
 ### Fixed
+- ignore invalid URIs from the client ([#232](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/232))
 - textDocument/foldingRange
   - consider non-numeric values properly when checking the client's range limit for folding ranges ([#229](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/229))
 - textDocument/publishDiagnostics

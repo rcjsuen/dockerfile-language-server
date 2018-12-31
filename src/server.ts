@@ -70,15 +70,19 @@ function getDocument(uri: string): PromiseLike<TextDocument> {
 	}
 	return new Promise((resolve, reject) => {
 		let file = Files.uriToFilePath(uri);
-		fs.exists(file, (exists) => {
-			if (exists) {
-				fs.readFile(file, (err, data) => {
-					resolve(TextDocument.create(uri, "dockerfile", 1, data.toString()));
-				});
-			} else {
-				resolve(null);
-			}
-		});
+		if (file === undefined) {
+			resolve(null);
+		} else {
+			fs.exists(file, (exists) => {
+				if (exists) {
+					fs.readFile(file, (err, data) => {
+						resolve(TextDocument.create(uri, "dockerfile", 1, data.toString()));
+					});
+				} else {
+					resolve(null);
+				}
+			});
+		}
 	});
 }
 

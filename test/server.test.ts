@@ -1324,6 +1324,27 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener);
 	});
 
+	it("issue #232", function(finished) {
+		const requestId = sendRequest("textDocument/definition", {
+			textDocument: {
+				uri: "uri://dockerfile/232.txt",
+			},
+			position: {
+				line: 0,
+				character: 1
+			}
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				assert.strictEqual(json.result, null);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+	});
+
 	function testInvalidFile(request: string, assertionCallback: Function) {
 		it(request, function(finished) {
 			this.timeout(5000);
