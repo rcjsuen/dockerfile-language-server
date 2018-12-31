@@ -929,6 +929,78 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", foldingRangeListener);
 	});
 
+	it("folding range string zero", function (finished) {
+		this.timeout(5000);
+		initializeCustomCapabilities(
+			{
+				textDocument: {
+					foldingRange: {
+						rangeLimit: "0"
+					}
+				}
+			}
+		);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/folding-string-zero.txt",
+				text: "# comment\n# comment2\n# comment3\nFROM node"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/foldingRange", {
+			textDocument: {
+				uri: "uri://dockerfile/folding-string-zero.txt",
+			}
+		});
+
+		const foldingRangeListener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", foldingRangeListener);
+				assert.strictEqual(json.result.length, 0);
+				finished();
+			}
+		};
+		lspProcess.on("message", foldingRangeListener);
+	});
+
+	it("folding range string zero", function (finished) {
+		this.timeout(5000);
+		initializeCustomCapabilities(
+			{
+				textDocument: {
+					foldingRange: {
+						rangeLimit: 0
+					}
+				}
+			}
+		);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/folding-lines-range-zero.txt",
+				text: "# comment\n# comment2\n# comment3\nFROM node"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/foldingRange", {
+			textDocument: {
+				uri: "uri://dockerfile/folding-lines-range-zero.txt",
+			}
+		});
+
+		const foldingRangeListener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", foldingRangeListener);
+				assert.strictEqual(json.result.length, 0);
+				finished();
+			}
+		};
+		lspProcess.on("message", foldingRangeListener);
+	});
+
 	function test231(uri: string, content: string, position: Position, range: Range, callback: Function) {
 		sendNotification("textDocument/didOpen", {
 			textDocument: {
