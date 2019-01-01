@@ -380,77 +380,31 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener207);
 	});
 
-	it("issue #218", function(finished) {
-		this.timeout(5000);
+	function test218(initialSeverity: string, severity: string, callback: Function) {
 		const document = {
 			languageId: "dockerfile",
 			version: 1,
 			uri: "uri://dockerfile/218.txt",
 			text: "FROM node\nRUN ['a']"
 		};
-		sendNotification("textDocument/didOpen", {
-			textDocument: document
-		});
-
-		let first = true;
-		const listener218 = (json) => {
-			if (json.method === "textDocument/publishDiagnostics" &&
-					json.params.uri === document.uri) {
-				if (first) {
-					assert.equal(json.params.diagnostics.length, 1);
-					first = false;
-
-					sendNotification("workspace/didChangeConfiguration", {
-						settings: {
-							docker: {
-								languageserver: {
-									diagnostics: {
-										instructionJSONInSingleQuotes: "ignore"
-									}
-								}
-							}
-						}
-					});
-				} else {
-					assert.equal(json.params.diagnostics.length, 0);
-					lspProcess.removeListener("message", listener218);
-					sendNotification("textDocument/didClose", {
-						textDocument: {
-							uri: "uri://dockerfile/218.txt"
-						}
-					});
-					finished();
+		if (initialSeverity === null) {
+			sendNotification("workspace/didChangeConfiguration", {
+				settings: {
 				}
-			}
-		};
-		lspProcess.on("message", listener218);
-	});
-
-	/**
-	 * 1. Start by sending in a configuration to "ignore" the diagnostic.
-	 * 2. Confirm that no diagnostic is received.
-	 * 3. Send in a null configruation.
-	 * 4. COnfirm that a diagnostic is received (as it should default to "warning").
-	 */
-	it("issue #218 null configuration", function(finished) {
-		this.timeout(5000);
-		const document = {
-			languageId: "dockerfile",
-			version: 1,
-			uri: "uri://dockerfile/218.txt",
-			text: "FROM node\nRUN ['a']"
-		};
-		sendNotification("workspace/didChangeConfiguration", {
-			settings: {
-				docker: {
-					languageserver: {
-						diagnostics: {
-							instructionJSONInSingleQuotes: "ignore"
+			});
+		} else {
+			sendNotification("workspace/didChangeConfiguration", {
+				settings: {
+					docker: {
+						languageserver: {
+							diagnostics: {
+								instructionJSONInSingleQuotes: initialSeverity
+							}
 						}
 					}
 				}
-			}
-		});
+			});
+		}
 		sendNotification("textDocument/didOpen", {
 			textDocument: document
 		});
@@ -460,27 +414,102 @@ describe("Dockerfile LSP Tests", function() {
 			if (json.method === "textDocument/publishDiagnostics" &&
 					json.params.uri === document.uri) {
 				if (first) {
-					assert.equal(json.params.diagnostics.length, 0);
+					if (initialSeverity === "ignore") {
+						assert.equal(json.params.diagnostics.length, 0);
+					} else {
+						assert.equal(json.params.diagnostics.length, 1);
+						assert.equal(json.params.diagnostics[0].severity, DiagnosticSeverity.Warning);
+					}
 					first = false;
 
-					sendNotification("workspace/didChangeConfiguration", {
-						settings: {
-						}
-					});
+					if (severity === null) {
+						sendNotification("workspace/didChangeConfiguration", {
+							settings: {
+							}
+						});
+					} else {
+						sendNotification("workspace/didChangeConfiguration", {
+							settings: {
+								docker: {
+									languageserver: {
+										diagnostics: {
+											instructionJSONInSingleQuotes: severity
+										}
+									}
+								}
+							}
+						});
+					}
 				} else {
-					assert.equal(json.params.diagnostics.length, 1);
+					if (severity === "ignore") {
+						assert.equal(json.params.diagnostics.length, 0);
+					} else {
+						if (severity === "error") {
+							assert.equal(json.params.diagnostics[0].severity, DiagnosticSeverity.Error);
+						} else {
+							assert.equal(json.params.diagnostics[0].severity, DiagnosticSeverity.Warning);
+						}
+						assert.equal(json.params.diagnostics.length, 1);
+					}
 					lspProcess.removeListener("message", listener218);
 					sendNotification("textDocument/didClose", {
 						textDocument: {
 							uri: "uri://dockerfile/218.txt"
 						}
 					});
-					finished();
+					callback();
 				}
 			}
 		};
 		lspProcess.on("message", listener218);
-	});
+	}
+
+	describe("issue #218", function() {
+		/**
+		 * 1. Start by sending in a "null" configuration as a default.
+		 * 2. Confirm that a diagnostic is received ("null" should default to "warning").
+		 * 3. Send in an "ignore" configruation.
+		 * 4. COnfirm that no diagnostic is received.
+		 */
+		it("null to ignore configuration", function(finished) {
+			this.timeout(5000);
+			test218(null, "ignore", finished);
+		});
+	
+		/**
+		 * 1. Start by sending in a configuration to "ignore" the diagnostic.
+		 * 2. Confirm that no diagnostic is received.
+		 * 3. Send in a "null" configuration.
+		 * 4. COnfirm that a diagnostic is received (as it should default to "warning").
+		 */
+		it("ignore to null configuration", function(finished) {
+			this.timeout(5000);
+			test218("ignore", null, finished);
+		});
+	
+		/**
+		 * 1. Start by sending in a configuration to "ignore" the diagnostic.
+		 * 2. Confirm that no diagnostic is received.
+		 * 3. Send in a "warning" configuration.
+		 * 4. COnfirm that a diagnostic is received.
+		 */
+		it("ignore to warning configuration", function(finished) {
+			this.timeout(5000);
+			test218("ignore", "warning", finished);
+		});
+	
+		/**
+		 * 1. Start by sending in a configuration to "ignore" the diagnostic.
+		 * 2. Confirm that no diagnostic is received.
+		 * 3. Send in an "error" configuration.
+		 * 4. COnfirm that a diagnostic is received.
+		 */
+		it("ignore to error configuration", function(finished) {
+			this.timeout(5000);
+			test218("ignore", "error", finished);
+		});
+	})
+
 
 	it("issue #223", function (finished) {
 		this.timeout(5000);
