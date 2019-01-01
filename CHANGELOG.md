@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.0.20] - 2019-01-01
 ### Added
 - textDocument/foldingRange
   - support folding of instructions that span multiple lines ([rcjsuen/dockerfile-language-service#43](https://github.com/rcjsuen/dockerfile-language-service/issues/43))
@@ -423,7 +423,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.19...HEAD
+[0.0.20]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.19...v0.0.20
 [0.0.19]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.18...v0.0.19
 [0.0.18]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.17...v0.0.18
 [0.0.17]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.16...v0.0.17
