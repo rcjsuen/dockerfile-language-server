@@ -380,34 +380,13 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener207);
 	});
 
-	function test218(initialSeverity: string, severity: string, callback: Function) {
+	function test218(fileName: string, initialSeverity: string, severity: string, callback: Function) {
 		const document = {
 			languageId: "dockerfile",
 			version: 1,
-			uri: "uri://dockerfile/218.txt",
+			uri: "uri://dockerfile/" + fileName,
 			text: "FROM node\nRUN ['a']"
 		};
-		if (initialSeverity === null) {
-			sendNotification("workspace/didChangeConfiguration", {
-				settings: {
-				}
-			});
-		} else {
-			sendNotification("workspace/didChangeConfiguration", {
-				settings: {
-					docker: {
-						languageserver: {
-							diagnostics: {
-								instructionJSONInSingleQuotes: initialSeverity
-							}
-						}
-					}
-				}
-			});
-		}
-		sendNotification("textDocument/didOpen", {
-			textDocument: document
-		});
 
 		let first = true;
 		const listener218 = (json) => {
@@ -441,6 +420,7 @@ describe("Dockerfile LSP Tests", function() {
 						});
 					}
 				} else {
+					lspProcess.removeListener("message", listener218);
 					if (severity === "ignore") {
 						assert.equal(json.params.diagnostics.length, 0);
 					} else {
@@ -451,7 +431,6 @@ describe("Dockerfile LSP Tests", function() {
 						}
 						assert.equal(json.params.diagnostics.length, 1);
 					}
-					lspProcess.removeListener("message", listener218);
 					sendNotification("textDocument/didClose", {
 						textDocument: {
 							uri: "uri://dockerfile/218.txt"
@@ -462,6 +441,28 @@ describe("Dockerfile LSP Tests", function() {
 			}
 		};
 		lspProcess.on("message", listener218);
+
+		if (initialSeverity === null) {
+			sendNotification("workspace/didChangeConfiguration", {
+				settings: {
+				}
+			});
+		} else {
+			sendNotification("workspace/didChangeConfiguration", {
+				settings: {
+					docker: {
+						languageserver: {
+							diagnostics: {
+								instructionJSONInSingleQuotes: initialSeverity
+							}
+						}
+					}
+				}
+			});
+		}
+		sendNotification("textDocument/didOpen", {
+			textDocument: document
+		});
 	}
 
 	describe("issue #218", function() {
@@ -473,7 +474,7 @@ describe("Dockerfile LSP Tests", function() {
 		 */
 		it("null to ignore configuration", function(finished) {
 			this.timeout(5000);
-			test218(null, "ignore", finished);
+			test218("218-null-to-ignore", null, "ignore", finished);
 		});
 	
 		/**
@@ -484,7 +485,7 @@ describe("Dockerfile LSP Tests", function() {
 		 */
 		it("ignore to null configuration", function(finished) {
 			this.timeout(5000);
-			test218("ignore", null, finished);
+			test218("218-ignore-to-null", "ignore", null, finished);
 		});
 	
 		/**
@@ -495,7 +496,7 @@ describe("Dockerfile LSP Tests", function() {
 		 */
 		it("ignore to warning configuration", function(finished) {
 			this.timeout(5000);
-			test218("ignore", "warning", finished);
+			test218("218-ignore-to-warning", "ignore", "warning", finished);
 		});
 	
 		/**
@@ -506,7 +507,7 @@ describe("Dockerfile LSP Tests", function() {
 		 */
 		it("ignore to error configuration", function(finished) {
 			this.timeout(5000);
-			test218("ignore", "error", finished);
+			test218("218-ignore-to-error","ignore", "error", finished);
 		});
 	})
 
