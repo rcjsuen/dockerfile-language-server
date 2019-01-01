@@ -426,6 +426,62 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener218);
 	});
 
+	/**
+	 * 1. Start by sending in a configuration to "ignore" the diagnostic.
+	 * 2. Confirm that no diagnostic is received.
+	 * 3. Send in a null configruation.
+	 * 4. COnfirm that a diagnostic is received (as it should default to "warning").
+	 */
+	it("issue #218 null configuration", function(finished) {
+		this.timeout(5000);
+		const document = {
+			languageId: "dockerfile",
+			version: 1,
+			uri: "uri://dockerfile/218.txt",
+			text: "FROM node\nRUN ['a']"
+		};
+		sendNotification("workspace/didChangeConfiguration", {
+			settings: {
+				docker: {
+					languageserver: {
+						diagnostics: {
+							instructionJSONInSingleQuotes: "ignore"
+						}
+					}
+				}
+			}
+		});
+		sendNotification("textDocument/didOpen", {
+			textDocument: document
+		});
+
+		let first = true;
+		const listener218 = (json) => {
+			if (json.method === "textDocument/publishDiagnostics" &&
+					json.params.uri === document.uri) {
+				if (first) {
+					assert.equal(json.params.diagnostics.length, 0);
+					first = false;
+
+					sendNotification("workspace/didChangeConfiguration", {
+						settings: {
+						}
+					});
+				} else {
+					assert.equal(json.params.diagnostics.length, 1);
+					lspProcess.removeListener("message", listener218);
+					sendNotification("textDocument/didClose", {
+						textDocument: {
+							uri: "uri://dockerfile/218.txt"
+						}
+					});
+					finished();
+				}
+			}
+		};
+		lspProcess.on("message", listener218);
+	});
+
 	it("issue #223", function (finished) {
 		this.timeout(5000);
 		let document = {
