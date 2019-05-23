@@ -2,9 +2,29 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - allow Bash syntax for variable modifiers in RUNs ([rcjsuen/dockerfile-utils#56](https://github.com/rcjsuen/dockerfile-utils/issues/56))
+  - warn if FROM has a variable for an image and it references nothing ([rcjsuen/dockerfile-utils#59](https://github.com/rcjsuen/dockerfile-utils/issues/59))
+
 ### Fixed
+- textDocument/completion
+  - corrected a small typo for VOLUME ([rcjsuen/dockerfile-language-service#47](https://github.com/rcjsuen/dockerfile-language-service/issues/47))
+- textDocument/definition
+  - only allow alphanumeric characters and underscores in variable names ([rcjsuen/dockerfile-language-server#49](https://github.com/rcjsuen/dockerfile-language-service/issues/49))
+- textDocument/documentHighlight
+  - only allow alphanumeric characters and underscores in variable names ([rcjsuen/dockerfile-language-server#49](https://github.com/rcjsuen/dockerfile-language-service/issues/49))
+- textDocument/hover
+  - corrected a small typo for VOLUME ([rcjsuen/dockerfile-language-service#47](https://github.com/rcjsuen/dockerfile-language-service/issues/47))
+  - only allow alphanumeric characters and underscores in variable names ([rcjsuen/dockerfile-language-server#49](https://github.com/rcjsuen/dockerfile-language-service/issues/49))
+- textDocument/prepareRename
+  - only allow alphanumeric characters and underscores in variable names ([rcjsuen/dockerfile-language-server#49](https://github.com/rcjsuen/dockerfile-language-service/issues/49))
 - textDocument/publishDiagnostics
   - EXPOSE on a port with an ENV variable that references a valid ARG variable should not get flagged as an error ([#235](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/235))
+  - allow quoted ARG variables in EXPOSE ([rcjsuen/dockerfile-utils#58](https://github.com/rcjsuen/dockerfile-utils/issues/58))
+  - do not validate variable substitutions if found in RUN ([rcjsuen/dockerfile-utils#60](https://github.com/rcjsuen/dockerfile-utils/issues/60))
+- textDocument/rename
+  - only allow alphanumeric characters and underscores in variable names ([rcjsuen/dockerfile-language-server#49](https://github.com/rcjsuen/dockerfile-language-service/issues/49))
 
 ## [0.0.20] - 2019-01-01
 ### Added
