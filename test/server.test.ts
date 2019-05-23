@@ -1431,6 +1431,26 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener);
 	});
 
+	it("issue #235", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/235.txt",
+				text: "FROM scratch\nARG ARG_VAR=1234\nENV ENV_VAR $ARG_VAR\nEXPOSE \"$ENV_VAR\""
+			}
+		});
+
+		lspProcess.once("message", (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				assert.equal(json.params.uri, "uri://dockerfile/235.txt");
+				assert.equal(json.params.diagnostics.length, 0);
+				finished();
+			}
+		});
+	});
+
 	function testInvalidFile(request: string, assertionCallback: Function) {
 		it(request, function(finished) {
 			this.timeout(5000);

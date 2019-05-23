@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/publishDiagnostics
+  - EXPOSE on a port with an ENV variable that references a valid ARG variable should not get flagged as an error ([#235](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/235))
+
 ## [0.0.20] - 2019-01-01
 ### Added
 - textDocument/foldingRange
@@ -423,6 +428,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.20...HEAD
 [0.0.20]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.19...v0.0.20
 [0.0.19]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.18...v0.0.19
 [0.0.18]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.17...v0.0.18
