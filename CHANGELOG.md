@@ -1,6 +1,27 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/completion
+  - support completing of tags for published images on the Docker Store ([#50](https://github.com/rcjsuen/dockerfile-language-service/issues/50))
+  - support completion of the `--platform` flag for FROMs introduced in Docker CE 18.04 ([#52](https://github.com/rcjsuen/dockerfile-language-service/issues/52))
+- textDocument/hover
+  - support hover documentation for the `--platform` flag for FROMs introduced in Docker CE 18.04 ([#53](https://github.com/rcjsuen/dockerfile-language-service/issues/53))
+- textDocument/publishDiagnostics
+  - add validation of FROM's `--platform` flag introduced in Docker CE 18.04 ([rcjsuen/dockerfile-utils#68](https://github.com/rcjsuen/dockerfile-utils/issues/68))
+    - `ValidationCode.UNKNOWN_FROM_FLAG`
+  - warn if two escape parser directives are defined ([rcjsuen/dockerfile-utils#70](https://github.com/rcjsuen/dockerfile-utils/issues/70))
+
+### Fixed
+- textDocument/formatting
+  - do not calculate edits for lines that are already formatted correctly ([rcjsuen/dockerfile-utils#66](https://github.com/rcjsuen/dockerfile-utils/issues/66))
+- textDocument/publishDiagnostics
+  - allow paths to be quoted in WORKDIRs ([rcjsuen/dockerfile-utils#67](https://github.com/rcjsuen/dockerfile-utils/issues/67))
+  - allow an instruction with an argument on the last line to be parsed if it has no leading whitespace and has a length of one ([rcjsuen/dockerfile-utils#69](https://github.com/rcjsuen/dockerfile-utils/issues/69))
+- textDocument/rangeFormatting
+  - do not calculate edits for lines that are already formatted correctly ([rcjsuen/dockerfile-utils#66](https://github.com/rcjsuen/dockerfile-utils/issues/66))
+
 ## [0.0.21] - 2019-05-26
 ### Added
 - textDocument/publishDiagnostics
@@ -448,6 +469,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.21...HEAD
 [0.0.21]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.20...v0.0.21
 [0.0.20]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.19...v0.0.20
 [0.0.19]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.18...v0.0.19
