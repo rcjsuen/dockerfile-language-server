@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.0.22] - 2020-02-12
 ### Added
 - textDocument/completion
   - support completing of tags for published images on the Docker Store ([rcjsuen/dockerfile-language-service#50](https://github.com/rcjsuen/dockerfile-language-service/issues/50))
@@ -473,7 +473,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.21...HEAD
+[0.0.22]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.21...v0.0.22
 [0.0.21]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.20...v0.0.21
 [0.0.20]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.19...v0.0.20
 [0.0.19]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.18...v0.0.19
