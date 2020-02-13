@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
   - add validation of FROM's `--platform` flag introduced in Docker CE 18.04 ([rcjsuen/dockerfile-utils#68](https://github.com/rcjsuen/dockerfile-utils/issues/68))
     - `ValidationCode.UNKNOWN_FROM_FLAG`
   - warn if two escape parser directives are defined ([rcjsuen/dockerfile-utils#70](https://github.com/rcjsuen/dockerfile-utils/issues/70))
+- textDocument/semanticTokens
+  - experimental work-in-progress support to allow semantic tokens to be calculated and returned ([#239](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/239))
+    - as the language server protocol API is still in flux, the exact request parameters and response results may change
+    - it is also possible that this request will not be fulfilled in a future release as a decision may be made to drop support for this
 
 ### Fixed
 - textDocument/formatting

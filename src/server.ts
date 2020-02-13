@@ -14,10 +14,11 @@ import {
 	RenameParams, Range, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
 	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind,
-	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, FoldingRangeRequestParam
+	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, FoldingRangeRequestParam, ProposedFeatures
 } from 'vscode-languageserver';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
+import { SemanticTokenModifiers, SemanticTokenTypes, SemanticTokensParams } from "vscode-languageserver-protocol/lib/protocol.sematicTokens.proposed";
 
 /**
  * The settings to use for the validator if the client doesn't support
@@ -31,7 +32,7 @@ let validatorSettings: ValidatorSettings | null = null;
  */
 let validatorConfigurations: Map<string, Thenable<ValidatorConfiguration>> = new Map();
 
-let connection = createConnection();
+let connection = createConnection(ProposedFeatures.all);
 let service = DockerfileLanguageServiceFactory.createLanguageService();
 service.setLogger({
 	log(message): void {
@@ -187,6 +188,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	documentChangesSupport = params.capabilities.workspace && params.capabilities.workspace.workspaceEdit && params.capabilities.workspace.workspaceEdit.documentChanges === true;
 	configurationSupport = params.capabilities.workspace && params.capabilities.workspace.configuration === true;
 	const renamePrepareSupport = params.capabilities.textDocument && params.capabilities.textDocument.rename && params.capabilities.textDocument.rename.prepareSupport === true;
+	const semanticTokensSupport = params.capabilities.textDocument && (params.capabilities.textDocument as any).semanticTokens;
 	codeActionQuickFixSupport = supportsCodeActionQuickFixes(params.capabilities);
 	return {
 		capabilities: {
@@ -243,8 +245,29 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			documentLinkProvider: {
 				resolveProvider: true
 			},
+			semanticTokensProvider: semanticTokensSupport ? {
+				legend: {
+					tokenTypes: [
+						SemanticTokenTypes.keyword,
+						SemanticTokenTypes.comment,
+						SemanticTokenTypes.parameter,
+						SemanticTokenTypes.property,
+						SemanticTokenTypes.label,
+						SemanticTokenTypes.class,
+						SemanticTokenTypes.marco,
+						SemanticTokenTypes.string,
+						SemanticTokenTypes.variable,
+					],
+					tokenModifiers: [
+						SemanticTokenModifiers.declaration,
+						SemanticTokenModifiers.definition,
+						SemanticTokenModifiers.deprecated,
+						SemanticTokenModifiers.reference
+					]
+				}
+			} : undefined,
 			foldingRangeProvider: true
-		}
+		} as any
 	}
 });
 
@@ -595,26 +618,38 @@ connection.onDidOpenTextDocument((didOpenTextDocumentParams: DidOpenTextDocument
 	validateTextDocument(document);
 });
 
+connection.languages.semanticTokens.on((semanticTokenParams: SemanticTokensParams) => {
+	return getDocument(semanticTokenParams.textDocument.uri).then((document) => {
+		if (document) {
+			return service.computeSemanticTokens(document.getText());
+		}
+		return {
+			data: []
+		}
+	});
+});
+
 connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDocumentParams): void => {
 	let document = documents[didChangeTextDocumentParams.textDocument.uri];
 	let buffer = document.getText();
 	let content = buffer;
 	let changes = didChangeTextDocumentParams.contentChanges;
 	for (let i = 0; i < changes.length; i++) {
-		if (!changes[i].range && !changes[i].rangeLength) {
+		const change = changes[i] as any;
+		if (!change.range && !change.rangeLength) {
 			// no ranges defined, the text is the entire document then
-			buffer = changes[i].text;
+			buffer = change.text;
 			break;
 		}
 
-		let offset = document.offsetAt(changes[i].range.start);
+		let offset = document.offsetAt(change.range.start);
 		let end = null;
-		if (changes[i].range.end) {
-			end = document.offsetAt(changes[i].range.end);
+		if (change.range.end) {
+			end = document.offsetAt(change.range.end);
 		} else {
-			end = offset + changes[i].rangeLength;
+			end = offset + change.rangeLength;
 		}
-		buffer = buffer.substring(0, offset) + changes[i].text + buffer.substring(end);
+		buffer = buffer.substring(0, offset) + change.text + buffer.substring(end);
 	}
 	document = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
 	documents[didChangeTextDocumentParams.textDocument.uri] = document;
