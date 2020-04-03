@@ -15,7 +15,6 @@ services:
 node_js:
   - "12"
   - "10"
-  - "8"
 
 cache:
   directories:
