@@ -2,9 +2,31 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/completion
+  - support completion of the `syntax` parser directive ([rcjsuen/dockerfile-language-service#57](https://github.com/rcjsuen/dockerfile-language-service/issues/57))
+- textDocument/documentSymbol
+  - support multiple directives when calculating a Dockerfile's symbols ([rcjsuen/dockerfile-language-service#65](https://github.com/rcjsuen/dockerfile-language-service/issues/65))
+- textDocument/hover
+  - add hover support for the `syntax` parser directive ([rcjsuen/dockerfile-language-service#58](https://github.com/rcjsuen/dockerfile-language-service/issues/58))
+- textDocument/publishDiagnostics
+  - RUN instructions with only flags and no arguments will now be raised as an error ([rcjsuen/dockerfile-utils#76](https://github.com/rcjsuen/dockerfile-utils/issues/76))
+
 ### Fixed
+- textDocument/hover
+  - allow hovers to be displayed for instruction keywords that span multiple lines ([rcjsuen/dockerfile-language-service#59](https://github.com/rcjsuen/dockerfile-language-service/issues/59))
+  - correct hover resolution of a variable if it comes after a false comment in a multiline instruction ([rcjsuen/dockerfile-language-service#61](https://github.com/rcjsuen/dockerfile-language-service/issues/61))
+  - correct hover resolution of a variable that comes after an embedded comment with a trailing escape character in a multiline instruction ([rcjsuen/dockerfile-language-service#62](https://github.com/rcjsuen/dockerfile-language-service/issues/62))
+- textDocument/publishDiagnostics
+  - multiline instructions with empty newlines will no longer throw an error during validation ([rcjsuen/dockerfile-utils#71](https://github.com/rcjsuen/dockerfile-utils/issues/71))
+  - instruction keywords that span multiple lines will no longer be raised as an error ([rcjsuen/dockerfile-utils#72](https://github.com/rcjsuen/dockerfile-utils/issues/72))
+  - embedded comments with an empty continuation line will no longer be raised as an error ([rcjsuen/dockerfile-utils#73](https://github.com/rcjsuen/dockerfile-utils/issues/73))
+  - arguments that follow a non-leading `#` comment marker will no longer be dropped during validation ([rcjsuen/dockerfile-utils#75](https://github.com/rcjsuen/dockerfile-utils/issues/75))
+  - fix parsing of embedded comments in multiline instructions that have a trailing escape character ([rcjsuen/dockerfile-utils#74](https://github.com/rcjsuen/dockerfile-utils/issues/74))
 - textDocument/semanticTokens
   - revamp to better handle strings, more tokens supported, and various fixes ([#239](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/239))
+- textDocument/signatureHelp
+  - use plain text instead of Markdown content for the signature label of the escape parser directive ([#64](https://github.com/rcjsuen/dockerfile-language-service/issues/64))
 
 ## [0.0.22] - 2020-02-12
 ### Added
