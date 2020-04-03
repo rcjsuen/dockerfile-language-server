@@ -254,9 +254,10 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 						SemanticTokenTypes.property,
 						SemanticTokenTypes.label,
 						SemanticTokenTypes.class,
-						SemanticTokenTypes.marco,
+						SemanticTokenTypes.macro,
 						SemanticTokenTypes.string,
 						SemanticTokenTypes.variable,
+						SemanticTokenTypes.operator
 					],
 					tokenModifiers: [
 						SemanticTokenModifiers.declaration,

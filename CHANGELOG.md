@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/semanticTokens
+  - revamp to better handle strings, more tokens supported, and various fixes ([#239](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/239))
+
 ## [0.0.22] - 2020-02-12
 ### Added
 - textDocument/completion
@@ -473,6 +478,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.22...HEAD
 [0.0.22]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.21...v0.0.22
 [0.0.21]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.20...v0.0.21
 [0.0.20]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.19...v0.0.20
