@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/semanticTokens
+  - improved support and parsing of strings and variables ([#239](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/239))
+
 ## [0.0.23] - 2020-04-03
 ### Added
 - textDocument/completion
