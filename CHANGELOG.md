@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/semanticTokens
   - allow embedded comments to immediately follow an ENV declaration ([rcjsuen/dockerfile-language-service#69](https://github.com/rcjsuen/dockerfile-language-service/issues/69))
   - fix the semantic tokens calculation to allow flags to have options without a value and improved handling of multiline strings ([#239](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/239))
+- fix builds so that Docker images are pushed to Docker Hub ([#243](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/243))
 
 ## [0.0.24] - 2020-04-23
 ### Fixed

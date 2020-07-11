@@ -13,6 +13,7 @@ services:
   - docker
 
 node_js:
+  # keep this list in sync for Docker images
   - "14"
   - "12"
 
@@ -39,7 +40,7 @@ script:
 after_success:
   - npm run coverage
   - npm pack
-  - 'if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_NODE_VERSION" == "8" ]; then
+  - 'if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_NODE_VERSION" == "12" ]; then
       docker build -t rcjsuen/docker-langserver . || travis_terminate 1;
       docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" || travis_terminate 1;
       docker push rcjsuen/docker-langserver || travis_terminate 1;
