@@ -7,7 +7,7 @@ import * as assert from "assert";
 
 import {
 	Position, Range,
-	TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind, DocumentHighlightKind
+	TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind, DocumentHighlightKind, DiagnosticTag
 } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
@@ -939,6 +939,41 @@ describe("Dockerfile LSP Tests", function() {
 				version: 1,
 				uri: "uri://dockerfile/227.txt",
 				text: ""
+			}
+		});
+	});
+
+	it("issue #242", function (finished) {
+		this.timeout(5000);
+
+		let first = true;
+		const diagnosticsListener = (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				if (first) {
+					assert.equal(json.params.uri, "uri://dockerfile/242.txt");
+					assert.equal(json.params.diagnostics.length, 1);
+					assert.strictEqual(json.params.diagnostics[0].range.start.line, 1);
+					assert.strictEqual(json.params.diagnostics[0].range.start.character, 0);
+					assert.strictEqual(json.params.diagnostics[0].range.end.line, 1);
+					assert.strictEqual(json.params.diagnostics[0].range.end.character, 10);
+					assert.strictEqual(json.params.diagnostics[0].tags.length, 1);
+					assert.strictEqual(json.params.diagnostics[0].tags[0], DiagnosticTag.Deprecated);
+					assert.strictEqual(json.params.diagnostics[0].severity, DiagnosticSeverity.Warning);
+					assert.strictEqual(json.params.diagnostics[0].code, ValidationCode.DEPRECATED_MAINTAINER);
+					assert.strictEqual(json.params.diagnostics[0].source, "dockerfile-utils");
+					lspProcess.removeListener("message", diagnosticsListener);
+					finished();
+				}
+			}
+		};
+		lspProcess.on("message", diagnosticsListener);
+
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/242.txt",
+				text: "FROM node\nMAINTAINER name"
 			}
 		});
 	});
