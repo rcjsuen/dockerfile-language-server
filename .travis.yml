@@ -13,8 +13,8 @@ services:
   - docker
 
 node_js:
+  - "14"
   - "12"
-  - "10"
 
 cache:
   directories:
