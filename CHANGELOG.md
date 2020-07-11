@@ -3,8 +3,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- textDocument/definition
+  - resolve build stage references to support definition navigation ([rcjsuen/dockerfile-language-service#67](https://github.com/rcjsuen/dockerfile-language-service/issues/67))
 - textDocument/publishDiagnostics
   - warnings about the deprecated MAINTAINER instruction will now be specifically tagged as being a deprecation warning diagnostic ([#242](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/242))
+  - ARG and ENV instructions that span multiple lines with just a comment are now flagged as an error ([rcjsuen/dockerfile-utils#78](https://github.com/rcjsuen/dockerfile-utils/issues/78))
+  - use DiagnosticTag to indicate if a Diagnostic is informing the user about a deprecation or not([rcjsuen/dockerfile-utils#80](https://github.com/rcjsuen/dockerfile-utils/issues/80))
+
+### Fixed
+- textDocument/definition
+  - build stages are no longer included as a link ([rcjsuen/dockerfile-language-service#68](https://github.com/rcjsuen/dockerfile-language-service/issues/68))
+- textDocument/publishDiagnostics
+  - correct ranges of linting errors if the error is on a multiline argument that is preceded by the escape character ([rcjsuen/dockerfile-utils#77](https://github.com/rcjsuen/dockerfile-utils/issues/77))
+  - fix linting error caused by whitespace followed after the escape character ([rcjsuen/dockerfile-utils#79](https://github.com/rcjsuen/dockerfile-utils/issues/79))
+- textDocument/semanticTokens
+  - allow embedded comments to immediately follow an ENV declaration ([rcjsuen/dockerfile-language-service#69](https://github.com/rcjsuen/dockerfile-language-service/issues/69))
+  - fix the semantic tokens calculation to allow flags to have options without a value and improved handling of multiline strings ([#239](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/239))
 
 ## [0.0.24] - 2020-04-23
 ### Fixed
