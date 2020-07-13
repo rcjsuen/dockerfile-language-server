@@ -640,6 +640,12 @@ connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDo
 		if (!change.range && !change.rangeLength) {
 			// no ranges defined, the text is the entire document then
 			buffer = change.text;
+			document = TextDocument.create(
+				didChangeTextDocumentParams.textDocument.uri,
+				document.languageId,
+				didChangeTextDocumentParams.textDocument.version,
+				buffer
+			);
 			break;
 		}
 
@@ -651,8 +657,13 @@ connection.onDidChangeTextDocument((didChangeTextDocumentParams: DidChangeTextDo
 			end = offset + change.rangeLength;
 		}
 		buffer = buffer.substring(0, offset) + change.text + buffer.substring(end);
+		document = TextDocument.create(
+			didChangeTextDocumentParams.textDocument.uri,
+			document.languageId,
+			didChangeTextDocumentParams.textDocument.version,
+			buffer
+		);
 	}
-	document = TextDocument.create(didChangeTextDocumentParams.textDocument.uri, document.languageId, didChangeTextDocumentParams.textDocument.version, buffer);
 	documents[didChangeTextDocumentParams.textDocument.uri] = document;
 	if (content !== buffer) {
 		validateTextDocument(document);

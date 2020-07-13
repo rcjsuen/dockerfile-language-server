@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/didChange
+  - correctly consider an event with multiple changes at the beginning of a file ([#244](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/244))
+
 ## [0.1.0] - 2020-07-11
 ### Added
 - textDocument/definition

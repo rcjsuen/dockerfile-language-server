@@ -1486,6 +1486,236 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
+	it("issue #244 A", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/244a.txt",
+				text: "FROM alpine"
+			}
+		});
+
+		lspProcess.once("message", (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				sendNotification("textDocument/didChange", {
+					textDocument: {
+						version: 2,
+						uri: "uri://dockerfile/244a.txt",
+					},
+					contentChanges: [
+						{
+							range: {
+								start: {
+									line: 0,
+									character: 11
+								},
+								end: {
+									line: 0,
+									character: 11
+								}
+							},
+							rangeLength: 0,
+							text: "\n"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 0
+								},
+								end: {
+									line: 1,
+									character: 0
+								}
+							},
+							rangeLength: 0,
+							text: "W"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 1
+								},
+								end: {
+									line: 1,
+									character: 1
+								}
+							},
+							rangeLength: 0,
+							text: "O"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 2
+								},
+								end: {
+									line: 1,
+									character: 2
+								}
+							},
+							rangeLength: 0,
+							text: "R"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 3
+								},
+								end: {
+									line: 1,
+									character: 3
+								}
+							},
+							rangeLength: 0,
+							text: "K"
+						}
+					]
+				});
+				lspProcess.once("message", (json) => {
+					if (json.method === "textDocument/publishDiagnostics") {
+						assert.equal(json.params.uri, "uri://dockerfile/244a.txt");
+						assert.equal(json.params.diagnostics.length, 1);
+						assert.strictEqual(json.params.diagnostics[0].range.start.line, 1);
+						assert.strictEqual(json.params.diagnostics[0].range.start.character, 0);
+						assert.strictEqual(json.params.diagnostics[0].range.end.line, 1);
+						assert.strictEqual(json.params.diagnostics[0].range.end.character, 4);
+						assert.strictEqual(json.params.diagnostics[0].severity, DiagnosticSeverity.Error);
+						assert.strictEqual(json.params.diagnostics[0].code, ValidationCode.UNKNOWN_INSTRUCTION);
+						assert.strictEqual(json.params.diagnostics[0].message, "Unknown instruction: WORK");
+						assert.strictEqual(json.params.diagnostics[0].source, "dockerfile-utils");
+						sendNotification("textDocument/didClose", {
+							textDocument: {
+								uri: "uri://dockerfile/244a.txt"
+							}
+						});
+						finished();
+					}
+				});
+			}
+		});
+	});
+
+	it("issue #244 B", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/244b.txt",
+				text: "FROM alpine\n\nENV a=b"
+			}
+		});
+
+		lspProcess.once("message", (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				sendNotification("textDocument/didChange", {
+					textDocument: {
+						version: 2,
+						uri: "uri://dockerfile/244b.txt",
+					},
+					contentChanges: [
+						{
+							range: {
+								start: {
+									line: 0,
+									character: 11
+								},
+								end: {
+									line: 0,
+									character: 11
+								}
+							},
+							rangeLength: 0,
+							text: "\n"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 0
+								},
+								end: {
+									line: 1,
+									character: 0
+								}
+							},
+							rangeLength: 0,
+							text: "W"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 1
+								},
+								end: {
+									line: 1,
+									character: 1
+								}
+							},
+							rangeLength: 0,
+							text: "O"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 2
+								},
+								end: {
+									line: 1,
+									character: 2
+								}
+							},
+							rangeLength: 0,
+							text: "R"
+						},
+						{
+							range: {
+								start: {
+									line: 1,
+									character: 3
+								},
+								end: {
+									line: 1,
+									character: 3
+								}
+							},
+							rangeLength: 0,
+							text: "K"
+						}
+					]
+				});
+				lspProcess.once("message", (json) => {
+					if (json.method === "textDocument/publishDiagnostics") {
+						assert.equal(json.params.uri, "uri://dockerfile/244b.txt");
+						assert.equal(json.params.diagnostics.length, 1);
+						assert.strictEqual(json.params.diagnostics[0].range.start.line, 1);
+						assert.strictEqual(json.params.diagnostics[0].range.start.character, 0);
+						assert.strictEqual(json.params.diagnostics[0].range.end.line, 1);
+						assert.strictEqual(json.params.diagnostics[0].range.end.character, 4);
+						assert.strictEqual(json.params.diagnostics[0].severity, DiagnosticSeverity.Error);
+						assert.strictEqual(json.params.diagnostics[0].code, ValidationCode.UNKNOWN_INSTRUCTION);
+						assert.strictEqual(json.params.diagnostics[0].message, "Unknown instruction: WORK");
+						assert.strictEqual(json.params.diagnostics[0].source, "dockerfile-utils");
+						sendNotification("textDocument/didClose", {
+							textDocument: {
+								uri: "uri://dockerfile/244b.txt"
+							}
+						});
+						finished();
+					}
+				});
+			}
+		});
+	});
+
 	function testInvalidFile(request: string, assertionCallback: Function) {
 		it(request, function(finished) {
 			this.timeout(5000);
