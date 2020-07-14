@@ -18,6 +18,7 @@ To [install and run](#installation-instructions) this language server, you will 
 - hovers
 - prepare rename
 - rename
+- semantic highlighting (experimental support for the upcoming LSP 3.16 specification)
 - signature help
 
 **Projects that use this language server:**
