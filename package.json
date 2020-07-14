@@ -8,7 +8,7 @@
     "dockerfile",
     "moby"
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Remy Suen",
   "license": "MIT",
   "bugs": "https://github.com/rcjsuen/dockerfile-language-server-nodejs/",

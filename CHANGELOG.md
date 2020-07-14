@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.1.1] - 2020-07-13
 ### Fixed
 - textDocument/didChange
   - correctly consider an event with multiple changes at the beginning of a file ([#244](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/244))
@@ -530,7 +530,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.1.1...HEAD
+[0.1.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.24...v0.1.0
 [0.0.24]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.23...v0.0.24
 [0.0.23]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.22...v0.0.23
