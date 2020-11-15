@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- replace deprecated `prepublish` script with `prepublishOnly` ([#111](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/111))
+
 ## [0.1.1] - 2020-07-13
 ### Fixed
 - textDocument/didChange

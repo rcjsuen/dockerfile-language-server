@@ -36,7 +36,7 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "prepublish": "tsc -p ./src",
+    "prepublishOnly": "tsc -p ./src",
     "watch": "tsc --watch -p .",
     "test": "mocha out/test",
     "nyc": "nyc mocha out/test",
