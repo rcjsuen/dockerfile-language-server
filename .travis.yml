@@ -39,6 +39,7 @@ script:
 
 after_success:
   - npm run coverage
+  - npm run prepublishOnly
   - npm pack
   - 'if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_NODE_VERSION" == "12" ]; then
       docker build -t rcjsuen/docker-langserver . || travis_terminate 1;
