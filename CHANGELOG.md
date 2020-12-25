@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
   - ENV instructions with blank space operators will no longer be assigned a semantic token ([rcjsuen/dockerfile-language-service#76](https://github.com/rcjsuen/dockerfile-language-service/issues/76))
   - prevent infinite loop caused by invalid ENV instruction ([#246](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/246))
 - replace deprecated `prepublish` script with `prepublishOnly` ([#111](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/111))
+- fix server crash caused by the finalizing of the LSP 3.16 specification ([#247](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/247))
 
 ## [0.1.1] - 2020-07-13
 ### Fixed
