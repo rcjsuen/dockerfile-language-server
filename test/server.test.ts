@@ -7,10 +7,30 @@ import * as assert from "assert";
 
 import {
 	Position, Range,
-	TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind, DocumentHighlightKind, DiagnosticTag
+	TextDocumentSyncKind, MarkupKind, SymbolKind, InsertTextFormat, CompletionItemKind, CodeActionKind, DiagnosticSeverity, FoldingRangeKind, DocumentHighlightKind, DiagnosticTag, SemanticTokenTypes, SemanticTokenModifiers
 } from 'vscode-languageserver';
 import { CommandIds } from 'dockerfile-language-service';
 import { ValidationCode } from 'dockerfile-utils';
+
+let semanticTokensLegend = {
+	tokenTypes: [
+		SemanticTokenTypes.keyword,
+		SemanticTokenTypes.comment,
+		SemanticTokenTypes.parameter,
+		SemanticTokenTypes.property,
+		SemanticTokenTypes.namespace,
+		SemanticTokenTypes.class,
+		SemanticTokenTypes.macro,
+		SemanticTokenTypes.string,
+		SemanticTokenTypes.variable,
+		SemanticTokenTypes.operator
+	],
+	tokenModifiers: [
+		SemanticTokenModifiers.declaration,
+		SemanticTokenModifiers.definition,
+		SemanticTokenModifiers.deprecated
+	]
+};
 
 // fork the server and connect to it using Node IPC
 let lspProcess = child_process.fork("out/src/server.js", [ "--node-ipc" ]);
@@ -67,6 +87,20 @@ function initializeCustomCapabilities(capabilities: any): number {
 		processId: process.pid,
 		capabilities
 	});
+}
+
+function assertSemanticToken(data: number[], tokenType: SemanticTokenTypes, index: number, line: number, startCharacter: number, length: number, tokenModifiers: SemanticTokenModifiers = null) {
+	assert.equal(data[index], line);
+	assert.equal(data[index + 1], startCharacter, "startCharacter mismatch");
+	assert.equal(data[index + 2], length, "length mismatch");
+	assert.equal(data[index + 3], semanticTokensLegend.tokenTypes.indexOf(tokenType));
+	if (tokenModifiers === null) {
+		// no modifiers
+		assert.equal(data[index + 4], 0);
+	} else {
+		const modifier = semanticTokensLegend.tokenModifiers.indexOf(tokenModifiers);
+		assert.equal(data[index + 4], modifier === 0 ? 1 : modifier * 2);
+	}
 }
 
 describe("Dockerfile LSP Tests", function() {
@@ -1714,6 +1748,38 @@ describe("Dockerfile LSP Tests", function() {
 				});
 			}
 		});
+	});
+
+	it("issue #246", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/246.txt",
+				text: "ENV DEBIAN_FRONTEND \\\nnoninteractive"
+			}
+		});
+
+		const semanticTokensResponseId = sendRequest("textDocument/semanticTokens/full", {
+			textDocument: {
+				uri: "uri://dockerfile/246.txt"
+			}
+		});
+		const semanticTokensListener = (json) => {
+			if (json.id === semanticTokensResponseId) {
+				lspProcess.removeListener("message", semanticTokensListener);
+				assert.ok(Array.isArray(json.result.data));
+				const data = json.result.data;
+				assert.equal(data.length, 20);
+				assertSemanticToken(data, SemanticTokenTypes.keyword, 0, 0, 0, 3);
+				assertSemanticToken(data, SemanticTokenTypes.variable, 5, 0, 4, 15, SemanticTokenModifiers.declaration);
+				assertSemanticToken(data, SemanticTokenTypes.macro, 10, 0, 16, 1);
+				assertSemanticToken(data, SemanticTokenTypes.parameter, 15, 1, 0, 14);
+				finished()
+			}
+		};
+		lspProcess.on("message", semanticTokensListener);
 	});
 
 	function testInvalidFile(request: string, assertionCallback: Function) {
