@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "dockerfile-language-service": "0.1.0",
-    "dockerfile-utils": "0.1.0",
+    "dockerfile-utils": "0.1.1",
     "vscode-languageserver": "^6.1.1"
   },
   "devDependencies": {

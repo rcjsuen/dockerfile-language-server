@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - instructions with only an escape character as its argument should be flagged as not having any arguments ([rcjsuen/dockerfile-utils#83](https://github.com/rcjsuen/dockerfile-utils/issues/83))
 ### Fixed
 - replace deprecated `prepublish` script with `prepublishOnly` ([#111](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/111))
 
