@@ -3,10 +3,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- textDocument/completion
+  - CompletionItemTag is now supported when completing on the MAINTAINER keyword ([rcjsuen/dockerfile-language-service/#70](https://github.com/rcjsuen/dockerfile-language-service/issues/70))
 - textDocument/publishDiagnostics
   - instructions with only an escape character as its argument should be flagged as not having any arguments ([rcjsuen/dockerfile-utils#83](https://github.com/rcjsuen/dockerfile-utils/issues/83))
 
 ### Fixed
+- textDocument/semanticTokens
+  - ENV instructions with blank space operators will no longer be assigned a semantic token ([rcjsuen/dockerfile-language-service#76](https://github.com/rcjsuen/dockerfile-language-service/issues/76))
 - replace deprecated `prepublish` script with `prepublishOnly` ([#111](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/111))
 
 ## [0.1.1] - 2020-07-13
