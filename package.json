@@ -22,13 +22,13 @@
   "dependencies": {
     "dockerfile-language-service": "0.1.1",
     "dockerfile-utils": "0.1.1",
-    "vscode-languageserver": "^6.1.1"
+    "vscode-languageserver": "^7.0.0"
   },
   "devDependencies": {
     "@types/mocha": "^7.0.2",
     "@types/node": "^6.0.52",
     "mocha": "^7.0.2",
-    "typescript": "^3.7.5",
+    "typescript": "^4.1.3",
     "nyc": "^15.0.0"
   },
   "bin": {

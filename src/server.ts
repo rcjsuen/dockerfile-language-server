@@ -6,7 +6,7 @@
 
 import * as fs from "fs";
 import {
-	createConnection, InitializeParams, InitializeResult, ClientCapabilities, Files,
+	createConnection, InitializeParams, InitializeResult, ClientCapabilities,
 	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams,
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
@@ -14,11 +14,12 @@ import {
 	RenameParams, Range, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
 	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind,
-	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, FoldingRangeRequestParam, ProposedFeatures
-} from 'vscode-languageserver';
+	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, ProposedFeatures
+} from 'vscode-languageserver/node';
+import { uriToFilePath } from 'vscode-languageserver/lib/node/files';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
-import { SemanticTokenModifiers, SemanticTokenTypes, SemanticTokensParams } from "vscode-languageserver-protocol/lib/protocol.sematicTokens.proposed";
+import { FoldingRangeParams, SemanticTokenModifiers, SemanticTokenTypes, SemanticTokensParams } from "vscode-languageserver-protocol";
 
 /**
  * The settings to use for the validator if the client doesn't support
@@ -70,7 +71,7 @@ function getDocument(uri: string): PromiseLike<TextDocument> {
 		return Promise.resolve(documents[uri]);
 	}
 	return new Promise((resolve, reject) => {
-		let file = Files.uriToFilePath(uri);
+		let file = uriToFilePath(uri);
 		if (file === undefined) {
 			resolve(null);
 		} else {
@@ -252,7 +253,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 						SemanticTokenTypes.comment,
 						SemanticTokenTypes.parameter,
 						SemanticTokenTypes.property,
-						SemanticTokenTypes.label,
+						SemanticTokenTypes.namespace,
 						SemanticTokenTypes.class,
 						SemanticTokenTypes.macro,
 						SemanticTokenTypes.string,
@@ -262,8 +263,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 					tokenModifiers: [
 						SemanticTokenModifiers.declaration,
 						SemanticTokenModifiers.definition,
-						SemanticTokenModifiers.deprecated,
-						SemanticTokenModifiers.reference
+						SemanticTokenModifiers.deprecated
 					]
 				}
 			} : undefined,
@@ -604,7 +604,7 @@ connection.onDocumentLinkResolve((documentLink: DocumentLink): DocumentLink => {
 	return service.resolveLink(documentLink);
 });
 
-connection.onFoldingRanges((foldingRangeParams: FoldingRangeRequestParam) => {
+connection.onFoldingRanges((foldingRangeParams: FoldingRangeParams) => {
 	return getDocument(foldingRangeParams.textDocument.uri).then((document) => {
 		if (document) {
 			return service.computeFoldingRanges(document.getText());
