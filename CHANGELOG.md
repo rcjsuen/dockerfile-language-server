@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.2.1] - 2020-01-06
 ### Fixed
 - textDocument/semanticTokens
   - clearly declare that full document semantic tokens are supported in the returned server capabilities ([rcjsuen/dockerfile-utils#248](https://github.com/rcjsuen/dockerfile-utils/issues/248))
@@ -549,7 +549,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.0.24...v0.1.0
