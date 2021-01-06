@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/semanticTokens
+  - clearly declare that full document semantic tokens are supported in the returned server capabilities ([rcjsuen/dockerfile-utils#248](https://github.com/rcjsuen/dockerfile-utils/issues/248))
+
 ## [0.2.0] - 2020-12-25
 ### Added
 - textDocument/completion

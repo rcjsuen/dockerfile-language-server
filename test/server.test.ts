@@ -70,6 +70,16 @@ function initialize(applyEdit: boolean, codeAction?: any, rename?: any): number 
 				contentFormat: [ MarkupKind.PlainText ]
 			},
 			codeAction,
+			semanticTokens: {
+				formats: [],
+				requests: {
+					full: {
+						delta: false
+					}
+				},
+				tokenModifiers: [],
+				tokenTypes: []
+			},
 			rename
 		},
 		workspace: {
@@ -118,6 +128,7 @@ describe("Dockerfile LSP Tests", function() {
 			assert.equal(capabilities.hoverProvider, true);
 			assert.equal(capabilities.renameProvider, true);
 			assert.equal(capabilities.renameProvider.prepareProvider, undefined);
+			assert.equal(capabilities.semanticTokensProvider.full.delta, false);
 			finished();
 		});
 	});

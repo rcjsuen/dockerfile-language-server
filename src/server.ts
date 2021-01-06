@@ -247,6 +247,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				resolveProvider: true
 			},
 			semanticTokensProvider: semanticTokensSupport ? {
+				full: {
+					delta: false
+				},
 				legend: {
 					tokenTypes: [
 						SemanticTokenTypes.keyword,
