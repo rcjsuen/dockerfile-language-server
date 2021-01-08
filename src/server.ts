@@ -14,12 +14,12 @@ import {
 	RenameParams, Range, WorkspaceEdit, Location,
 	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
 	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind,
-	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, ProposedFeatures
+	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, ProposedFeatures,
+	FoldingRangeParams, SemanticTokenModifiers, SemanticTokenTypes, SemanticTokensParams
 } from 'vscode-languageserver/node';
 import { uriToFilePath } from 'vscode-languageserver/lib/node/files';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
 import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
-import { FoldingRangeParams, SemanticTokenModifiers, SemanticTokenTypes, SemanticTokensParams } from "vscode-languageserver-protocol";
 
 /**
  * The settings to use for the validator if the client doesn't support

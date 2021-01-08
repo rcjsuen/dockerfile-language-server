@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- import all types from vscode-languageserver to prevent bundling issues ([#249](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/249))
+
 ## [0.2.1] - 2020-01-06
 ### Fixed
 - textDocument/semanticTokens
