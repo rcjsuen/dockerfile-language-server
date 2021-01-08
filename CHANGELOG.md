@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.1] - 2020-01-06
 ### Fixed
 - textDocument/semanticTokens
-  - clearly declare that full document semantic tokens are supported in the returned server capabilities ([rcjsuen/dockerfile-utils#248](https://github.com/rcjsuen/dockerfile-utils/issues/248))
+  - clearly declare that full document semantic tokens are supported in the returned server capabilities ([#248](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/248))
 
 ## [0.2.0] - 2020-12-25
 ### Added
