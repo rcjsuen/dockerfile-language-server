@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - support `--chmod` flag in ADD instructions added in Docker CE 20.10 ([#250](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/250))
+
 ## [0.2.2] - 2020-01-07
 ### Fixed
 - import all types from vscode-languageserver to prevent bundling issues ([#249](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/249))
