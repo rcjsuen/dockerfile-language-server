@@ -1819,6 +1819,31 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
+	it("issue #251", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/251.txt",
+				text: "FROM scratch\nCOPY --chmod=644 . ."
+			}
+		});
+
+		lspProcess.once("message", (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				assert.equal(json.params.uri, "uri://dockerfile/251.txt");
+				assert.equal(json.params.diagnostics.length, 0);
+				sendNotification("textDocument/didClose", {
+					textDocument: {
+						uri: "uri://dockerfile/251.txt"
+					}
+				});
+				finished();
+			}
+		});
+	});
+
 	function testInvalidFile(request: string, assertionCallback: Function) {
 		it(request, function(finished) {
 			this.timeout(5000);

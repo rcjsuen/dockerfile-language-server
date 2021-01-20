@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/publishDiagnostics
   - support `--chmod` flag in ADD instructions added in Docker CE 20.10 ([#250](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/250))
+  - support `--chmod` flag in COPY instructions added in Docker CE 20.10 ([#251](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/251))
 
 ## [0.2.2] - 2020-01-07
 ### Fixed
