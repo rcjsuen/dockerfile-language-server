@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.3.0] - 2021-01-20
 ### Added
 - textDocument/publishDiagnostics
   - support `--chmod` flag in ADD instructions added in Docker CE 20.10 ([#250](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/250))
@@ -559,7 +559,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.1.1...v0.2.0
