@@ -103,6 +103,9 @@ interface Settings {
         instructionEntrypointMultiple?: string,
         instructionHealthcheckMultiple?: string,
         instructionJSONInSingleQuotes?: string
+      },
+      formatter?: {
+        ignoreMultilineInstructions?: boolean,
       }
     }
   }

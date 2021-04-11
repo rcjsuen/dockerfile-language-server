@@ -3,10 +3,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- settings
+  - docker.languageserver.formatter.ignoreMultilineInstructions? ([#255](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/255))
+    - value = ( true | false )
+    - this will make the formatter ignore instructions that span multiple lines
 - suggest working directories if editing the last argument of ADD and COPY instructions that aren't written in JSON ([rcjsuen/dockerfile-language-service#77](https://github.com/rcjsuen/dockerfile-language-service/issues/77))
 - allow multiple arguments to be defined for ARG instructions to support Docker Engine 20.10 ([rcjsuen/dockerfile-utils#92](https://github.com/rcjsuen/dockerfile-utils/issues/92))
 - optimized range formatting so that it does not return unnecessary edits ([rcjsuen/dockerfile-language-service#81](https://github.com/rcjsuen/dockerfile-language-service/issues/81))
 - optimized on type formatting so that it does not return unnecessary edits ([rcjsuen/dockerfile-language-service#82](https://github.com/rcjsuen/dockerfile-language-service/issues/82))
+- textDocument/formatting
+  - allow the formatter to skip formatting of instructions that span multiple lines ([#255](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/255))
 
 ### Fixed
 - do not validate variable substitutions if found in CMD and ENTRYPOINT ([rcjsuen/dockerfile-utils#89](https://github.com/rcjsuen/dockerfile-utils/issues/89))

@@ -1843,6 +1843,82 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
+	function test255(fileName: string, configurationSet: boolean, ignoreMultilineAttribute: any, callback: Function): void {
+		if (configurationSet) {
+			sendNotification("workspace/didChangeConfiguration", {
+				settings: {
+					docker: {
+						languageserver: {
+							formatter: {
+								ignoreMultilineInstructions: ignoreMultilineAttribute
+							}
+						}
+					}
+				}
+			});
+		} else {
+			sendNotification("workspace/didChangeConfiguration", {settings: {}});
+		}
+
+		const documentURI = "uri://dockerfile/" + fileName;
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: documentURI,
+				text: "FROM node AS\\\n build"
+			}
+		});
+
+		const requestId = sendRequest("textDocument/formatting", {
+			textDocument: {
+				uri: documentURI,
+			},
+			options: {
+				insertSpaces: true,
+				tabSize: 4
+			}
+		});
+
+		const listener = (json: any) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				sendNotification("textDocument/didClose", { textDocument: { uri: documentURI } });
+
+				assert.ok(json.result instanceof Array);
+				if (ignoreMultilineAttribute === true) {
+					assert.strictEqual(json.result.length, 0);
+				} else {
+					assert.strictEqual(json.result.length, 1);
+					assert.strictEqual(json.result[0].newText, "    ");
+					assert.strictEqual(json.result[0].range.start.line, 1);
+					assert.strictEqual(json.result[0].range.start.character, 0);
+					assert.strictEqual(json.result[0].range.end.line, 1);
+					assert.strictEqual(json.result[0].range.end.character, 1);
+				}
+				callback();
+			}
+		};
+		lspProcess.on("message", listener);
+	}
+
+	describe("issue #255 workspace configuration", () => {
+		it("workspace configuration not defined", finished => {
+			this.timeout(5000);
+			test255("255-workspace-configuration-not-defined", false, null, finished);
+		});
+
+		it("workspace configuration true", finished => {
+			this.timeout(5000);
+			test255("255-workspace-configuration-true", true, true, finished);
+		});
+
+		it("workspace configuration false", finished => {
+			this.timeout(5000);
+			test255("255-workspace-configuration-false", true, false, finished);
+		});
+	});
+
 	function testInvalidFile(request: string, assertionCallback: Function) {
 		it(request, function(finished) {
 			this.timeout(5000);

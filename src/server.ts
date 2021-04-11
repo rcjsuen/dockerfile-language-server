@@ -19,13 +19,17 @@ import {
 } from 'vscode-languageserver/node';
 import { uriToFilePath } from 'vscode-languageserver/lib/node/files';
 import { ValidatorSettings, ValidationSeverity } from 'dockerfile-utils';
-import { CommandIds, DockerfileLanguageServiceFactory } from 'dockerfile-language-service';
+import { CommandIds, DockerfileLanguageServiceFactory, FormatterSettings } from 'dockerfile-language-service';
+
+let formatterConfiguration: FormatterConfiguration | null = null;
 
 /**
  * The settings to use for the validator if the client doesn't support
  * workspace/configuration requests.
  */
 let validatorSettings: ValidatorSettings | null = null;
+
+const formatterConfigurations: Map<string, Thenable<FormatterConfiguration>> = new Map();
 
 /**
  * The validator settings that correspond to an individual file retrieved via
@@ -311,7 +315,7 @@ function convertValidatorConfiguration(config: ValidatorConfiguration): Validato
 
 function validateTextDocument(textDocument: TextDocument): void {
 	if (configurationSupport) {
-		getConfiguration(textDocument.uri).then((config: ValidatorConfiguration) => {
+		getValidatorConfiguration(textDocument.uri).then((config: ValidatorConfiguration) => {
 			const fileSettings = convertValidatorConfiguration(config);
 			const diagnostics = service.validate(textDocument.getText(), fileSettings);
 			connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
@@ -320,6 +324,10 @@ function validateTextDocument(textDocument: TextDocument): void {
 		const diagnostics = service.validate(textDocument.getText(), validatorSettings);
 		connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 	}
+}
+
+interface FormatterConfiguration {
+	ignoreMultilineInstructions?: boolean;
 }
 
 interface ValidatorConfiguration {
@@ -337,7 +345,8 @@ interface ValidatorConfiguration {
 interface Settings {
 	docker: {
 		languageserver: {
-			diagnostics?: ValidatorConfiguration
+			diagnostics?: ValidatorConfiguration,
+			formatter?: FormatterConfiguration
 		}
 	}
 }
@@ -354,13 +363,22 @@ function getSeverity(severity: string | undefined): ValidationSeverity | null {
 	return null;
 }
 
+function getFormatterConfiguration(resource: string): Thenable<FormatterConfiguration> {
+	let result = formatterConfigurations.get(resource);
+	if (!result) {
+		result = connection.workspace.getConfiguration({ section: "docker.languageserver.formatter", scopeUri: resource });
+		formatterConfigurations.set(resource, result);
+	}
+	return result;
+}
+
 /**
  * Gets the validation configuration that pertains to the specified resource.
  * 
  * @param resource the interested resource
  * @return the configuration to use to validate the interested resource
  */
-function getConfiguration(resource: string): Thenable<ValidatorConfiguration> {
+function getValidatorConfiguration(resource: string): Thenable<ValidatorConfiguration> {
 	let result = validatorConfigurations.get(resource);
 	if (!result) {
 		result = connection.workspace.getConfiguration({ section: "docker.languageserver.diagnostics", scopeUri: resource });
@@ -374,17 +392,36 @@ connection.onNotification(DidChangeConfigurationNotification.type, () => {
 	refreshConfigurations();
 });
 
-/**
- * Wipes and reloads the internal cache of validator configurations.
- */
-function refreshConfigurations() {
+function getConfigurationItems(sectionName): ConfigurationItem[] {
 	// store all the URIs that need to be refreshed
-	const settingsRequest: ConfigurationItem[] = [];
-	for (let uri in documents) {
-		settingsRequest.push({ section: "docker.languageserver.diagnostics", scopeUri: uri });
+	const configurationItems: ConfigurationItem[] = [];
+	for (const uri in documents) {
+		configurationItems.push({ section: sectionName, scopeUri: uri });
 	}
+	return configurationItems;
+}
+
+function refreshFormatterConfigurations() {
+	// store all the URIs that need to be refreshed
+	const settingsRequest = getConfigurationItems("docker.languageserver.formatter");
 	// clear the cache
-	validatorConfigurations.clear();
+	formatterConfigurations.clear();
+
+	// ask the workspace for the configurations
+	connection.workspace.getConfiguration(settingsRequest).then((settings: FormatterConfiguration[]) => {
+		for (let i = 0; i < settings.length; i++) {
+			const resource = settingsRequest[i].scopeUri;
+			// a value might have been stored already, use it instead and ignore this one if so
+			if (settings[i] && !formatterConfigurations.has(resource)) {
+				formatterConfigurations.set(resource, Promise.resolve(settings[i]));
+			}
+		}
+	});
+}
+
+function refreshValidatorConfigurations() {
+	// store all the URIs that need to be refreshed
+	const settingsRequest = getConfigurationItems("docker.languageserver.diagnostics");
 
 	// ask the workspace for the configurations
 	connection.workspace.getConfiguration(settingsRequest).then((values: ValidatorConfiguration[]) => {
@@ -404,14 +441,28 @@ function refreshConfigurations() {
 	});
 }
 
+/**
+ * Wipes and reloads the internal cache of configurations.
+ */
+function refreshConfigurations() {
+	refreshFormatterConfigurations();
+	refreshValidatorConfigurations();
+}
+
 connection.onDidChangeConfiguration((change) => {
 	if (configurationSupport) {
 		refreshConfigurations();
 	} else {
 		let settings = <Settings>change.settings;
-		if (settings.docker && settings.docker.languageserver && settings.docker.languageserver.diagnostics) {
-			validatorSettings = convertValidatorConfiguration(settings.docker.languageserver.diagnostics);
+		if (settings.docker && settings.docker.languageserver) {
+			if (settings.docker.languageserver.diagnostics) {
+				validatorSettings = convertValidatorConfiguration(settings.docker.languageserver.diagnostics);
+			}
+			if (settings.docker.languageserver.formatter) {
+				formatterConfiguration = settings.docker.languageserver.formatter;
+			}
 		} else {
+			formatterConfiguration = null;
 			validatorSettings = convertValidatorConfiguration(null);
 		}
 		// validate all the documents again
@@ -569,8 +620,21 @@ connection.onDocumentSymbol((documentSymbolParams: DocumentSymbolParams): Promis
 
 connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingParams): PromiseLike<TextEdit[]> => {
 	return getDocument(documentFormattingParams.textDocument.uri).then((document) => {
+		if (configurationSupport) {
+			return getFormatterConfiguration(document.uri).then((configuration: FormatterConfiguration) => {
+				if (document) {
+					const options: FormatterSettings = documentFormattingParams.options;
+					options.ignoreMultilineInstructions = configuration !== null && configuration.ignoreMultilineInstructions;
+					return service.format(document.getText(), options);
+				}
+				return [];
+			});
+		}
+
 		if (document) {
-			return service.format(document.getText(), documentFormattingParams.options);
+			const options: FormatterSettings = documentFormattingParams.options;
+			options.ignoreMultilineInstructions = formatterConfiguration !== null && formatterConfiguration.ignoreMultilineInstructions;
+			return service.format(document.getText(), options);
 		}
 		return [];
 	});
