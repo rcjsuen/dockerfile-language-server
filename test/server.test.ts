@@ -515,7 +515,7 @@ describe("Dockerfile LSP Tests", function() {
 		 * 1. Start by sending in a "null" configuration as a default.
 		 * 2. Confirm that a diagnostic is received ("null" should default to "warning").
 		 * 3. Send in an "ignore" configruation.
-		 * 4. COnfirm that no diagnostic is received.
+		 * 4. Confirm that no diagnostic is received.
 		 */
 		it("null to ignore configuration", function(finished) {
 			this.timeout(5000);
@@ -526,7 +526,7 @@ describe("Dockerfile LSP Tests", function() {
 		 * 1. Start by sending in a configuration to "ignore" the diagnostic.
 		 * 2. Confirm that no diagnostic is received.
 		 * 3. Send in a "null" configuration.
-		 * 4. COnfirm that a diagnostic is received (as it should default to "warning").
+		 * 4. Confirm that a diagnostic is received (as it should default to "warning").
 		 */
 		it("ignore to null configuration", function(finished) {
 			this.timeout(5000);
@@ -537,7 +537,7 @@ describe("Dockerfile LSP Tests", function() {
 		 * 1. Start by sending in a configuration to "ignore" the diagnostic.
 		 * 2. Confirm that no diagnostic is received.
 		 * 3. Send in a "warning" configuration.
-		 * 4. COnfirm that a diagnostic is received.
+		 * 4. Confirm that a diagnostic is received.
 		 */
 		it("ignore to warning configuration", function(finished) {
 			this.timeout(5000);
@@ -548,7 +548,7 @@ describe("Dockerfile LSP Tests", function() {
 		 * 1. Start by sending in a configuration to "ignore" the diagnostic.
 		 * 2. Confirm that no diagnostic is received.
 		 * 3. Send in an "error" configuration.
-		 * 4. COnfirm that a diagnostic is received.
+		 * 4. Confirm that a diagnostic is received.
 		 */
 		it("ignore to error configuration", function(finished) {
 			this.timeout(5000);
