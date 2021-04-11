@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- suggest working directories if editing the last argument of ADD and COPY instructions that aren't written in JSON ([rcjsuen/dockerfile-language-service#77](https://github.com/rcjsuen/dockerfile-language-service/issues/77))
+- allow multiple arguments to be defined for ARG instructions to support Docker Engine 20.10 ([rcjsuen/dockerfile-utils#92](https://github.com/rcjsuen/dockerfile-utils/issues/92))
+- optimized range formatting so that it does not return unnecessary edits ([rcjsuen/dockerfile-language-service#81](https://github.com/rcjsuen/dockerfile-language-service/issues/81))
+- optimized on type formatting so that it does not return unnecessary edits ([rcjsuen/dockerfile-language-service#82](https://github.com/rcjsuen/dockerfile-language-service/issues/82))
+
+### Fixed
+- do not validate variable substitutions if found in CMD and ENTRYPOINT ([rcjsuen/dockerfile-utils#89](https://github.com/rcjsuen/dockerfile-utils/issues/89))
+- fix infinite loop issue when calculating semantic tokens for ARG or ENV instructions with nested comments ([rcjsuen/dockerfile-language-service#74](https://github.com/rcjsuen/dockerfile-language-service/issues/74))
+- do not flag `?` as an invalid modifier in variable substitutions ([rcjsuen/dockerfile-utils#91](https://github.com/rcjsuen/dockerfile-utils/issues/91))
+- prevent false positive by improving the parsing of an escape character and newline that immediately follows a label definition ([rcjsuen/dockerfile-utils#95](https://github.com/rcjsuen/dockerfile-utils/issues/95))
+
+
 ## [0.3.0] - 2021-01-20
 ### Added
 - textDocument/publishDiagnostics
