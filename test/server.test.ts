@@ -1807,7 +1807,6 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.once("message", json => {
 			if (json.method === "textDocument/publishDiagnostics") {
 				assert.equal(json.params.uri, "uri://dockerfile/250.txt");
-				console.log(json.params.diagnostics);
 				assert.equal(json.params.diagnostics.length, 0);
 				sendNotification("textDocument/didClose", {
 					textDocument: {
