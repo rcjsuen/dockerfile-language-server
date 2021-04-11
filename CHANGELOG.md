@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.4.0] - 2021-04-11
 ### Added
 - settings
   - docker.languageserver.formatter.ignoreMultilineInstructions? ([#255](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/255))
@@ -587,7 +587,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.0...v0.2.1
