@@ -642,7 +642,20 @@ connection.onDocumentFormatting((documentFormattingParams: DocumentFormattingPar
 
 connection.onDocumentRangeFormatting((rangeFormattingParams: DocumentRangeFormattingParams): PromiseLike<TextEdit[]> => {
 	return getDocument(rangeFormattingParams.textDocument.uri).then((document) => {
+		if (configurationSupport) {
+			return getFormatterConfiguration(document.uri).then((configuration: FormatterConfiguration) => {
+				if (document) {
+					const options: FormatterSettings = rangeFormattingParams.options;
+					options.ignoreMultilineInstructions = configuration !== null && configuration.ignoreMultilineInstructions;
+					return service.formatRange(document.getText(),rangeFormattingParams.range, options);
+				}
+				return [];
+			});
+		}
+
 		if (document) {
+			const options: FormatterSettings = rangeFormattingParams.options;
+			options.ignoreMultilineInstructions = formatterConfiguration !== null && formatterConfiguration.ignoreMultilineInstructions;
 			return service.formatRange(document.getText(), rangeFormattingParams.range, rangeFormattingParams.options);
 		}
 		return [];
@@ -651,7 +664,20 @@ connection.onDocumentRangeFormatting((rangeFormattingParams: DocumentRangeFormat
 
 connection.onDocumentOnTypeFormatting((onTypeFormattingParams: DocumentOnTypeFormattingParams): PromiseLike<TextEdit[]> => {
 	return getDocument(onTypeFormattingParams.textDocument.uri).then((document) => {
+		if (configurationSupport) {
+			return getFormatterConfiguration(document.uri).then((configuration: FormatterConfiguration) => {
+				if (document) {
+					const options: FormatterSettings = onTypeFormattingParams.options;
+					options.ignoreMultilineInstructions = configuration !== null && configuration.ignoreMultilineInstructions;
+					return service.formatOnType(document.getText(), onTypeFormattingParams.position, onTypeFormattingParams.ch, options);
+				}
+				return [];
+			});
+		}
+
 		if (document) {
+			const options: FormatterSettings = onTypeFormattingParams.options;
+			options.ignoreMultilineInstructions = formatterConfiguration !== null && formatterConfiguration.ignoreMultilineInstructions;
 			return service.formatOnType(document.getText(), onTypeFormattingParams.position, onTypeFormattingParams.ch, onTypeFormattingParams.options);
 		}
 		return [];

@@ -86,7 +86,7 @@ describe("LSP server with configuration support", function() {
 		sendNotification("initialized", {});
 	});
 
-	function test255(fileName: string, configurationSet: boolean, attribute: any, callback: Function): void {
+	function test255(fileName: string, text: string, request: string, params: any, configurationSet: boolean, attribute: any, callback: Function): void {
 		const configurationListener = (json: any) => {
 			if (json.method === "workspace/configuration" && json.params.items.length > 0 && json.params.items[0].section === "docker.languageserver.formatter") {
 				lspProcess.removeListener("message", configurationListener);
@@ -105,19 +105,12 @@ describe("LSP server with configuration support", function() {
 				languageId: "dockerfile",
 				version: 1,
 				uri: documentURI,
-				text: "FROM node AS\\\n build"
+				text: text
 			}
 		});
 
-		const requestId = sendRequest("textDocument/formatting", {
-			textDocument: {
-				uri: documentURI,
-			},
-			options: {
-				insertSpaces: true,
-				tabSize: 4
-			}
-		});
+		params.textDocument.uri = documentURI;
+		const requestId = sendRequest(request, params);
 
 		const listener = (json: any) => {
 			if (json.id === requestId && json.method !== "workspace/configuration") {
@@ -142,19 +135,142 @@ describe("LSP server with configuration support", function() {
 	}
 
 	describe("issue #255 file configuration", () => {
-		it("file configuration not defined", finished => {
+		const fileFormattingRequest = {
+			textDocument: {},
+			options: { insertSpaces: true, tabSize: 4 }
+		};
+
+		const rangeFormattingRequest = {
+			textDocument: {},
+			range: {
+				start: { line: 0, position: 3 },
+				end: { line: 1, position: 3 }
+			},
+			options: { insertSpaces: true, tabSize: 4 }
+		};
+
+		const onTypeFormattingRequest = {
+			textDocument: {},
+			position: { line: 0, position: 12 },
+			ch: "\\",
+			options: { insertSpaces: true, tabSize: 4 }
+		};
+
+		it("textDocument/formatting file configuration not defined", finished => {
 			this.timeout(5000);
-			test255("255-file-configuration-not-defined", false, null, finished);
+			test255(
+				"formatting-255-file-configuration-not-defined",
+				"FROM node AS\\\n build",
+				"textDocument/formatting",
+				fileFormattingRequest,
+				false,
+				null,
+				finished
+			);
 		});
 
-		it("file configuration true", finished => {
+		it("textDocument/formatting file configuration true", finished => {
 			this.timeout(5000);
-			test255("255-file-configuration-true", true, true, finished);
+			test255(
+				"formatting-255-file-configuration-true",
+				"FROM node AS\\\n build",
+				"textDocument/formatting",
+				fileFormattingRequest,
+				true,
+				true,
+				finished
+			);
 		});
 
-		it("file configuration false", finished => {
+		it("textDocument/formatting file configuration false", finished => {
 			this.timeout(5000);
-			test255("255-file-configuration-false", true, false, finished);
+			test255(
+				"formatting-255-file-configuration-false",
+				"FROM node AS\\\n build",
+				"textDocument/formatting",
+				fileFormattingRequest,
+				true,
+				false,
+				finished
+			);
+		});
+
+		it("textDocument/rangeFormatting file configuration not defined", finished => {
+			this.timeout(5000);
+			test255(
+				"range-formatting-255-file-configuration-not-defined",
+				"FROM node AS\\\n build\nFROM node AS \\\n build",
+				"textDocument/rangeFormatting",
+				rangeFormattingRequest,
+				false,
+				null,
+				finished
+			);
+		});
+
+		it("textDocument/rangeFormatting file configuration true", finished => {
+			this.timeout(5000);
+			test255(
+				"range-formatting-255-file-configuration-true",
+				"FROM node AS\\\n build\nFROM node AS \\\n build",
+				"textDocument/rangeFormatting",
+				rangeFormattingRequest,
+				true,
+				true,
+				finished
+			);
+		});
+
+		it("textDocument/rangeFormatting file configuration false", finished => {
+			this.timeout(5000);
+			test255(
+				"range-formatting-255-file-configuration-false",
+				"FROM node AS\\\n build\nFROM node AS \\\n build",
+				"textDocument/rangeFormatting",
+				rangeFormattingRequest,
+				true,
+				false,
+				finished
+			);
+		});
+
+		it("textDocument/onTypeFormatting file configuration not defined", finished => {
+			this.timeout(5000);
+			test255(
+				"on-type-formatting-255-file-configuration-not-defined",
+				"FROM node AS\n build",
+				"textDocument/onTypeFormatting",
+				onTypeFormattingRequest,
+				false,
+				null,
+				finished
+			);
+		});
+
+		it("textDocument/onTypeFormatting file configuration true", finished => {
+			this.timeout(5000);
+			test255(
+				"on-type-formatting-255-file-configuration-true",
+				"FROM node AS\n build",
+				"textDocument/onTypeFormatting",
+				onTypeFormattingRequest,
+				true,
+				true,
+				finished
+			);
+		});
+
+		it("textDocument/onTypeFormatting file configuration false", finished => {
+			this.timeout(5000);
+			test255(
+				"on-type-formatting-255-file-configuration-false",
+				"FROM node AS\n build",
+				"textDocument/onTypeFormatting",
+				onTypeFormattingRequest,
+				true,
+				false,
+				finished
+			);
 		});
 	});
 

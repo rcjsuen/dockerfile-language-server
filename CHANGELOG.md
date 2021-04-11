@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - optimized on type formatting so that it does not return unnecessary edits ([rcjsuen/dockerfile-language-service#82](https://github.com/rcjsuen/dockerfile-language-service/issues/82))
 - textDocument/formatting
   - allow the formatter to skip formatting of instructions that span multiple lines ([#255](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/255))
+- textDocument/onTypeFormatting
+  - allow the formatter to skip formatting of instructions that span multiple lines ([#255](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/255))
+- textDocument/rangeFormatting
+  - allow the formatter to skip formatting of instructions that span multiple lines ([#255](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/255))
 
 ### Fixed
 - do not validate variable substitutions if found in CMD and ENTRYPOINT ([rcjsuen/dockerfile-utils#89](https://github.com/rcjsuen/dockerfile-utils/issues/89))

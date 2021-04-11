@@ -1843,7 +1843,7 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
-	function test255(fileName: string, configurationSet: boolean, ignoreMultilineAttribute: any, callback: Function): void {
+	function test255(fileName: string, text: string, request: string, params: any, configurationSet: boolean, ignoreMultilineAttribute: any, callback: Function): void {
 		if (configurationSet) {
 			sendNotification("workspace/didChangeConfiguration", {
 				settings: {
@@ -1866,19 +1866,12 @@ describe("Dockerfile LSP Tests", function() {
 				languageId: "dockerfile",
 				version: 1,
 				uri: documentURI,
-				text: "FROM node AS\\\n build"
+				text: text,
 			}
 		});
 
-		const requestId = sendRequest("textDocument/formatting", {
-			textDocument: {
-				uri: documentURI,
-			},
-			options: {
-				insertSpaces: true,
-				tabSize: 4
-			}
-		});
+		params.textDocument.uri = documentURI;
+		const requestId = sendRequest(request, params);
 
 		const listener = (json: any) => {
 			if (json.id === requestId) {
@@ -1903,19 +1896,142 @@ describe("Dockerfile LSP Tests", function() {
 	}
 
 	describe("issue #255 workspace configuration", () => {
-		it("workspace configuration not defined", finished => {
+		const fileFormattingRequest = {
+			textDocument: {},
+			options: { insertSpaces: true, tabSize: 4 }
+		};
+
+		const rangeFormattingRequest = {
+			textDocument: {},
+			range: {
+				start: { line: 0, position: 3 },
+				end: { line: 1, position: 3 }
+			},
+			options: { insertSpaces: true, tabSize: 4 }
+		};
+
+		const onTypeFormattingRequest = {
+			textDocument: {},
+			position: { line: 0, position: 12 },
+			ch: "\\",
+			options: { insertSpaces: true, tabSize: 4 }
+		};
+
+		it("file formatting workspace configuration not defined", finished => {
 			this.timeout(5000);
-			test255("255-workspace-configuration-not-defined", false, null, finished);
+			test255(
+				"file-255-workspace-configuration-not-defined",
+				"FROM node AS\\\n build",
+				"textDocument/formatting",
+				fileFormattingRequest,
+				false,
+				null,
+				finished
+			);
 		});
 
-		it("workspace configuration true", finished => {
+		it("file formatting workspace configuration true", finished => {
 			this.timeout(5000);
-			test255("255-workspace-configuration-true", true, true, finished);
+			test255(
+				"file-255-workspace-configuration-not-defined",
+				"FROM node AS\\\n build",
+				"textDocument/formatting",
+				fileFormattingRequest,
+				true,
+				true,
+				finished
+			);
 		});
 
-		it("workspace configuration false", finished => {
+		it("file formatting workspace configuration false", finished => {
 			this.timeout(5000);
-			test255("255-workspace-configuration-false", true, false, finished);
+			test255(
+				"file-255-workspace-configuration-not-defined",
+				"FROM node AS\\\n build",
+				"textDocument/formatting",
+				fileFormattingRequest,
+				true,
+				false,
+				finished
+			);
+		});
+
+		it("range formatting workspace configuration not defined", finished => {
+			this.timeout(5000);
+			test255(
+				"range-255-workspace-configuration-not-defined",
+				"FROM node AS\\\n build\nFROM node AS \\\n build",
+				"textDocument/rangeFormatting",
+				rangeFormattingRequest,
+				false,
+				null,
+				finished
+			);
+		});
+
+		it("range formatting workspace configuration true", finished => {
+			this.timeout(5000);
+			test255(
+				"range-255-workspace-configuration-not-defined",
+				"FROM node AS\\\n build\nFROM node AS \\\n build",
+				"textDocument/rangeFormatting",
+				rangeFormattingRequest,
+				true,
+				true,
+				finished
+			);
+		});
+
+		it("range formatting workspace configuration false", finished => {
+			this.timeout(5000);
+			test255(
+				"range-255-workspace-configuration-not-defined",
+				"FROM node AS\\\n build\nFROM node AS \\\n build",
+				"textDocument/rangeFormatting",
+				rangeFormattingRequest,
+				true,
+				false,
+				finished
+			);
+		});
+
+		it("on type formatting workspace configuration not defined", finished => {
+			this.timeout(5000);
+			test255(
+				"on-type-255-workspace-configuration-not-defined",
+				"FROM node AS\n build",
+				"textDocument/onTypeFormatting",
+				onTypeFormattingRequest,
+				false,
+				null,
+				finished
+			);
+		});
+
+		it("on type formatting workspace configuration true", finished => {
+			this.timeout(5000);
+			test255(
+				"on-type-255-workspace-configuration-not-defined",
+				"FROM node AS\n build",
+				"textDocument/onTypeFormatting",
+				onTypeFormattingRequest,
+				true,
+				true,
+				finished
+			);
+		});
+
+		it("on type formatting workspace configuration false", finished => {
+			this.timeout(5000);
+			test255(
+				"on-type-255-workspace-configuration-not-defined",
+				"FROM node AS\n build",
+				"textDocument/onTypeFormatting",
+				onTypeFormattingRequest,
+				true,
+				false,
+				finished
+			);
 		});
 	});
 
