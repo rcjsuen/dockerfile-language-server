@@ -422,7 +422,8 @@ function refreshFormatterConfigurations() {
 function refreshValidatorConfigurations() {
 	// store all the URIs that need to be refreshed
 	const settingsRequest = getConfigurationItems("docker.languageserver.diagnostics");
-
+	// clear the cache
+	validatorConfigurations.clear();
 	// ask the workspace for the configurations
 	connection.workspace.getConfiguration(settingsRequest).then((values: ValidatorConfiguration[]) => {
 		const toRevalidate: string[] = [];

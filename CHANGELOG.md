@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2021-04-12
+### Fixed
+- textDocument/publishDiagnostics
+  - fixed a regression that caused the internal state of configurations to be stale which mean editors would not immediately be notified of changed diagnostics based on configuration changes  ([#256](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/256))
+
 ## [0.4.0] - 2021-04-11
 ### Added
 - settings

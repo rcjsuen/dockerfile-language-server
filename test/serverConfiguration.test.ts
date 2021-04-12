@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 import * as child_process from "child_process";
 import * as assert from "assert";
+import { DiagnosticSeverity } from "vscode-languageserver";
 
 // fork the server and connect to it using Node IPC
 const lspProcess = child_process.fork("out/src/server.js", [ "--node-ipc" ]);
@@ -271,6 +272,140 @@ describe("LSP server with configuration support", function() {
 				false,
 				finished
 			);
+		});
+	});
+
+
+	function test256(fileName: string, initialSeverity: string, severity: string, callback: Function): void {
+		let firstConfigurationRequest = true;
+		const configurationListener = (json: any) => {
+			if (json.method === "workspace/configuration" && json.params.items.length > 0 && json.params.items[0].section === "docker.languageserver.diagnostics") {
+				if (firstConfigurationRequest) {
+					if (initialSeverity === null) {
+						sendResult(json.id, [{ }]);
+					} else {
+						sendResult(json.id, [{ instructionJSONInSingleQuotes: initialSeverity }]);
+					}
+					firstConfigurationRequest = false;
+				} else {
+					if (severity === null) {
+						sendResult(json.id, [{ }]);
+					} else {
+						sendResult(json.id, [{ instructionJSONInSingleQuotes: severity }]);
+					}
+					lspProcess.removeListener("message", configurationListener);
+				}
+			}
+		};
+		lspProcess.on("message", configurationListener);
+
+		const documentURI = "uri://dockerfile/" + fileName;
+		let first = true;
+		const listener256 = (json: any) => {
+			if (json.method === "textDocument/publishDiagnostics" &&
+				json.params.uri === documentURI) {
+				if (first) {
+					if (initialSeverity === null || initialSeverity === "ignore") {
+						assert.equal(json.params.diagnostics.length, 0);
+					} else {
+						assert.equal(json.params.diagnostics.length, 1);
+						assert.equal(json.params.diagnostics[0].severity, DiagnosticSeverity.Warning);
+					}
+					first = false;
+
+					if (severity === null) {
+						sendNotification("workspace/didChangeConfiguration", {
+							settings: {
+							}
+						});
+					} else {
+						sendNotification("workspace/didChangeConfiguration", {
+							settings: {
+								docker: {
+									languageserver: {
+										diagnostics: {
+											instructionJSONInSingleQuotes: severity
+										}
+									}
+								}
+							}
+						});
+					}
+				} else {
+					lspProcess.removeListener("message", listener256);
+					if (severity === "ignore") {
+						assert.equal(json.params.diagnostics.length, 0);
+					} else {
+						if (severity === null) {
+							assert.equal(json.params.diagnostics.length, 0);
+						} else {
+							if (severity === "error") {
+								assert.equal(json.params.diagnostics[0].severity, DiagnosticSeverity.Error);
+							} else {
+								assert.equal(json.params.diagnostics[0].severity, DiagnosticSeverity.Warning);
+							}
+							assert.equal(json.params.diagnostics.length, 1);
+						}
+					}
+					sendNotification("textDocument/didClose", {
+						textDocument: {
+							uri: documentURI
+						}
+					});
+					callback();
+				}
+			}
+		};
+		lspProcess.on("message", listener256);
+
+		if (severity === null) {
+			sendNotification("workspace/didChangeConfiguration", {
+				settings: {
+				}
+			});
+		} else {
+			sendNotification("workspace/didChangeConfiguration", {
+				settings: {
+					docker: {
+						languageserver: {
+							diagnostics: {
+								instructionJSONInSingleQuotes: severity
+							}
+						}
+					}
+				}
+			});
+		}
+
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: documentURI,
+				text: "FROM node\nRUN ['a']"
+			}
+		});
+	}
+
+	describe("issue #256 file configuration", () => {
+		it("null to ignore configuration", function(finished) {
+			this.timeout(5000);
+			test256("256-null-to-ignore", null, "ignore", finished);
+		});
+
+		it("ignore to null configuration", function(finished) {
+			this.timeout(5000);
+			test256("256-ignore-to-null", "ignore", null, finished);
+		});
+
+		it("ignore to warning configuration", function(finished) {
+			this.timeout(5000);
+			test256("256-ignore-to-warning", "ignore", "warning", finished);
+		});
+
+		it("ignore to error configuration", function(finished) {
+			this.timeout(5000);
+			test256("256-ignore-to-error","ignore", "error", finished);
 		});
 	});
 
