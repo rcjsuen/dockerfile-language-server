@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 - textDocument/publishDiagnostics
   - support heredoc syntax when validating RUN instructions ([rcjsuen/dockerfile-utils#97](https://github.com/rcjsuen/dockerfile-utils/issues/97))
 
+### Fixed
+- textDocument/semanticTokens/full
+  - fix semantic highlighting issue seen in arguments spanning multiple lines that are contiguous with no whitespace ([rcjsuen/dockerfile-language-service#84](https://github.com/rcjsuen/dockerfile-language-service/issues/84))
+  - remove special handling of backslash characters in strings for semantic tokens ([rcjsuen/dockerfile-language-service#88](https://github.com/rcjsuen/dockerfile-language-service/issues/84))
+
 ## [0.4.1] - 2021-04-12
 ### Fixed
 - textDocument/publishDiagnostics
