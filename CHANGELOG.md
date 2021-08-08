@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - textDocument/publishDiagnostics
   - support heredoc syntax when validating RUN instructions ([rcjsuen/dockerfile-utils#97](https://github.com/rcjsuen/dockerfile-utils/issues/97))
+- textDocument/completion
+  - support heredoc syntax when deciding what completion items to return ([rcjsuen/dockerfile-language-service#87](https://github.com/rcjsuen/dockerfile-language-service/issues/87))
 
 ### Fixed
 - textDocument/semanticTokens/full
