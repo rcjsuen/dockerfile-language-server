@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## [Unreleased]
+## [0.5.0] - 2021-08-08
 - textDocument/publishDiagnostics
   - support heredoc syntax when validating RUN instructions ([rcjsuen/dockerfile-utils#97](https://github.com/rcjsuen/dockerfile-utils/issues/97))
 - textDocument/completion
@@ -604,7 +604,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.2.2...v0.3.0
