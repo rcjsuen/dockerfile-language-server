@@ -2093,6 +2093,31 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
+	it("heredoc syntax in RUN", (finished) => {
+		const uri = "uri://dockerfile/heredoc-syntax-RUN.txt";
+		this.timeout(5000);
+
+		const diagnosticsListener = (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				lspProcess.removeListener("message", diagnosticsListener);
+				sendNotification("textDocument/didClose", { textDocument: { uri } });
+				assert.strictEqual(json.params.uri, uri);
+				assert.strictEqual(json.params.diagnostics.length, 0);
+				finished();
+			}
+		};
+		lspProcess.on("message", diagnosticsListener);
+
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri,
+				text: "FROM alpine\nRUN <<eot\n  echo\neot"
+			}
+		});
+	});
+
 	after(() => {
 		// terminate the forked LSP process after all the tests have been run
 		lspProcess.kill();

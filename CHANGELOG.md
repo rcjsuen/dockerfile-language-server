@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+
+## [Unreleased]
+- textDocument/publishDiagnostics
+  - support heredoc syntax when validating RUN instructions ([rcjsuen/dockerfile-utils#97](https://github.com/rcjsuen/dockerfile-utils/issues/97))
+
 ## [0.4.1] - 2021-04-12
 ### Fixed
 - textDocument/publishDiagnostics
