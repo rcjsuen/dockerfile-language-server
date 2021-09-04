@@ -11,10 +11,11 @@ All notable changes to this project will be documented in this file.
   - support heredoc syntax in ADD and COPY instructions ([rcjsuen/#98](https://github.com/rcjsuen/dockerfile-utils/issues/98))
 
 ## [0.5.0] - 2021-08-08
-- textDocument/publishDiagnostics
-  - support heredoc syntax when validating RUN instructions ([rcjsuen/dockerfile-utils#97](https://github.com/rcjsuen/dockerfile-utils/issues/97))
+### Added
 - textDocument/completion
   - support heredoc syntax when deciding what completion items to return ([rcjsuen/dockerfile-language-service#87](https://github.com/rcjsuen/dockerfile-language-service/issues/87))
+- textDocument/publishDiagnostics
+  - support heredoc syntax when validating RUN instructions ([rcjsuen/dockerfile-utils#97](https://github.com/rcjsuen/dockerfile-utils/issues/97))
 
 ### Fixed
 - textDocument/semanticTokens/full
