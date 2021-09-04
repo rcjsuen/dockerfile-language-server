@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - textDocument/completion
-  - process heredoc syntax correctly when deciding what completion items to return for ADD and COPY ([#90](https://github.com/rcjsuen/dockerfile-language-service/issues/90))
+  - process heredoc syntax correctly when deciding what completion items to return for ADD and COPY ([rcjsuen/dockerfile-language-service#90](https://github.com/rcjsuen/dockerfile-language-service/issues/90))
 - textDocument/publishDiagnostics
   - flag duplicated escape parser directive declarations as being unnecessary ([rcjsuen/#82](https://github.com/rcjsuen/dockerfile-utils/issues/82))
   - flag duplicated CMD, ENTRYPOINT, and HEALTHCHECK instructions as being unnecessary diagnostics ([rcjsuen/#82](https://github.com/rcjsuen/dockerfile-utils/issues/82))
