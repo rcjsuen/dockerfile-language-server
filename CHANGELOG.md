@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - flag duplicated escape parser directive declarations as being unnecessary ([rcjsuen/#82](https://github.com/rcjsuen/dockerfile-utils/issues/82))
+  - flag duplicated CMD, ENTRYPOINT, and HEALTHCHECK instructions as being unnecessary diagnostics ([rcjsuen/#82](https://github.com/rcjsuen/dockerfile-utils/issues/82))
+  - support heredoc syntax in ADD and COPY instructions ([rcjsuen/#98](https://github.com/rcjsuen/dockerfile-utils/issues/98))
 
 ## [0.5.0] - 2021-08-08
 - textDocument/publishDiagnostics
