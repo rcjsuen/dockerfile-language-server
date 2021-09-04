@@ -2106,10 +2106,9 @@ describe("Dockerfile LSP Tests", function() {
 		this.timeout(5000);
 
 		const diagnosticsListener = (json) => {
-			if (json.method === "textDocument/publishDiagnostics") {
+			if (json.method === "textDocument/publishDiagnostics" && json.params.uri === uri) {
 				lspProcess.removeListener("message", diagnosticsListener);
 				sendNotification("textDocument/didClose", { textDocument: { uri } });
-				assert.strictEqual(json.params.uri, uri);
 				assert.strictEqual(json.params.diagnostics.length, 0);
 				finished();
 			}
