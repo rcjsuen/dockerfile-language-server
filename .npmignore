@@ -1,5 +1,5 @@
-.travis.yml
+.github
+.vscode
 src
 test
 tsconfig.json
-.github
