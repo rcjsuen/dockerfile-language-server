@@ -1820,18 +1820,10 @@ describe("Dockerfile LSP Tests", function() {
 
 	it("issue #251", function (finished) {
 		this.timeout(5000);
-		sendNotification("textDocument/didOpen", {
-			textDocument: {
-				languageId: "dockerfile",
-				version: 1,
-				uri: "uri://dockerfile/251.txt",
-				text: "FROM scratch\nCOPY --chmod=644 . ."
-			}
-		});
 
-		lspProcess.once("message", (json) => {
-			if (json.method === "textDocument/publishDiagnostics") {
-				assert.equal(json.params.uri, "uri://dockerfile/251.txt");
+		const listener = (json) => {
+			if (json.method === "textDocument/publishDiagnostics" && json.params.uri === "uri://dockerfile/251.txt") {
+				lspProcess.removeListener("message", listener);
 				assert.equal(json.params.diagnostics.length, 0);
 				sendNotification("textDocument/didClose", {
 					textDocument: {
@@ -1839,6 +1831,16 @@ describe("Dockerfile LSP Tests", function() {
 					}
 				});
 				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/251.txt",
+				text: "FROM scratch\nCOPY --chmod=644 . ."
 			}
 		});
 	});
