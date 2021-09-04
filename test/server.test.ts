@@ -1755,7 +1755,7 @@ describe("Dockerfile LSP Tests", function() {
 				});
 			}
 		};
-		lspProcess.once("message", listener);
+		lspProcess.on("message", listener);
 
 		sendNotification("textDocument/didOpen", {
 			textDocument: {
