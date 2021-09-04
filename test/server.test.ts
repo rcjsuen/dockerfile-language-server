@@ -1652,8 +1652,9 @@ describe("Dockerfile LSP Tests", function() {
 		const listener = (json) => {
 			if (json.method === "textDocument/publishDiagnostics" && json.params.uri === "uri://dockerfile/244b.txt") {
 				lspProcess.removeListener("message", listener);
-				lspProcess.once("message", (json) => {
-					if (json.method === "textDocument/publishDiagnostics") {
+				const secondListener = (json) => {
+					if (json.method === "textDocument/publishDiagnostics" && json.params.uri === "uri://dockerfile/244b.txt") {
+						lspProcess.removeListener("message", secondListener);
 						assert.equal(json.params.uri, "uri://dockerfile/244b.txt");
 						assert.equal(json.params.diagnostics.length, 1);
 						assert.strictEqual(json.params.diagnostics[0].range.start.line, 1);
@@ -1671,7 +1672,9 @@ describe("Dockerfile LSP Tests", function() {
 						});
 						finished();
 					}
-				});
+				};
+				lspProcess.on("message", secondListener);
+
 				sendNotification("textDocument/didChange", {
 					textDocument: {
 						version: 2,
