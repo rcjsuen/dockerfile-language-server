@@ -25,7 +25,6 @@ jobs:
       run: npm pack
     - name: Test
       run: npm run nyc-ci
-    steps:
     - name: Coveralls
       uses: coverallsapp/github-action@master
       if: ${{ matrix.status == 'LTS' }}
