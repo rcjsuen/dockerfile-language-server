@@ -40,7 +40,6 @@
     "watch": "tsc --watch -p .",
     "test": "mocha out/test",
     "nyc": "nyc mocha out/test",
-    "nyc-ci": "nyc --reporter=lcov mocha out/test",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "nyc-ci": "nyc --reporter=lcov mocha out/test"
   }
 }
