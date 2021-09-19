@@ -13,13 +13,13 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - textDocument/completion
-  - consider escaped words when calculating prefixes for code completion ([#60](https://github.com/rcjsuen/dockerfile-language-service/issues/60))
+  - consider escaped words when calculating prefixes for code completion ([rcjsuen/dockerfile-language-service#60](https://github.com/rcjsuen/dockerfile-language-service/issues/60))
 - textDocument/hover
-  - fix undefined hover return value to be null instead to match the stated API ([#92](https://github.com/rcjsuen/dockerfile-language-service/issues/92))
+  - fix undefined hover return value to be null instead to match the stated API ([rcjsuen/dockerfile-language-service#92](https://github.com/rcjsuen/dockerfile-language-service/issues/92))
 - textDocument/publishDiagnostics
   - fix incorrect merging of error ranges if escape character embedded in the keyword ([rcjsuen/dockerfile-utils#99](https://github.com/rcjsuen/dockerfile-utils/issues/99))
 - textDocument/semanticTokens/full
-  - prevent infinite loop when computing semantic tokens for a keyword with an escape character ([#91](https://github.com/rcjsuen/dockerfile-language-service/issues/91))
+  - prevent infinite loop when computing semantic tokens for a keyword with an escape character ([rcjsuen/dockerfile-language-service#91](https://github.com/rcjsuen/dockerfile-language-service/issues/91))
 
 ## [0.6.0] - 2021-09-04
 ### Added
