@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - support BuildKit by ignoring RUN instructions with no arguments ([rcjsuen/dockerfile-utils#102](https://github.com/rcjsuen/dockerfile-utils/issues/102))
+
+### Changed
+- textDocument/publishDiagnostics
+  - duplicated escape parser directive errors will now only flag the duplicates ([rcjsuen/dockerfile-utils#100](https://github.com/rcjsuen/dockerfile-utils/issues/100))
+  - duplicated CMD, ENTRYPOINT, and HEALTHCHECK instructions will no longer flag the last one found as it is the valid one ([rcjsuen/dockerfile-utils#101](https://github.com/rcjsuen/dockerfile-utils/issues/101))
+
+### Fixed
+- textDocument/publishDiagnostics
+  - fix incorrect merging of error ranges if escape character embedded in the keyword ([rcjsuen/dockerfile-utils#99](https://github.com/rcjsuen/dockerfile-utils/issues/99))
+
 ## [0.6.0] - 2021-09-04
 ### Added
 - textDocument/completion
