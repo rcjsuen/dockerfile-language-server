@@ -27,6 +27,6 @@ jobs:
       run: npm run nyc-ci
     - name: Coveralls
       uses: coverallsapp/github-action@master
-      if: ${{ matrix.status == 'LTS' }}
+      if: ${{ matrix.status == 'LTS' && github.ref == 'refs/heads/master' }}
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
