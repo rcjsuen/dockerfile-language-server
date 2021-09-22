@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Fixed
+- textDocument/publishDiagnostics
+  - prevent merging of instructions if it contains an escape character and spans multiple lines ([rcjsuen/dockerfile-utils#103](https://github.com/rcjsuen/dockerfile-utils/issues/103))
+  - ignore comments embedded in an instruction's keyword ([rcjsuen/dockerfile-utils#104](https://github.com/rcjsuen/dockerfile-utils/issues/104))
 - textDocument/semanticTokens/full
   - prevent infinite loop when calculating semantic tokens for an instruction with a keyword that spans multiple lines ([rcjsuen/dockerfile-language-service#94](https://github.com/rcjsuen/dockerfile-language-service/issues/94))
 
