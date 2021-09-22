@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.7.1] - 2021-09-21
 ### Fixed
 - textDocument/publishDiagnostics
   - prevent merging of instructions if it contains an escape character and spans multiple lines ([rcjsuen/dockerfile-utils#103](https://github.com/rcjsuen/dockerfile-utils/issues/103))
@@ -639,7 +639,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.4.1...v0.5.0
