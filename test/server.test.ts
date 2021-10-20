@@ -1851,6 +1851,68 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
+	it("issue rcjsuen/dockerfile-language-service#95", (finished) => {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/246.txt",
+				text: "R\\ \n\n"
+			}
+		});
+
+		const semanticTokensResponseId = sendRequest("textDocument/semanticTokens/full", {
+			textDocument: {
+				uri: "uri://dockerfile/246.txt"
+			}
+		});
+		const semanticTokensListener = (json) => {
+			if (json.id === semanticTokensResponseId) {
+				lspProcess.removeListener("message", semanticTokensListener);
+				assert.ok(Array.isArray(json.result.data));
+				const data = json.result.data;
+				assert.equal(data.length, 10);
+				assertSemanticToken(data, SemanticTokenTypes.keyword, 0, 0, 0, 1);
+				assertSemanticToken(data, SemanticTokenTypes.macro, 5, 0, 1, 1);
+				finished()
+			}
+		};
+		lspProcess.on("message", semanticTokensListener);
+	});
+
+	it("issue rcjsuen/dockerfile-language-service#96", (finished) => {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/246.txt",
+				text: "FROM $abc\\\ndef"
+			}
+		});
+
+		const semanticTokensResponseId = sendRequest("textDocument/semanticTokens/full", {
+			textDocument: {
+				uri: "uri://dockerfile/246.txt"
+			}
+		});
+		const semanticTokensListener = (json) => {
+			if (json.id === semanticTokensResponseId) {
+				lspProcess.removeListener("message", semanticTokensListener);
+				assert.ok(Array.isArray(json.result.data));
+				const data = json.result.data;
+				assert.equal(data.length, 20);
+				assertSemanticToken(data, SemanticTokenTypes.keyword, 0, 0, 0, 4);
+				assertSemanticToken(data, SemanticTokenTypes.variable, 5, 0, 5, 4);
+				assertSemanticToken(data, SemanticTokenTypes.macro, 10, 0, 4, 1);
+				assertSemanticToken(data, SemanticTokenTypes.variable, 15, 1, 0, 3);
+				finished()
+			}
+		};
+		lspProcess.on("message", semanticTokensListener);
+	});
+
 	function test255(fileName: string, text: string, request: string, params: any, configurationSet: boolean, ignoreMultilineAttribute: any, callback: Function): void {
 		if (configurationSet) {
 			sendNotification("workspace/didChangeConfiguration", {
