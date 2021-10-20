@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2021-09-21
+## [0.7.2] - 2021-10-20
 ### Fixed
 - prevent infinite loop when calculating semantic tokens if an escape character is not followed by any actual content ([rcjsuen/dockerfile-language-service#95](https://github.com/rcjsuen/dockerfile-language-service/issues/95))
 - prevent infinite loop when calculating semantic tokens if an escape character is embedded within a variable ([rcjsuen/dockerfile-language-service#96](https://github.com/rcjsuen/dockerfile-language-service/issues/96))
@@ -644,7 +644,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.5.0...v0.6.0
