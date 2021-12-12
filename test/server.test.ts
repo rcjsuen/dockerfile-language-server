@@ -2225,6 +2225,35 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener258);
 	});
 
+	it("issue #259", (finished) => {
+		const uri = "uri://dockerfile/259.txt";
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: uri,
+				text: "ADD --chown=a "
+			}
+		});
+		let id = sendRequest("textDocument/completion", {
+			textDocument: { uri: uri },
+			position: { line: 0, character: 14 }
+		});
+
+		const listener259 = (json) => {
+			if (json.id === id) {
+				lspProcess.removeListener("message", listener259);
+				sendNotification("textDocument/didClose", {
+					textDocument: { uri: uri }
+				});
+				assert.strictEqual(json.result.length, 0);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener259);
+	});
+
 	after(() => {
 		// terminate the forked LSP process after all the tests have been run
 		lspProcess.kill();
