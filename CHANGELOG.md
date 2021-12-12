@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.7.3] - 2021-12-12
 ### Fixed
 - textDocument/completion
   - fix error returned when computing completion items at the end of a COPY instruction with flags ([#258](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/258))
@@ -657,7 +657,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-utils/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/rcjsuen/dockerfile-utils/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.6.0...v0.7.0
