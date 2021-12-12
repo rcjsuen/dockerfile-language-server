@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - textDocument/completion
   - fix error returned when computing completion items at the end of a COPY instruction with flags ([#258](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/258))
   - fix error returned when computing completion items at the end of a ADD instruction with flags ([#259](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/259))
+  - fix infinite loop in ADD and COPY instructions when calculating WORKDIR suggestions for a build stage that shares its name with the image ([rcjsuen/dockerfile-language-service#99](https://github.com/rcjsuen/dockerfile-language-service/issues/99))
 - textDocument/formatting
   - ignore heredoc content when formatting ([rcjsuen/dockerfile-utils#105](https://github.com/rcjsuen/dockerfile-utils/issues/105))
 - textDocument/onTypeFormatting
