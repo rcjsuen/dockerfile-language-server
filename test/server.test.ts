@@ -2187,6 +2187,44 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
+	it("issue #258", (finished) => {
+		const uri = "uri://dockerfile/258.txt";
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: uri,
+				text: "COPY --from=a "
+			}
+		});
+		let id = sendRequest("textDocument/completion", {
+			textDocument: { uri: uri },
+			position: { line: 0, character: 14 }
+		});
+
+		const listener258 = (json) => {
+			if (json.id === id) {
+				lspProcess.removeListener("message", listener258);
+				sendNotification("textDocument/didClose", {
+					textDocument: { uri: uri }
+				});
+				assert.strictEqual(json.result.length, 1);
+				assert.strictEqual(json.result[0].data, "COPY_FlagChown");
+				assert.strictEqual(json.result[0].label, "--chown=");
+				assert.strictEqual(json.result[0].kind, CompletionItemKind.Field);
+				assert.strictEqual(json.result[0].insertTextFormat, InsertTextFormat.PlainText);
+				assert.strictEqual(json.result[0].textEdit.newText, "--chown=");
+				assert.strictEqual(json.result[0].textEdit.range.start.line, 0);
+				assert.strictEqual(json.result[0].textEdit.range.start.character, 14);
+				assert.strictEqual(json.result[0].textEdit.range.end.line, 0);
+				assert.strictEqual(json.result[0].textEdit.range.end.character, 14);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener258);
+	});
+
 	after(() => {
 		// terminate the forked LSP process after all the tests have been run
 		lspProcess.kill();

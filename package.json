@@ -20,7 +20,7 @@
     "node": "*"
   },
   "dependencies": {
-    "dockerfile-language-service": "0.7.3",
+    "dockerfile-language-service": "0.7.4",
     "dockerfile-utils": "0.9.2",
     "vscode-languageserver": "^8.0.0-next.2"
   },

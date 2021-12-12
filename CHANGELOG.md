@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/completion
+  - fix error returned when computing completion items at the end of a COPY instruction with flags ([#258](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/258))
+
 ## [0.7.2] - 2021-10-20
 ### Fixed
 - textDocument/semanticTokens/full
