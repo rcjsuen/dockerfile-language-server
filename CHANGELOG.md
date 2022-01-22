@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/semanticTokens/full
+  - variable semantic tokens are now split up into multiple tokens, offering a finer-grained view of what each part of it is for which should improve readability ([rcjsuen/dockerfile-language-service#100](https://github.com/rcjsuen/dockerfile-language-service/issues/100))
+
 ### Fixed
 - textDocument/publishDiagnostics
   - empty lines in heredoc content should not trigger the empty continuation line warning ([rcjsuen/dockerfile-utils#107](https://github.com/rcjsuen/dockerfile-utils/issues/107))
