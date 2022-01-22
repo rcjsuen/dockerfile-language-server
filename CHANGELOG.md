@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/publishDiagnostics
+  - empty lines in heredoc content should not trigger the empty continuation line warning ([rcjsuen/dockerfile-utils#107](https://github.com/rcjsuen/dockerfile-utils/issues/107))
+
 ## [0.7.3] - 2021-12-12
 ### Fixed
 - textDocument/completion
