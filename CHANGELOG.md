@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - add support for validating the `--link` flag in ADD instructions ([rcjsuen/dockerfile-utils#109](https://github.com/rcjsuen/dockerfile-utils/issues/109))
+  - add support for validating the `--link` flag in COPY instructions ([rcjsuen/dockerfile-language-service#103](https://github.com/rcjsuen/dockerfile-language-service/issues/103)
+
+### Fixed
+- textDocument/semanticTokens/full
+  - semantic tokens will no longer have negative values if quoted string content is inside a variable ([rcjsuen/dockerfile-language-service#104](https://github.com/rcjsuen/dockerfile-language-service/issues/104))
+
 ## [0.8.0] - 2022-01-22
 ### Added
 - textDocument/semanticTokens/full
