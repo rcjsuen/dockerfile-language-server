@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - ignore UTF-8 BOM when validating the Dockerfile ([rcjsuen/dockerfile-utils#113](https://github.com/rcjsuen/dockerfile-utils/issues/113))
+- ignore quotes in comments if it's within an embedded argument ([rcjsuen/dockerfile-language-service#110](https://github.com/rcjsuen/dockerfile-language-service/issues/110))
 
 ## [0.9.0] - 2022-05-04
 ### Added
