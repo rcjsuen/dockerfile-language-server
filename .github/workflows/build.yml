@@ -7,10 +7,10 @@ jobs:
       fail-fast: false
       matrix:
        include:
-         - node-version: 12.x
-         - node-version: 14.x
          - node-version: 16.x
+         - node-version: 18.x
            status: "LTS"
+         - node-version: 20.x
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
