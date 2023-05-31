@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+### Fixed
+- textDocument/publishDiagnostics
+  - ignore UTF-8 BOM when calculating completion items ([#rcjsuen/dockerfile-language-service#112](https://github.com/rcjsuen/dockerfile-language-service/issues/112))
+
 ## [0.10.0] - 2023-05-28
 ### Added
 - textDocument/formatting
