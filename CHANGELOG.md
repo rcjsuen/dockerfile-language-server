@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [0.10.1] - 2023-06-01
 ### Fixed
 - textDocument/publishDiagnostics
   - ignore UTF-8 BOM when calculating completion items ([#rcjsuen/dockerfile-language-service#112](https://github.com/rcjsuen/dockerfile-language-service/issues/112))
@@ -699,7 +699,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.7.3...v0.8.0
