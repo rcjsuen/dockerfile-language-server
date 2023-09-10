@@ -30,7 +30,7 @@
     "@types/node": "^6.0.52",
     "mocha": "^9.1.3",
     "nyc": "^15.1.0",
-    "typescript": "^4.5.3"
+    "typescript": "^5.2.2"
   },
   "bin": {
     "docker-langserver": "./bin/docker-langserver"
