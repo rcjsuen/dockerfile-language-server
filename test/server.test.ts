@@ -2254,6 +2254,36 @@ describe("Dockerfile LSP Tests", function() {
 		lspProcess.on("message", listener259);
 	});
 
+	it("issue #265", (finished) => {
+		this.timeout(5000);
+
+		const documentURI = "uri://dockerfile/265.txt";
+		const diagnosticsListener = (json) => {
+			if (json.method === "textDocument/publishDiagnostics") {
+				if (json.params.uri === documentURI) {
+					lspProcess.removeListener("message", diagnosticsListener);
+					sendNotification("textDocument/didClose", {
+						textDocument: {
+							uri: documentURI,
+						}
+					});
+					assert.strictEqual(json.params.diagnostics.length, 0);
+					finished();
+				}
+			}
+		};
+		lspProcess.on("message", diagnosticsListener);
+
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: documentURI,
+				text: "FROM alpine\nADD --keep-git-dir=true https://github.com/moby/buildkit.git#v0.10.1 /buildkit"
+			}
+		});
+	});
+
 	after(() => {
 		// terminate the forked LSP process after all the tests have been run
 		lspProcess.kill();

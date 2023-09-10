@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
   - support parsing the new `--checksum` flag for ADD instructions ([rcjsuen/dockerfile-utils#116](https://github.com/rcjsuen/dockerfile-utils/issues/116))
   - flag empty tag specified with a digest in FROM instructions as an error ([rcjsuen/dockerfile-utils#118](https://github.com/rcjsuen/dockerfile-utils/issues/118))
   - ignore predefined platform ARG variables if they are used as a base image ([rcjsuen/dockerfile-utils#119](https://github.com/rcjsuen/dockerfile-utils/issues/119))
+  - support parsing the new `--keep-git-dir` flag for ADD instructions ([#265](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/265))
 - textDocument/completion
   - suggest the new `--start-interval` flag for HEALTHCHECK instructions when calculating completion items ([#117](https://github.com/rcjsuen/dockerfile-language-service/issues/117))
 - textDocument/hover
