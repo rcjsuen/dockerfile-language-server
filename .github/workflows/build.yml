@@ -12,9 +12,9 @@ jobs:
            status: "LTS"
          - node-version: 20.x
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
     - name: Build
@@ -26,14 +26,14 @@ jobs:
     - name: Test
       run: npm run nyc-ci
     - name: Login to DockerHub
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       if: ${{ matrix.status == 'LTS' && github.ref == 'refs/heads/master' }}
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Build and push to DockerHub
       id: docker_build
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v4
       if: ${{ matrix.status == 'LTS' && github.ref == 'refs/heads/master' }}
       with:
         context: .
