@@ -13,7 +13,7 @@ import {
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
 	RenameParams, Range, WorkspaceEdit, Location,
-	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams, TextDocumentContentChangeEvent,
+	DidChangeTextDocumentParams, DidOpenTextDocumentParams, DidCloseTextDocumentParams,
 	DidChangeConfigurationNotification, ConfigurationItem, DocumentLinkParams, DocumentLink, MarkupKind,
 	VersionedTextDocumentIdentifier, TextDocumentEdit, CodeAction, CodeActionKind, ProposedFeatures,
 	FoldingRangeParams, SemanticTokenModifiers, SemanticTokenTypes, SemanticTokensParams
