@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.11.0] - 2023-09-10
 ### Added
 - textDocument/publishDiagnostics
   - support parsing the new `--start-interval` flag for HEALTHCHECK instructions ([rcjsuen/dockerfile-utils#115](https://github.com/rcjsuen/dockerfile-utils/issues/115))
@@ -722,7 +722,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.9.0...v0.10.0
