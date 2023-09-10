@@ -15,7 +15,6 @@ All notable changes to this project will be documented in this file.
 - textDocument/hover
   - provide documentation support when hovering over the `--start-interval` flag for HEALTHCHECK instructions ([rcjsuen/dockerfile-language-service#119](https://github.com/rcjsuen/dockerfile-language-service/issues/119))
 
-
 ## [0.10.2] - 2023-06-01
 ### Fixed
 - textDocument/semanticTokens/full
