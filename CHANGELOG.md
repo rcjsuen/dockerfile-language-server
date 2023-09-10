@@ -11,9 +11,9 @@ All notable changes to this project will be documented in this file.
   - ignore predefined platform ARG variables if they are used as a base image ([rcjsuen/dockerfile-utils#119](https://github.com/rcjsuen/dockerfile-utils/issues/119))
   - support parsing the new `--keep-git-dir` flag for ADD instructions ([#265](https://github.com/rcjsuen/dockerfile-language-server-nodejs/issues/265))
 - textDocument/completion
-  - suggest the new `--start-interval` flag for HEALTHCHECK instructions when calculating completion items ([#117](https://github.com/rcjsuen/dockerfile-language-service/issues/117))
+  - suggest the new `--start-interval` flag for HEALTHCHECK instructions when calculating completion items ([rcjsuen/dockerfile-language-service#117](https://github.com/rcjsuen/dockerfile-language-service/issues/117))
 - textDocument/hover
-  - provide documentation support when hovering over the `--start-interval` flag for HEALTHCHECK instructions ([#119](https://github.com/rcjsuen/dockerfile-language-service/issues/119))
+  - provide documentation support when hovering over the `--start-interval` flag for HEALTHCHECK instructions ([rcjsuen/dockerfile-language-service#119](https://github.com/rcjsuen/dockerfile-language-service/issues/119))
 
 
 ## [0.10.2] - 2023-06-01
