@@ -5,9 +5,10 @@
 'use strict';
 
 import * as fs from "fs";
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import {
 	createConnection, InitializeParams, InitializeResult, ClientCapabilities,
-	TextDocumentPositionParams, TextDocumentSyncKind, TextDocument, TextEdit, Hover,
+	TextDocumentPositionParams, TextDocumentSyncKind, TextEdit, Hover,
 	CompletionItem, CodeActionParams, Command, ExecuteCommandParams,
 	DocumentSymbolParams, SymbolInformation, SignatureHelp,
 	DocumentFormattingParams, DocumentRangeFormattingParams, DocumentOnTypeFormattingParams, DocumentHighlight,
