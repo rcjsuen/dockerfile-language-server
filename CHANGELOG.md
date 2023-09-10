@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/publishDiagnostics
+  - support parsing the new `--start-interval` flag for HEALTHCHECK instructions ([rcjsuen/dockerfile-utils#115](https://github.com/rcjsuen/dockerfile-utils/issues/115))
+  - allow some diagnostics to be ignored if a `# dockerfile-utils: ignore` comment precedes the originating line of the error ([rcjsuen/dockerfile-utils#106](https://github.com/rcjsuen/dockerfile-utils/issues/106))
+  - support parsing the new `--checksum` flag for ADD instructions ([rcjsuen/dockerfile-utils#116](https://github.com/rcjsuen/dockerfile-utils/issues/116))
+  - flag empty tag specified with a digest in FROM instructions as an error ([rcjsuen/dockerfile-utils#118](https://github.com/rcjsuen/dockerfile-utils/issues/118))
+  - ignore predefined platform ARG variables if they are used as a base image ([rcjsuen/dockerfile-utils#119](https://github.com/rcjsuen/dockerfile-utils/issues/119))
+- textDocument/completion
+  - suggest the new `--start-interval` flag for HEALTHCHECK instructions when calculating completion items ([#117](https://github.com/rcjsuen/dockerfile-language-service/issues/117))
+- textDocument/hover
+  - provide documentation support when hovering over the `--start-interval` flag for HEALTHCHECK instructions ([#119](https://github.com/rcjsuen/dockerfile-language-service/issues/119))
+
+
 ## [0.10.2] - 2023-06-01
 ### Fixed
 - textDocument/semanticTokens/full
