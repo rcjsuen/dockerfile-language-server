@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - textDocument/definition
   - support navigating the definitions of heredocs ([rcjsuen/dockerfile-language-service#122](https://github.com/rcjsuen/dockerfile-language-service/issues/122))
+- textDocument/publishDiagnostics
+  - support parsing the new `--exclude` flag for ADD and COPY instructions ([rcjsuen/dockerfile-utils#124](https://github.com/rcjsuen/dockerfile-utils/issues/124))
+  - support parsing the new `--parents` flag for COPY instructions ([rcjsuen/dockerfile-utils#123](https://github.com/rcjsuen/dockerfile-utils/issues/123))
 
 ## [0.11.0] - 2023-09-10
 ### Added
