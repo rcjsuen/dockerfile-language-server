@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- textDocument/definition
+  - support navigating the definitions of heredocs ([rcjsuen/dockerfile-language-service#122](https://github.com/rcjsuen/dockerfile-language-service/issues/122))
+
 ## [0.11.0] - 2023-09-10
 ### Added
 - textDocument/publishDiagnostics
