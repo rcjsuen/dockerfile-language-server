@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.13.0] - 2024-06-18
 ### Added
 - textDocument/documentHighlight
   - support computing highlight ranges for heredocs ([rcjsuen/dockerfile-language-service#121](https://github.com/rcjsuen/dockerfile-language-service/issues/121))
@@ -742,7 +742,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.1...v0.10.2
