@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/documentHighlight
+  - support computing highlight ranges for heredocs ([rcjsuen/dockerfile-language-service#121](https://github.com/rcjsuen/dockerfile-language-service/issues/121))
+
 ### Fixed
 - textDocument/publishDiagnostics
   - consider default value of a variable when determining if FROM is invalid or not ([#269](https://github.com/rcjsuen/dockerfile-language-server/issues/269))
