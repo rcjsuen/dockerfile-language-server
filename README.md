@@ -23,6 +23,8 @@ To [install and run](#installation-instructions) this language server, you will 
 
 **Projects that use this language server:**
 - [vscode-docker](https://github.com/Microsoft/vscode-docker)
+- [sublimelsp](https://github.com/sublimelsp/LSP-dockerfile)
+- [Zed](https://github.com/d1y/dockerfile.zed/)
 - [atom-ide-docker](https://github.com/josa42/atom-ide-docker)
 - [Sourcegraph](https://sourcegraph.com/)
 - [Theia](https://theia-ide.org/)
