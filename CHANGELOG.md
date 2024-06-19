@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/publishDiagnostics
+  - consider default value of a variable when determining if FROM is invalid or not ([#269](https://github.com/rcjsuen/dockerfile-language-server/issues/269))
+
 ## [0.12.0] - 2024-05-23
 ### Added
 - textDocument/definition
