@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/publishDiagnostics
+  - prevent invalid heredocs from crashing the linter ([rcjsuen/dockerfile-utils#127](https://github.com/rcjsuen/dockerfile-utils/issues/127))
+- textDocument/onTypeFormatting
+  - prevent invalid heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#127](https://github.com/rcjsuen/dockerfile-utils/issues/127))
+- textDocument/rangeFormatting
+  - prevent invalid heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#127](https://github.com/rcjsuen/dockerfile-utils/issues/127))
+
 ## [0.13.0] - 2024-06-18
 ### Added
 - textDocument/documentHighlight
