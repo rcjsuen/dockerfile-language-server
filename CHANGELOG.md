@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.14.0] - 2025-04-11
 ### Added
 - textDocument/prepareRename
   - support preparing renames for here-documents ([rcjsuen/dockerfile-language-service#129](https://github.com/rcjsuen/dockerfile-language-service/issues/129))
@@ -764,7 +764,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.10.2...v0.11.0
