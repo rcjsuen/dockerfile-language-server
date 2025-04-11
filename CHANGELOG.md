@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- textDocument/prepareRename
+  - support preparing renames for here-documents ([rcjsuen/dockerfile-language-service#129](https://github.com/rcjsuen/dockerfile-language-service/issues/129))
+  - support preparing renames for a build stage referenced in a FROM ([rcjsuen/dockerfile-language-service#126](https://github.com/rcjsuen/dockerfile-language-service/issues/126))
+- textDocument/documentLinks
+  - provide document links for GitHub Container Registry, Microsoft Artifact Registry, and Quay.io registries ([rcjsuen/dockerfile-language-service#134](https://github.com/rcjsuen/dockerfile-language-service/issues/134))
+
 ### Fixed
 - textDocument/publishDiagnostics
   - prevent invalid heredocs from crashing the linter ([rcjsuen/dockerfile-utils#127](https://github.com/rcjsuen/dockerfile-utils/issues/127))
@@ -9,6 +16,12 @@ All notable changes to this project will be documented in this file.
   - prevent invalid heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#127](https://github.com/rcjsuen/dockerfile-utils/issues/127))
 - textDocument/rangeFormatting
   - prevent invalid heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#127](https://github.com/rcjsuen/dockerfile-utils/issues/127))
+- textDocument/definition
+  - stop resolving definitions to build stages after the selected line ([rcjsuen/dockerfile-language-service#130](https://github.com/rcjsuen/dockerfile-language-service/issues/130))
+- textDocument/documentHighlight
+  - build stage references in FROM instructions will now be highlighted ([rcjsuen/dockerfile-language-service#128](https://github.com/rcjsuen/dockerfile-language-service/issues/128))
+- textDocument/rename
+  - build stage references in FROM instructions will now be included in rename edits ([rcjsuen/dockerfile-language-service#127](https://github.com/rcjsuen/dockerfile-language-service/issues/127))
 
 ## [0.13.0] - 2024-06-18
 ### Added
