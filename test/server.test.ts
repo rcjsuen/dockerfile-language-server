@@ -2314,6 +2314,39 @@ describe("Dockerfile LSP Tests", function() {
 		});
 	});
 
+	it("issue #266", function (finished) {
+		this.timeout(5000);
+		sendNotification("textDocument/didOpen", {
+			textDocument: {
+				languageId: "dockerfile",
+				version: 1,
+				uri: "uri://dockerfile/266.txt",
+				text: "RUN <<'END_OF_PATCH\nEND_OF_PATCH\nRUN <<'SCRIPT'\nSCRIPT"
+			}
+		});
+
+
+		const requestId = sendRequest("textDocument/definition", {
+			textDocument: {
+				uri: "uri://dockerfile/266.txt",
+			},
+			position: {
+				line: 0,
+				character: 10
+			}
+		});
+
+		const listener = (json) => {
+			if (json.id === requestId) {
+				lspProcess.removeListener("message", listener);
+				assert.strictEqual(json.error, undefined);
+				assert.strictEqual(json.result, null);
+				finished();
+			}
+		};
+		lspProcess.on("message", listener);
+	});
+
 	after(() => {
 		// terminate the forked LSP process after all the tests have been run
 		lspProcess.kill();

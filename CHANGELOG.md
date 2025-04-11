@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
   - prevent invalid heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#127](https://github.com/rcjsuen/dockerfile-utils/issues/127))
 - textDocument/definition
   - stop resolving definitions to build stages after the selected line ([rcjsuen/dockerfile-language-service#130](https://github.com/rcjsuen/dockerfile-language-service/issues/130))
+  - prevent invalid heredocs from crashing the server ([#266](https://github.com/rcjsuen/dockerfile-language-server/issues/266))
 - textDocument/documentHighlight
   - build stage references in FROM instructions will now be highlighted ([rcjsuen/dockerfile-language-service#128](https://github.com/rcjsuen/dockerfile-language-service/issues/128))
 - textDocument/rename
