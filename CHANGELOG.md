@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Fixed
+- textDocument/formatting
+  - prevent tabbed delimiters in heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#129](https://github.com/rcjsuen/dockerfile-utils/issues/129))
+- textDocument/publishDiagnostics
+  - prevent tabbed delimiters in heredocs from crashing the linter ([rcjsuen/dockerfile-utils#129](https://github.com/rcjsuen/dockerfile-utils/issues/129))
+- textDocument/rangeFormatting
+  - prevent tabbed delimiters in heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#129](https://github.com/rcjsuen/dockerfile-utils/issues/129))
+
+## [0.15.0] - 2025-04-10
 ## [0.14.0] - 2025-04-11
 ### Added
 - textDocument/prepareRename
