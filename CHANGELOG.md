@@ -3,13 +3,26 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Fixed
+- textDocument/definition
+  - fix TypeError from being thrown if the position of definition calculations are from outside the document ([rcjsuen/dockerfile-language-service#132](https://github.com/rcjsuen/dockerfile-language-service/issues/132))
+  - fix TypeError from being thrown if the position of definition calculations are for tabbed heredocs ([rcjsuen/dockerfile-language-service#135](https://github.com/rcjsuen/dockerfile-language-service/issues/135))
+- textDocument/documentHighlight
+  - fix TypeError from being thrown if the position of highlight range calculations are from outside the document ([rcjsuen/dockerfile-language-service#132](https://github.com/rcjsuen/dockerfile-language-service/issues/132))
+  - fix TypeError from being thrown if the position of highlight range calculations are for tabbed heredocs ([rcjsuen/dockerfile-language-service#135](https://github.com/rcjsuen/dockerfile-language-service/issues/135))
 - textDocument/formatting
   - prevent tabbed delimiters in heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#129](https://github.com/rcjsuen/dockerfile-utils/issues/129))
+- textDocument/prepareRename
+  - fix TypeError from being thrown if the position of prepare rename calculations are from outside the document ([rcjsuen/dockerfile-language-service#132](https://github.com/rcjsuen/dockerfile-language-service/issues/132))
+  - fix TypeError from being thrown if the position of prepare rename calculations are for tabbed heredocs ([rcjsuen/dockerfile-language-service#135](https://github.com/rcjsuen/dockerfile-language-service/issues/135))
 - textDocument/publishDiagnostics
   - prevent tabbed delimiters in heredocs from crashing the linter ([rcjsuen/dockerfile-utils#129](https://github.com/rcjsuen/dockerfile-utils/issues/129))
 - textDocument/rangeFormatting
   - prevent tabbed delimiters in heredocs from crashing the formatter ([rcjsuen/dockerfile-utils#129](https://github.com/rcjsuen/dockerfile-utils/issues/129))
+- textDocument/rename
+  - fix TypeError from being thrown if the position of rename calculations are from outside the document ([rcjsuen/dockerfile-language-service#132](https://github.com/rcjsuen/dockerfile-language-service/issues/132))
+  - fix TypeError from being thrown if the position of rename calculations are for tabbed heredocs ([rcjsuen/dockerfile-language-service#135](https://github.com/rcjsuen/dockerfile-language-service/issues/135))
 
+## [0.15.0] - 2025-04-10
 ## [0.15.0] - 2025-04-10
 ## [0.14.0] - 2025-04-11
 ### Added
