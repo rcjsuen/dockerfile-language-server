@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.14.1] - 2025-07-21
 ### Fixed
 - textDocument/definition
   - fix TypeError from being thrown if the position of definition calculations are from outside the document ([rcjsuen/dockerfile-language-service#132](https://github.com/rcjsuen/dockerfile-language-service/issues/132))
@@ -788,7 +788,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.14.1...HEAD
+[0.14.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.11.0...v0.12.0
