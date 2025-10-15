@@ -26,8 +26,6 @@ All notable changes to this project will be documented in this file.
   - fix TypeError from being thrown if the position of rename calculations are from outside the document ([rcjsuen/dockerfile-language-service#132](https://github.com/rcjsuen/dockerfile-language-service/issues/132))
   - fix TypeError from being thrown if the position of rename calculations are for tabbed heredocs ([rcjsuen/dockerfile-language-service#135](https://github.com/rcjsuen/dockerfile-language-service/issues/135))
 
-## [0.15.0] - 2025-04-10
-## [0.15.0] - 2025-04-10
 ## [0.14.0] - 2025-04-11
 ### Added
 - textDocument/prepareRename
