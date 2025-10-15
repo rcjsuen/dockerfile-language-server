@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.15.0] - 2025-10-15
+### Changed
+- dependency `dockerfile-language-service` was changed from UMD to CJS. ([rcjsuen/dockerfile-language-service#137](https://github.com/rcjsuen/dockerfile-language-service/issues/137))
+
 ## [0.14.1] - 2025-07-21
 ### Fixed
 - textDocument/definition
@@ -788,7 +792,8 @@ All notable changes to this project will be documented in this file.
 - textDocument/formatting
 - textDocument/rangeFormatting
 
-[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.14.1...HEAD
+[Unreleased]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/rcjsuen/dockerfile-language-server-nodejs/compare/v0.12.0...v0.13.0
