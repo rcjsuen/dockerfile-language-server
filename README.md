@@ -1,6 +1,6 @@
 # Dockerfile Language Server
 
-![Node.js Builds](https://github.com/rcjsuen/dockerfile-language-server-nodejs/workflows/Node.js%20Builds/badge.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/rcjsuen/dockerfile-language-server-nodejs/badge.svg?branch=master)](https://coveralls.io/github/rcjsuen/dockerfile-language-server-nodejs?branch=master) [![Build Dependencies](https://david-dm.org/rcjsuen/dockerfile-language-server-nodejs.svg)](https://david-dm.org/rcjsuen/dockerfile-language-server-nodejs) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Node.js Builds](https://github.com/rcjsuen/dockerfile-language-server/workflows/Node.js%20Builds/badge.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/rcjsuen/dockerfile-language-server/badge.svg?branch=master)](https://coveralls.io/github/rcjsuen/dockerfile-language-server?branch=master) [![Build Dependencies](https://david-dm.org/rcjsuen/dockerfile-language-server.svg)](https://david-dm.org/rcjsuen/dockerfile-language-server) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This is a language server for Dockerfiles powered by Node.js written in TypeScript.
 To [install and run](#installation-instructions) this language server, you will need to have either [Node.js](https://nodejs.org/en/download/) or [Docker](https://www.docker.com/get-docker) installed on your computer.
@@ -62,11 +62,11 @@ client to the server via Node IPC, stdio, or sockets.
 ## Installation Instructions
 
 To install this language server onto your computer, please install the
-[dockerfile-language-server-nodejs npm module](https://www.npmjs.com/package/dockerfile-language-server-nodejs).
+[dockerfile-language-server npm module](https://www.npmjs.com/package/dockerfile-language-server).
 The `-g` flag will install the npm module globally onto your computer.
 
 ```
-npm install -g dockerfile-language-server-nodejs
+npm install -g dockerfile-language-server
 ```
 
 After the installation has completed, you can start the language

@@ -1,5 +1,5 @@
 {
-  "name": "dockerfile-language-server-nodejs",
+  "name": "dockerfile-language-server",
   "description": "A language server for Dockerfiles powered by NodeJS, TypeScript, and VSCode technologies.",
   "keywords": [
     "language",
@@ -11,10 +11,10 @@
   "version": "0.15.0",
   "author": "Remy Suen",
   "license": "MIT",
-  "bugs": "https://github.com/rcjsuen/dockerfile-language-server-nodejs/",
+  "bugs": "https://github.com/rcjsuen/dockerfile-language-server/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rcjsuen/dockerfile-language-server-nodejs.git"
+    "url": "https://github.com/rcjsuen/dockerfile-language-server.git"
   },
   "engines": {
     "node": "*"
